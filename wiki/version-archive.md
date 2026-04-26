@@ -34,6 +34,7 @@ CTO/
 ├── versions/
 │   ├── VERSIONS.md             # Index of all versions with dates, summaries, snapshot IDs
 │   ├── v0.1.0/
+│   │   ├── HANDOFF.md          # Context transfer: what changed, learned, watch for
 │   │   ├── decision.json       # Decision that led to this version being replaced
 │   │   ├── ROLLBACK.md         # How to restore this version
 │   │   └── snapshot-id.txt     # Hetzner snapshot ID for full VPS restore

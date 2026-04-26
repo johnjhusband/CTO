@@ -60,20 +60,30 @@ A Docker container cannot test any of these faithfully. Only a full VPS provides
 - **Tests fail:** iterate (fix and re-test on same candidate VPS) or abandon
 - Decision is logged regardless of outcome
 
-### 6. Archive
+### 6. Handoff
+- Outgoing CTO writes a HANDOFF.md for the incoming version:
+  - What changed and why (the full reasoning, not just the diff)
+  - What was learned during this version's operation
+  - Mistakes made and corrections received from John
+  - What to watch out for in the new version
+  - Any open questions or deferred decisions
+- This is the knowledge transfer mechanism. Without it, each new version starts without the context of why things are the way they are.
+
+### 7. Archive
 - Current production CTO is archived:
   - Hetzner VPS snapshot (one-click restore)
   - Git tag: `v{version}-archived-{date}`
   - Decision log entry written
+  - HANDOFF.md committed with this version's context
   - Rollback instructions generated
 
-### 7. Promote
+### 8. Promote
 - Candidate VPS becomes the new primary CTO
 - DNS/IP updated if needed (or CTO migrates state to candidate)
 - Old production VPS is destroyed (after confirming candidate is healthy)
 - New CTO takes over all duties
 
-### 8. Report
+### 9. Report
 - User notified via Telegram Bot / Gmail fallback
 - Report includes: what changed, why, test results, rollback instructions
 
