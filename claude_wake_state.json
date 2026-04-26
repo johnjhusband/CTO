@@ -1,53 +1,46 @@
 {
   "project": "CTO v1",
   "date": "2026-04-26",
-  "session_summary": "Assumption audit phase. Verified all API keys work, all packages exist, tested Hetzner API create/delete. Found and corrected multiple wrong claims in documentation. Major remaining task: tag every record in every document as [verified] or [unverified].",
+  "session_summary": "Verification and tagging phase. All API keys verified working. All packages verified on npm/PyPI. OpenClaw behavior verified against official docs (6 wrong claims found and corrected). Started tagging every record as [verified]/[unverified]. PRD done. Remaining documents need tagging.",
 
-  "critical_next_task": "Every record in every document needs [verified] or [unverified] tag. John requested this explicitly. Documents to tag: PRD.md, beads.md, README.md, SOUL.md, AGENTS.md, HANDOFF.md, TOOLS.md, MEMORY.md, HEARTBEAT.md, IDENTITY.md, USER.md, GUARDRAILS.md, FAILURE.md, all wiki/*.md pages, all skills. This is the blocking task before installation.",
+  "critical_next_task": "Continue tagging [verified]/[unverified] on ALL remaining documents: beads.md, README.md, SOUL.md, AGENTS.md, HANDOFF.md, TOOLS.md, MEMORY.md, HEARTBEAT.md, IDENTITY.md, USER.md, GUARDRAILS.md, FAILURE.md, all wiki/*.md, all skills. PRD is done. Then install OpenClaw.",
 
-  "verification_results_summary": {
-    "api_keys": "All 4 work (OpenRouter, Telegram, Hetzner, OpenAI)",
-    "packages": "All verified on npm/PyPI (openclaw, mcpvault, filesystem-mcp, brave-mcp, hetzner-mcp, fetch-mcp, memweave, github-mcp-server)",
-    "openclaw_behavior": {
-      "confirmed": ["auto-loads SOUL/AGENTS/IDENTITY/USER/TOOLS", "skip-bootstrap", "heartbeat 30min", "extraPaths", "cron persists", "loopback bind", "telegram config keys", "model format", "message send", "schema validation", "searxng support", "uvx for python mcp"],
-      "wrong": ["skills NOT lazy-loaded (snapshot at session start)", "MCP key is mcp.servers not mcpServers", "onboard workaround unconfirmed (issue closed not_planned)", "Tier 3 label fabricated", "SearXNG docker command incomplete", "MCPVault not OpenClaw-specific"],
-      "caveats": ["MEMORY.md only in main private session", "heartbeat 1hr for Anthropic OAuth"]
-    },
-    "memweave": "No FTS-only mode. Hybrid search works with OpenAI key but scores are very low (0.14). Needs tuning or may not be right tool.",
-    "hetzner": "API create/delete works. SSH key must be uploaded via API first (done). Billing stops on DELETE confirmed. Snapshots EUR 0.0143/GB/month confirmed.",
-    "telegram": "Proactive messaging fails until John messages bot first (confirmed). John's ID: 8702838158. Bot: @HusbandCTObot"
-  },
+  "key_corrections_this_session": [
+    "MCP config key is mcp.servers not mcpServers",
+    "Skills are snapshot-loaded at session start, NOT lazy-loaded",
+    "Telegram allowFrom uses 'tg:ID' format, not bare integer",
+    "Onboard --auth-choice 'openrouter-api-key' workaround was never recommended (issue closed not_planned) — use manual config",
+    "'Tier 3' label is fabricated — OpenClaw doesn't use this term",
+    "memweave has NO FTS-only mode — hybrid search requires embeddings",
+    "memweave search quality is poor (0.14 scores) — may need alternative",
+    "SearXNG is official OpenClaw web search provider — Brave may not be needed",
+    "VPS is cx43 not cx33",
+    "Node.js was only under root — had to install nvm for cto user",
+    "Hetzner SSH key must be uploaded via API before server creation"
+  ],
 
-  "api_keys_stored": {
-    "location_local": "/home/john/repos/CTO/.env",
-    "location_vps": "/opt/cto/.env",
-    "keys": ["OPENROUTER_API_KEY", "TELEGRAM_BOT_TOKEN", "TELEGRAM_USER_ID", "HETZNER_API_TOKEN", "OPENAI_API_KEY"]
+  "api_keys_status": {
+    "OpenRouter": "verified working, needs more credits for paid models",
+    "Telegram": "verified working, John must message @HusbandCTObot first",
+    "Hetzner": "verified working, SSH key uploaded (id=111410859), server create/delete tested",
+    "OpenAI": "verified working",
+    "Brave": "not obtained — may not be needed (SearXNG alternative)",
+    "GitHub PAT": "not obtained — optional"
   },
 
   "vps_state": {
     "ip": "178.104.213.9",
-    "type": "cx43 (not cx33 as previously documented)",
-    "user": "cto (non-root, nvm+node22 installed)",
-    "root": "cto-vps-root",
-    "repo": "/opt/cto",
-    "hetzner_ssh_key_id": 111410859,
+    "type": "cx43",
+    "user": "cto (non-root, nvm+node22)",
+    "repo": "/opt/cto (behind — needs git pull)",
     "openclaw": "NOT INSTALLED"
   },
 
-  "still_needed_from_john": [
-    "Message @HusbandCTObot on Telegram (enables proactive messaging)",
-    "Add OpenRouter credits (~$5-10 for paid models)",
-    "Brave Search API key (optional, $5/mo free credit)",
-    "GitHub PAT (optional)"
-  ],
+  "assumption_audit": "wiki/assumption-audit.md has full results. Key reference for what's verified vs not.",
 
-  "pending_tasks": [
-    "Tag every record in every document as [verified] or [unverified]",
-    "Test suite doesn't exist (#18)",
-    "Security review not done (#22)",
-    "Health checks not implemented (#23)",
-    "Install OpenClaw on VPS",
-    "Decide: memweave or alternative for SQLite coordination (poor search quality)",
-    "Decide: Brave or SearXNG for web search"
+  "open_decisions": [
+    "How much OpenRouter credits to add",
+    "memweave or alternative for SQLite coordination (poor search quality)",
+    "SearXNG (free, needs Docker) vs Brave ($5/mo, simpler) for web search"
   ]
 }
