@@ -1,0 +1,41 @@
+{
+  "id": "CTO-DECISION-004",
+  "timestamp": "2026-04-26T12:00:00Z",
+  "version_before": "0.0.0",
+  "technology": "Obsidian-compatible vault + SQLite + filesystem MCP (memory architecture)",
+  "source": "Community consensus research (Mem0, OpenViking, memweave, Karpathy LLM Wiki) + Obsidian headless research",
+  "category": "memory",
+  "architecture_layer": "memory",
+  "action": "adopted",
+  "summary": "Memory architecture: Obsidian-compatible markdown vault + SQLite (memweave) + tiered loading + filesystem MCP server",
+  "community_evidence": {
+    "production_deployments": "Mem0 ($6.27B market), memweave (hybrid search), Google Memory Agent (2-table pattern), LinkedIn CMA",
+    "practitioner_sentiment": "Community converged on graph+vector hybrid with tiered loading. Flat markdown outdated. Memory is the #1 failure cause.",
+    "github_stars": "OpenViking 15K, Mem0 widely adopted",
+    "maturity": "production"
+  },
+  "evaluation": {
+    "what_it_makes_obsolete": "Flat markdown wiki (original v1 design)",
+    "cost_of_switching": "memweave: pip install. MCPVault: npm install. Structure wiki pages with Summary/Overview/Details headers.",
+    "cost_of_staying": "Flat wiki loads everything every time (no tiered loading), no search index, no structured queries, no concurrent access safety",
+    "can_test_on_vps": true,
+    "material_change": true
+  },
+  "rationale": "Memory is the moat — community consensus. Three components: (1) Obsidian-compatible markdown vault with [[wikilinks]] as human-readable source of truth. Obsidian app does NOT work headless — use filesystem MCP server (MCPVault or obsidian-mcp) on VPS, Obsidian on desktop for John. (2) SQLite via memweave for derived search index (FTS5 + vector, hybrid scoring, rebuildable from markdown). (3) Tiered loading (L0 summary/L1 overview/L2 details per OpenViking pattern) — 80-90% of queries resolve at L1, 83% token reduction. SOUL.md pattern for identity persistence.",
+  "test_results": {
+    "tested": false,
+    "vps_provisioned": false,
+    "passed": null,
+    "total_tests": null,
+    "failed_tests": null,
+    "iterations": null,
+    "notes": "memweave, MCPVault, obsidian-mcp all researched with install commands. Schema designed for decisions, research findings, technology radar. Wiki pages already have L0/L1 headers but need restructuring to Summary/Overview/Details format."
+  },
+  "rollback": {
+    "snapshot_id": "",
+    "git_tag": "",
+    "instructions": "Revert to OpenClaw native memory (MEMORY.md + daily files + Tier 3 search)"
+  },
+  "version_after": "0.1.0",
+  "re_evaluate_date": null
+}

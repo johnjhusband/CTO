@@ -1,0 +1,41 @@
+{
+  "id": "CTO-DECISION-001",
+  "timestamp": "2026-04-26T12:00:00Z",
+  "version_before": "0.0.0",
+  "technology": "OpenClaw (agent framework)",
+  "source": "21 research agents across 2 rounds, April 2026",
+  "category": "framework",
+  "architecture_layer": "spine",
+  "action": "adopted",
+  "summary": "Selected OpenClaw over Hermes Agent as CTO's agent framework",
+  "community_evidence": {
+    "production_deployments": "364K GitHub stars, used by enterprise teams, 25-26 messaging platforms",
+    "practitioner_sentiment": "Largest open-source agent community. Security concerns acknowledged but mitigable.",
+    "github_stars": "364000",
+    "maturity": "production"
+  },
+  "evaluation": {
+    "what_it_makes_obsolete": "Custom agent framework. No prior framework existed.",
+    "cost_of_switching": "N/A — first framework selection",
+    "cost_of_staying": "N/A",
+    "can_test_on_vps": true,
+    "material_change": true
+  },
+  "rationale": "Evaluated against CTO requirements, not against Hermes features. CTO's core mission is macro evolution (research-driven revolutionary change). OpenClaw's loosely coupled plugin architecture, larger ecosystem (~3,300-5,700 skills), and 25-26 messaging platforms better serve macro evolution than Hermes's tightly coupled self-improvement loop. Hermes excels at micro evolution (40% speedup on repeat tasks via GEPA) but micro evolution is secondary to the mission. Both are MIT licensed. Security concerns exist for both and are mitigable.",
+  "test_results": {
+    "tested": false,
+    "vps_provisioned": false,
+    "passed": null,
+    "total_tests": null,
+    "failed_tests": null,
+    "iterations": null,
+    "notes": "Framework selected based on requirements evaluation, not hands-on testing. Installation research completed."
+  },
+  "rollback": {
+    "snapshot_id": "",
+    "git_tag": "",
+    "instructions": "Framework not yet installed. Rollback is simply choosing a different framework."
+  },
+  "version_after": "0.1.0",
+  "re_evaluate_date": null
+}

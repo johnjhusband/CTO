@@ -1,0 +1,41 @@
+{
+  "id": "CTO-DECISION-003",
+  "timestamp": "2026-04-26T12:00:00Z",
+  "version_before": "0.0.0",
+  "technology": "Telegram Bot (communication)",
+  "source": "WhatsApp research showing physical phone requirement + ban risk",
+  "category": "tool",
+  "architecture_layer": "spine",
+  "action": "adopted",
+  "summary": "Telegram Bot API as primary communication channel, WhatsApp deferred",
+  "community_evidence": {
+    "production_deployments": "Telegram Bot API is the standard for server-to-user notifications in the agent community",
+    "practitioner_sentiment": "Zero friction, zero ban risk, designed for automation",
+    "github_stars": "N/A",
+    "maturity": "mature"
+  },
+  "evaluation": {
+    "what_it_makes_obsolete": "WhatsApp as primary channel",
+    "cost_of_switching": "John installs Telegram app",
+    "cost_of_staying": "WhatsApp via Baileys needs physical phone + QR scan + ban risk. WhatsApp Business API needs Meta verification + per-message cost.",
+    "can_test_on_vps": true,
+    "material_change": true
+  },
+  "rationale": "John prefers WhatsApp but three paths evaluated: Baileys (free but needs physical phone for QR scan, moderate ban risk), Business API (no phone but Meta verification takes days, $0.004-0.14/msg), Telegram (free, no phone, zero ban risk, 3-minute setup, designed for automation). Telegram wins on zero friction. WhatsApp deferred as future macro evolution decision. OpenClaw supports both as built-in channels.",
+  "test_results": {
+    "tested": false,
+    "vps_provisioned": false,
+    "passed": null,
+    "total_tests": null,
+    "failed_tests": null,
+    "iterations": null,
+    "notes": "Exact OpenClaw Telegram config researched and documented in wiki/openclaw-setup.md. Known bug: first message must come from user before bot can send proactively."
+  },
+  "rollback": {
+    "snapshot_id": "",
+    "git_tag": "",
+    "instructions": "Switch to WhatsApp by updating openclaw.json channels config"
+  },
+  "version_after": "0.1.0",
+  "re_evaluate_date": null
+}

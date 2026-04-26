@@ -2,7 +2,7 @@ node_modules/
 .env
 *.env
 .openclaw/credentials/
-logs/
+logs/*.log
 versions/*/docker-image.tar
 *.tar
 .DS_Store

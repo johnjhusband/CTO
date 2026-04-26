@@ -22,11 +22,16 @@
 - Material vs immaterial: does it make something current obsolete? Is it in production?
 
 ## Mistakes to Never Repeat
-- Never modify repos outside this project
+- Never modify repos outside this project (destroyed a production VPS)
 - Never recommend technology before live research
-- Never search only for what I expect to find
+- Never search only for what I expect to find — cast widest net
 - Never evaluate against a framework's features — evaluate against requirements
 - Never get VPS specs wrong — check the math on concurrent workloads
+- Never install without researching the target platform first
+- Never downgrade agreed architecture for convenience
+- Never write rules you aren't currently following — audit yourself
+- Never assume a desktop app works on a headless server — research first
+- Every change cascades — trace downstream impacts recursively
 
 ## What John Cares About
 - Macro evolution from community research, not micro self-optimization

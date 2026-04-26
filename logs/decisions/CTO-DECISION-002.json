@@ -1,0 +1,41 @@
+{
+  "id": "CTO-DECISION-002",
+  "timestamp": "2026-04-26T12:00:00Z",
+  "version_before": "0.0.0",
+  "technology": "VPS-based upgrade testing (not Docker)",
+  "source": "User-identified architectural flaw + community deployment research",
+  "category": "infrastructure",
+  "architecture_layer": "guardrails",
+  "action": "adopted",
+  "summary": "Clone-test-replace uses fresh Hetzner VPS instances, not Docker containers",
+  "community_evidence": {
+    "production_deployments": "Docker's own position: 'An LLM deciding its own security boundaries is not a security model'",
+    "practitioner_sentiment": "MicroVM and full-VPS testing emerging as best practice for system-level agent changes",
+    "github_stars": "N/A",
+    "maturity": "early"
+  },
+  "evaluation": {
+    "what_it_makes_obsolete": "Docker-based clone-test-replace (original design)",
+    "cost_of_switching": "~EUR 0.05 per test cycle (4 hours on CX23 + snapshot)",
+    "cost_of_staying": "Docker cannot test system-level changes — packages, services, network, Docker itself",
+    "can_test_on_vps": true,
+    "material_change": true
+  },
+  "rationale": "CTO has full system access. Macro evolution can change anything including OS packages, system services, network config, and Docker itself. A Docker container shares the host kernel and cannot faithfully test these changes. Only a full VPS provides a true test environment. Hetzner API enables programmatic provisioning and destruction. Cost per test cycle is ~EUR 0.05.",
+  "test_results": {
+    "tested": false,
+    "vps_provisioned": false,
+    "passed": null,
+    "total_tests": null,
+    "failed_tests": null,
+    "iterations": null,
+    "notes": "Hetzner API researched. hcloud CLI available. Community Hetzner MCP server exists with 60 tools."
+  },
+  "rollback": {
+    "snapshot_id": "",
+    "git_tag": "",
+    "instructions": "Revert to Docker-based testing if VPS approach proves impractical"
+  },
+  "version_after": "0.1.0",
+  "re_evaluate_date": null
+}

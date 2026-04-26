@@ -24,8 +24,8 @@
 - OpenClaw as the agent framework connecting brain to hands
 
 ### 3. Memory — The Moat
-- **Obsidian vault** as human-readable knowledge layer with `[[wikilinks]]` and graph
-- **SQLite coordination layer** for concurrent access and structured queries
+- **Obsidian-compatible markdown vault** with `[[wikilinks]]`, accessed via filesystem MCP server (Obsidian app on desktop for John, raw files on VPS)
+- **SQLite coordination layer** (memweave) for concurrent access and structured queries
 - **Tiered loading** (L0/L1/L2 per OpenViking pattern) to minimize token costs
 - **SOUL.md** for persistent agent identity
 - See [memory-architecture.md](memory-architecture.md) for full details

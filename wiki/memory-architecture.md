@@ -58,19 +58,27 @@ Every piece of context auto-processed into 3 detail levels on write. Agent only 
 
 **Our current wiki = all L2 (full detail, always loaded).** OpenViking would give us tiered loading that dramatically cuts tokens.
 
-## Obsidian as Knowledge Layer
+## Obsidian-Compatible Knowledge Layer
 
-Community converged on Obsidian for the human-readable layer:
-- `[[Wikilinks]]` with bidirectional backlinks — relational data without a database
-- Graph view — visual map of knowledge connections
-- Official CLI (60x faster than grep, 70,000x fewer tokens than MCP file reads)
-- Official Agent Skills (14.9K stars) by Obsidian CEO
-- 24+ MCP servers targeting Obsidian
+**Critical finding: Obsidian desktop app requires a GUI. It cannot run on a headless VPS.**
 
-**But Obsidian alone isn't enough for multi-agent:**
+The correct architecture for a headless VPS:
+- Vault is a **plain directory of .md files** with `[[wikilinks]]`
+- A **filesystem MCP server** (MCPVault or obsidian-mcp) gives the agent read/write/search
+- Wikilinks are parseable with regex `\[\[([^\]]+)\]\]` — MCP servers resolve them
+- **John uses Obsidian on his desktop** for graph view and visual editing, synced to VPS via git
+- VPS agent operates on raw files through MCP — no Obsidian app needed
+
+MCP server options for headless VPS:
+| Server | Install | Features |
+|--------|---------|----------|
+| **MCPVault** | `npm install -g @bitbonsai/mcpvault` | Zero deps, 14 tools, tag scanning, soft-delete |
+| **obsidian-mcp** | `pip install obsidian-mcp` | SQLite indexing, regex search, 90% less memory |
+
+**Obsidian alone isn't enough for multi-agent anyway:**
 - No concurrent writes (silent corruption)
 - No structured queries
-- **Emerging hybrid:** markdown for storage + SQLite for search/coordination
+- **Hybrid required:** markdown for storage + SQLite for search/coordination
 - memweave, EchoVault, Google Memory Agent pattern all use this
 
 ## PostgreSQL as Unified Store
