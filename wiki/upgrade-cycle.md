@@ -38,10 +38,14 @@ A Docker container cannot test any of these faithfully. Only a full VPS provides
 - BEFORE attempting installation or configuration of anything new, research:
   - What does the target platform expect? (file structure, conventions, config format)
   - What does its setup process ask for? (exact wizard steps, required inputs)
+  - **What are ALL prerequisites and dependencies?** (runtime versions, API keys, external services, embedding models, database engines, other packages it depends on)
+  - **For each dependency: do we have it? If not, what does IT need?** (recurse until the full dependency chain is mapped)
   - How does it integrate with existing components? (memory, tools, communication)
   - What are the known gotchas? (defaults that overwrite your files, missing dependencies, breaking changes)
 - Map the target's requirements against our current architecture — identify gaps and conflicts BEFORE touching infrastructure
-- This step prevents the pattern of pressing forward without understanding what you're building on
+- This step prevents TWO patterns: (1) pressing forward without understanding what you're building on, and (2) discovering missing prerequisites during installation
+
+*Origin: memweave was installed without knowing it needs an embedding API key or local embedding model. The research covered capabilities and configuration but not prerequisites.*
 
 ### 3. Provision
 - CTO provisions a **new Hetzner VPS** via the Hetzner Cloud API

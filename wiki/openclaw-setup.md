@@ -272,6 +272,8 @@ openclaw logs --mcp --server name    # View logs
 
 ### MCP Servers for CTO
 
+**IMPORTANT: Several commonly referenced packages are deprecated or don't exist. Verified correct packages below.**
+
 ```json
 {
   "mcpServers": {
@@ -283,27 +285,20 @@ openclaw logs --mcp --server name    # View logs
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "/opt/cto"]
     },
-    "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
-      }
-    },
     "brave-search": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "args": ["-y", "@brave/brave-search-mcp-server"],
       "env": {
         "BRAVE_API_KEY": "${BRAVE_API_KEY}"
       }
     },
     "fetch": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-fetch"]
+      "command": "uvx",
+      "args": ["mcp-server-fetch"]
     },
     "hetzner": {
       "command": "npx",
-      "args": ["-y", "hetzner-cloud-mcp"],
+      "args": ["-y", "@lazyants/hetzner-mcp-server"],
       "env": {
         "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}"
       }
@@ -312,15 +307,33 @@ openclaw logs --mcp --server name    # View logs
 }
 ```
 
+**NOTE on GitHub MCP:** The official server is now a Go binary (`github/github-mcp-server`), not an npm package. Install separately:
+```bash
+# Download from GitHub releases
+curl -sSL https://github.com/github/github-mcp-server/releases/latest/download/github-mcp-server-linux-amd64 -o /usr/local/bin/github-mcp-server
+chmod +x /usr/local/bin/github-mcp-server
+```
+Then in openclaw.json:
+```json
+"github": {
+  "command": "/usr/local/bin/github-mcp-server",
+  "args": [],
+  "env": {
+    "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+  }
+}
+```
+PAT scopes needed: minimum `repo` (private) or `public_repo` (public only).
+
 Key servers:
-| Server | Purpose | Auth |
-|--------|---------|------|
-| **vault** (MCPVault) | Read/write/search wiki as Obsidian-compatible vault | None (path-scoped) |
-| **filesystem** | Read/write project files | None (path-scoped) |
-| **github** | PRs, issues, repo management | GitHub PAT |
-| **brave-search** | Web search (2,000 free queries/month) | Brave API key |
-| **fetch** | Fetch and parse web pages | None |
-| **hetzner** | VPS provisioning/snapshots/destruction for upgrade cycle | Hetzner API token |
+| Server | Package | Auth | Notes |
+|--------|---------|------|-------|
+| **vault** | `@bitbonsai/mcpvault` (npm) | None | 15 tools, Obsidian-compatible |
+| **filesystem** | `@modelcontextprotocol/server-filesystem` (npm) | None | Verified v2026.1.14 |
+| **brave-search** | `@brave/brave-search-mcp-server` (npm) | Brave API key | $5/mo free credit, 1 req/sec |
+| **fetch** | `mcp-server-fetch` (PyPI, via uvx) | None | Needs Python. No API key. |
+| **hetzner** | `@lazyants/hetzner-mcp-server` (npm) | Hetzner API token | 104 tools across 13 domains |
+| **github** | `github-mcp-server` (Go binary) | GitHub PAT | Not npm — download binary |
 
 ## Hetzner Cloud API (for Upgrade Cycle)
 
@@ -456,22 +469,22 @@ asyncio.run(main())
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "/opt/cto"]
     },
     "github": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "command": "/usr/local/bin/github-mcp-server",
+      "args": [],
       "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" }
     },
     "brave-search": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "args": ["-y", "@brave/brave-search-mcp-server"],
       "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
     },
     "fetch": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-fetch"]
+      "command": "uvx",
+      "args": ["mcp-server-fetch"]
     },
     "hetzner": {
       "command": "npx",
-      "args": ["-y", "hetzner-cloud-mcp"],
+      "args": ["-y", "@lazyants/hetzner-mcp-server"],
       "env": { "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}" }
     }
   }

@@ -56,7 +56,7 @@ Skipping this check is how you write rules you don't follow and design architect
 - **Reject:** Not relevant, not mature, not better. Document why.
 
 ## Upgrade Cycle (Clone-Test-Replace)
-1. **Research the target BEFORE touching infrastructure** — what does it expect? File structure, config format, setup process, integration points, known gotchas. Map against current architecture. Identify gaps and conflicts.
+1. **Research the target BEFORE touching infrastructure** — what does it expect? File structure, config format, setup process, integration points, known gotchas. **What are ALL prerequisites and dependencies? For each dependency: do we have it? If not, what does IT need?** Recurse until full chain is mapped. Map against current architecture. Identify gaps and conflicts.
 2. Provision fresh Hetzner VPS via API
 3. Deploy candidate version with proposed change
 4. Run full test suite on real infrastructure
