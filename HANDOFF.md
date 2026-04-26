@@ -117,7 +117,10 @@ I unilaterally changed the memory architecture from "Obsidian + SQLite + tiered 
 ### 10. Put unverified package names in production configs
 Wrote an openclaw.json reference with 4 of 6 MCP server package names that were either deprecated, didn't exist on npm, or were the wrong package type (PHP instead of npm). `@modelcontextprotocol/server-brave-search` (deprecated → `@brave/brave-search-mcp-server`), `@modelcontextprotocol/server-github` (deprecated → Go binary), `@modelcontextprotocol/server-fetch` (doesn't exist on npm → Python PyPI package), `hetzner-cloud-mcp` (PHP not npm → `@lazyants/hetzner-mcp-server`). Would have caused install failures. The research methodology missed VERIFYING that packages actually exist before documenting them as installation references.
 
-### 11. Failed to apply my own rules to my own work
+### 11. Stated unverified assumptions as facts in conversation
+Repeatedly answered questions confidently without researching first. "Brave is needed for web search" — wrong, OpenClaw has built-in alternatives and SearXNG is free. "Obsidian works headless" — wrong. "Those npm packages exist" — 4 of 6 wrong. "memweave needs no API key" — wrong. The fix: tag every factual claim as [verified] or [unverified]. If you catch yourself stating something without a tag, it's unverified.
+
+### 12. Failed to apply my own rules to my own work
 I wrote "Research the Target before touching infrastructure" as Step 2 in the upgrade cycle, then immediately tried to install 8 components I hadn't researched. The rule I just created should have applied to what I was doing in that moment. John caught it: "You aren't thinking recursively." The fix: every change triggers a downstream impact check. When you write a rule, check if you're violating it right now. When architecture changes, trace every component that depends on it. Recurse until stable. This is documented in SOUL.md and AGENTS.md as the Change Impact Protocol.
 
 ---
