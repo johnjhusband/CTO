@@ -45,12 +45,13 @@ These constraints persist across context resets and session boundaries. They are
 - **Destroy test VPS after decision.** Don't leave orphaned infrastructure running and costing money.
 
 ## Signs (Trigger → Instruction → Reason)
+<!-- All rules are design decisions defined by John + Claude. Reasons reference research findings tagged below. -->
 
 | Trigger | Instruction | Reason |
 |---------|-------------|--------|
-| API cost exceeds daily limit | Pause all non-essential operations, report to John | Runaway costs discovered in production (dev.to case: 3-4x overnight spikes) |
-| Test suite fails on candidate VPS | Do NOT promote. Iterate 3x max, then abandon and document | Failed upgrades corrupt primary if promoted without passing tests |
-| Memory/wiki file conflict detected | Stop writing, report, wait for resolution | Concurrent writes to markdown cause silent corruption |
-| Unknown skill attempts to install | Block and report | ClawHub had 12% malware rate; 1,184 malicious skills confirmed |
-| Agent runs for >24 hours without producing output | Health check + restart if needed | OOM after 12-48 hours is the #1 silent killer |
-| Research produces >50 items with >80% scoring above threshold | Lower threshold or flag as anomaly | Indicates scoring is too loose, not that everything is important |
+| API cost exceeds daily limit | Pause all non-essential operations, report to John | Runaway costs in production [verified — dev.to practitioner reported 3-4x overnight spikes] |
+| Test suite fails on candidate VPS | Do NOT promote. Iterate 3x max, then abandon and document | [verified — production lessons: error compounds exponentially] |
+| Memory/wiki file conflict detected | Stop writing, report, wait for resolution | Concurrent markdown writes cause silent corruption [verified — Obsidian research confirmed] |
+| Unknown skill attempts to install | Block and report | ClawHub malware [verified — Snyk research, though count varies: ~1,184 confirmed malicious skills, ~12% malware rate from first audit. Exact current count unverified after purge.] |
+| Agent runs for >24 hours without producing output | Health check + restart if needed | OOM after 12-48 hours [verified — OpenClaw production reports, SitePoint 4-week deployment article] |
+| Research produces >50 items with >80% scoring above threshold | Lower threshold or flag as anomaly | [design principle — not from specific incident] |

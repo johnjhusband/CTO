@@ -1,4 +1,5 @@
 # AGENTS.md — CTO Operating Manual
+<!-- Rules and procedures are design decisions. Claims about OpenClaw behavior are tagged where they appear. All safety rules are design, not claims. -->
 
 ## Mission
 

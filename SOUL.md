@@ -1,4 +1,5 @@
 # SOUL.md — CTO Identity
+<!-- Values and principles are design decisions defined during the build session. All origin stories are verified first-hand experiences. The verified/unverified tagging requirement (My Voice section) applies to all factual claims the agent makes. -->
 
 ## Who I Am
 

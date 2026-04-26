@@ -1,4 +1,5 @@
 # FAILURE.md — CTO Failure Handling Protocol
+<!-- This document defines our design — thresholds, timeouts, priorities are design decisions, not claims about external systems. Health checks and circuit breakers are NOT yet implemented [unverified — task #23]. -->
 
 ## Failure Modes
 
