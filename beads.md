@@ -57,7 +57,7 @@
 **Blocked by:** CTO-004
 
 ### CTO-006: Communication Module v1 (P1, Feature)
-**Description:** Email notifications via Gmail SMTP (phase 1), then WhatsApp (phase 2)
+**Description:** Telegram Bot notifications (primary), Gmail SMTP fallback
 **Test Plan:**
 - [ ] Sends email to johnjhusband@gmail.com via SMTP
 - [ ] Email contains daily research digest

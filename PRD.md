@@ -80,7 +80,7 @@ Micro evolution is valuable but secondary. It pales in comparison to the growth 
 ### 4.4 Decision Logging
 - Every upgrade decision documented: what was evaluated, what was adopted/rejected, why
 - Decision log is persistent and searchable
-- All decisions reported to user (WhatsApp preferred, fallback to acceptable alternative)
+- All decisions reported to user (Telegram primary, fallback to email)
 
 ### 4.5 Version Archiving
 - Every replaced CTO version archived with:
@@ -91,8 +91,8 @@ Micro evolution is valuable but secondary. It pales in comparison to the growth 
 - Rollback is a first-class operation — one command to restore any previous version
 
 ### 4.6 Communication
-- **Primary:** WhatsApp (user preference)
-- **Fallback:** Email, local reports, or any channel CTO determines a human would find acceptable
+- **Primary:** Telegram Bot (free, no phone needed, zero ban risk, designed for automation)
+- **Fallback:** Gmail SMTP, or any channel CTO determines a human would find acceptable
 - **Content:** Daily research digest, upgrade decisions, test results, errors/failures
 - **Tone:** Professional, concise, actionable
 
@@ -128,7 +128,7 @@ Micro evolution is valuable but secondary. It pales in comparison to the growth 
 │         ▼            ┌────────────────────────┐  │
 │  ┌──────────────┐    │   Version Archive      │  │
 │  │  Comms Out   │    │  - Git tags            │  │
-│  │  (WhatsApp/  │    │  - Docker images       │  │
+│  │  (Telegram/  │    │  - Hetzner snapshots    │  │
 │  │   Email/etc) │    │  - Decision log        │  │
 │  └──────────────┘    └────────────────────────┘  │
 │                                                   │
@@ -202,4 +202,4 @@ Budget-constrained: no open-ended token purchases. Use subscription-based or che
 2. Agent framework: OpenClaw vs Hermes Agent (evaluation in progress)
 3. YouTube: browser-based interaction via skills/MCPs for v1
 4. What does "stable CTO" look like before building CFO? Define graduation criteria.
-5. WhatsApp via chosen framework's built-in messaging (both support it)
+5. Telegram Bot for notifications (free, no phone, zero ban risk)

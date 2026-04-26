@@ -72,7 +72,7 @@ A Docker container cannot test any of these faithfully. Only a full VPS provides
 - New CTO takes over all duties
 
 ### 8. Report
-- User notified via WhatsApp/Telegram/fallback
+- User notified via Telegram Bot / Gmail fallback
 - Report includes: what changed, why, test results, rollback instructions
 
 ## Rollback Procedure

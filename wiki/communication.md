@@ -3,53 +3,46 @@
 **Source:** Live web research (April 2026). Audit-corrected April 26.
 
 ## Key Facts
-- User prefers WhatsApp — this is the primary channel
-- OpenClaw has WhatsApp built in via Baileys (unofficial WhatsApp Web protocol)
-- Ban risk exists but is manageable with low volume and dedicated number
-- Telegram and Gmail SMTP as fallbacks
+- Telegram Bot API is the primary channel — free, no phone needed, zero ban risk, designed for automation
+- WhatsApp deferred — requires physical phone for initial pairing (Baileys) or Meta business verification (Business API)
+- Gmail SMTP as email fallback
 
-## Channel Comparison (Verified April 2026)
+## Primary: Telegram Bot
+- Free, zero ongoing cost
+- No phone needed at any point — set up via @BotFather in 3 minutes
+- Official Bot API designed for automation (not a hack like Baileys)
+- Zero ban risk
+- Rich formatting (Markdown/HTML), file attachments, inline keyboards
+- 30 messages/second rate limit
+- Bot can message John proactively (daily reports, alerts)
+- Simple HTTP API: `curl "https://api.telegram.org/bot<TOKEN>/sendMessage?chat_id=<ID>&text=Hello"`
+- OpenClaw has Telegram built in as a supported channel
 
-| Channel | Cost | Setup | Reliability | Ban Risk | Best For |
-|---------|------|-------|-------------|----------|----------|
-| **WhatsApp (via OpenClaw)** | Free | 10 min (QR scan) | Good | Moderate | **Primary — user preference** |
-| **Telegram Bot** | Free | 5-10 min | Excellent | None | Fallback |
-| **Gmail SMTP** | Free | 15-30 min | Good | Low | Email fallback |
-| **Discord Webhook** | Free | 5 min | Excellent | None | Rich report logging |
-| WhatsApp Business API | $30-100/mo + per-msg | Days-weeks | Excellent | None | Overkill for one person |
-| Baileys/WAHA standalone | Free | 30 min | Good | **HIGH** | Redundant — OpenClaw handles this |
+### Setup
+1. John messages @BotFather on Telegram: `/newbot`
+2. Choose name and username
+3. Receive bot token
+4. Configure in OpenClaw: `channels.telegram.enabled: true` with bot token
+5. John starts a chat with the bot — done
 
-## Recommendation
-
-### Primary: WhatsApp via OpenClaw
-OpenClaw has WhatsApp built in using the Baileys library (reverse-engineered WhatsApp Web protocol). Setup:
-1. Configure in `openclaw.json`: `channels.whatsapp.enabled: true`
-2. Set `dmPolicy: "allowlist"` and add John's number to `allowFrom`
-3. Run `openclaw channels login` and scan QR code with WhatsApp
-4. Phone must stay online; session unlinks after ~14 days offline
-
-**Ban risk mitigation:**
-- Use a **dedicated SIM/number** for CTO, not John's personal WhatsApp
-- Low message volume (1-2 daily reports) keeps risk minimal
-- OpenClaw has built-in rate limiting
-- If banned, Telegram fallback is instant
-
-### Fallback: Telegram Bot
-- Free, zero ban risk, 5-minute setup via @BotFather
-- Already supported by OpenClaw
-- Activates automatically if WhatsApp fails
-
-### Fallback: Gmail SMTP
+## Fallback: Gmail SMTP
 - 100 emails/day via SMTP (free Gmail)
 - Uses existing Gmail account + App Password
-- For daily summary emails or when messaging channels are down
+- For daily summary emails or when Telegram is down
+
+## WhatsApp — Deferred
+Evaluated three paths:
+- **Baileys (OpenClaw built-in):** Free but requires one-time QR scan from physical phone. Ban risk.
+- **WhatsApp Business API:** No phone needed but requires Meta business verification (days) and per-message costs ($0.004-0.14/msg).
+- **Decision:** Neither path justified for v1. Telegram does everything needed with zero friction.
+
+May revisit if WhatsApp Business API simplifies or if CTO determines a switch is warranted (macro evolution decision).
 
 ## Relationships
 - [Architecture](architecture.md) — comms module is a core component
 - [Decision Log Format](decision-log-format.md) — decisions are reported via this channel
 
 ## Sources
-- [OpenClaw WhatsApp Docs](https://docs.openclaw.ai/channels/whatsapp)
-- [Baileys ban reports](https://github.com/WhiskeySockets/Baileys/issues/1869)
 - [Telegram Bot API](https://core.telegram.org/bots/faq)
+- [OpenClaw WhatsApp Docs](https://docs.openclaw.ai/channels/whatsapp)
 - [Gmail SMTP limits](https://support.google.com/mail/answer/22839)

@@ -20,7 +20,7 @@ Selected after requirements-based evaluation prioritizing macro evolution. See [
 3. **Test Environment** — fresh Hetzner VPS provisioned via API for testing upgrades (not Docker)
 4. **Upgrade Manager** — handles provision → deploy → test → archive → promote cycle
 5. **Version Archive** — Hetzner snapshots, git tags, decision logs for every version
-6. **Communication Module** — WhatsApp (primary via OpenClaw built-in), Telegram/Gmail fallback
+6. **Communication Module** — Telegram Bot (primary), Gmail SMTP (fallback)
 7. **Scheduler** — OpenClaw built-in cron triggers daily research cycle
 8. **LLM Router** — multi-model via OpenRouter, cheap models for routine, escalate for complex
 
@@ -34,7 +34,7 @@ Run test suite on candidate → Pass? → Snapshot current → Promote candidate
 ## Infrastructure
 - **Primary VPS:** Hetzner 178.104.213.9 (8 vCPU, 16 GB RAM, 150 GB disk)
 - **Test VPS:** Provisioned on-demand via Hetzner API, destroyed after testing
-- **Communication:** WhatsApp (primary), Telegram (fallback), Gmail SMTP (fallback)
+- **Communication:** Telegram Bot (primary), Gmail SMTP (fallback)
 - **LLM:** OpenRouter for multi-model access
 - **YouTube:** Browser-based interaction via skills/MCPs for v1
 

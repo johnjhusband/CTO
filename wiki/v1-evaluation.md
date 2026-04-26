@@ -17,7 +17,7 @@ From the PRD, the CTO must:
 3. **R3: Macro evolution (revolutionary change)** — when research finds something worth adopting, clone itself, apply the change (which may be radical — new framework, new LLM, new memory system), test, promote or discard
 4. **R4: Micro evolution (incremental improvement)** — learn from its own experience to get faster/better at routine tasks
 5. **R5: Archive every version** — git tags, Docker images, rollback in <5 minutes
-6. **R6: Report all decisions** — WhatsApp preferred, daily digest + upgrade notifications
+6. **R6: Report all decisions** — Telegram primary, daily digest + upgrade notifications
 7. **R7: Run 24/7 on Hetzner VPS** — persistent, autonomous, cron-scheduled
 8. **R8: Full system access** — shell, Docker, git, file system, package management
 9. **R9: Multi-model / not provider-locked** — can switch its own LLM as part of macro evolution
@@ -60,8 +60,8 @@ Less sophisticated than Hermes's native learning loop, but the user correctly no
 ### R5: Archive every version
 **STRONG.** Docker-native. Can create, tag, and archive images. Git integration built in. Community has deployment/versioning skills. However, no built-in safe upgrade/rollback mechanism (open feature request #44876).
 
-### R6: Report all decisions — WhatsApp preferred
-**STRONGEST.** 24+ messaging platforms including WhatsApp (via built-in integration). Telegram, Discord, Slack, Signal, email all available. This is OpenClaw's core architecture — messaging-first. The CTO can report via WhatsApp from day 1.
+### R6: Report all decisions — Telegram primary
+**STRONGEST.** 25-26 messaging platforms including Telegram (built-in). Discord, Slack, Signal, email all available. This is OpenClaw's core architecture — messaging-first.
 
 ### R7: Run 24/7 on Hetzner VPS
 **STRONG.** Purpose-built for self-hosting. Extensive VPS deployment guides. Event-driven architecture with cron, heartbeats, and multi-agent orchestration. FreeCodeCamp, Hostinger, and community all have Hetzner-specific deployment tutorials.
@@ -119,8 +119,8 @@ This is genuinely best-in-class. No other framework comes close for micro evolut
 ### R5: Archive every version
 **MODERATE.** Docker support via terminal backends. Git integration. But no built-in safe upgrade mechanism (same gap as OpenClaw — open feature request). Fewer community deployment patterns.
 
-### R6: Report all decisions — WhatsApp preferred
-**GOOD.** 17 messaging platforms including WhatsApp. Fewer platforms than OpenClaw (16 vs 24+) but WhatsApp is supported. Messaging is built-in but not the architectural centerpiece the way it is for OpenClaw.
+### R6: Report all decisions — Telegram primary
+**GOOD.** 17 messaging platforms including Telegram. Fewer platforms than OpenClaw (17 vs 25-26) but Telegram is supported.
 
 ### R7: Run 24/7 on Hetzner VPS
 **STRONG.** Purpose-built for VPS deployment. systemd/Docker service. Community recommends Hetzner CX22 (~EUR 5-7/mo). Smaller but growing deployment community.
@@ -158,7 +158,7 @@ This is genuinely best-in-class. No other framework comes close for micro evolut
 | R3: Macro evolution (revolutionary) | **HIGHEST** | **Strong** | Moderate |
 | R4: Micro evolution (incremental) | LOW | Moderate | **Strongest** |
 | R5: Version archive & rollback | MEDIUM | **Strong** | Moderate |
-| R6: WhatsApp + notifications | MEDIUM | **Strongest** | Good |
+| R6: Telegram + notifications | MEDIUM | **Strongest** | Good |
 | R7: 24/7 on Hetzner VPS | HIGH | **Strong** | Strong |
 | R8: Full system access | HIGH | Strong | Strong |
 | R9: Multi-model | HIGH | Strong | Strong |
@@ -174,7 +174,7 @@ This is genuinely best-in-class. No other framework comes close for micro evolut
 **OpenClaw wins on the requirements that matter most:**
 - Research breadth (~3,300-5,700 skills, 24+ platforms, larger ecosystem)
 - Macro evolution (loosely coupled architecture, community-built integrations for new tech)
-- Communication (WhatsApp native, messaging-first architecture)
+- Communication (Telegram primary, messaging-first architecture)
 - Multi-agent future (roadmap for orchestration, A2A, larger community building patterns)
 
 **Hermes wins on the requirement that matters least to the core mission:**
