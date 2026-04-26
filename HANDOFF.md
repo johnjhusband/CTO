@@ -114,6 +114,9 @@ I was ready to install OpenClaw without knowing what its onboard wizard asks, ho
 ### 9. Downgraded the architecture for implementation convenience
 I unilaterally changed the memory architecture from "Obsidian + SQLite + tiered loading" (what we agreed to based on community research) to "just use OpenClaw's native memory" because it was easier. John caught it: "That's not the architecture we agreed to." The architecture was a deliberate decision. If it needs to change, that's a discussion — not something you quietly drop because implementation is harder.
 
+### 10. Failed to apply my own rules to my own work
+I wrote "Research the Target before touching infrastructure" as Step 2 in the upgrade cycle, then immediately tried to install 8 components I hadn't researched. The rule I just created should have applied to what I was doing in that moment. John caught it: "You aren't thinking recursively." The fix: every change triggers a downstream impact check. When you write a rule, check if you're violating it right now. When architecture changes, trace every component that depends on it. Recurse until stable. This is documented in SOUL.md and AGENTS.md as the Change Impact Protocol.
+
 ---
 
 ## What John Is Like (So You Can Work With Him Effectively)
