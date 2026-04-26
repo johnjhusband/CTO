@@ -12,7 +12,7 @@ It is the first employee in a planned AI workforce. Once CTO is stable and self-
 
 ## How It Works
 
-1. **Daily Research** — CTO scans GitHub, HN, arXiv, YouTube, changelogs, and the broader web for new AI technologies (with a 5-minute human curation checkpoint)
+1. **Daily Research** — CTO autonomously scans GitHub, HN, arXiv, YouTube, changelogs, and the broader web for new AI technologies
 2. **Evaluate** — Filters signal from noise via LLM relevance scoring, determines what's worth integrating
 3. **Clone-Test-Replace** — Provisions a fresh Hetzner VPS, deploys the candidate version, runs full test suite on real infrastructure. If tests pass, the candidate becomes the new CTO. If they fail, it iterates or abandons with a documented reason.
 4. **Archive** — Every replaced version is archived with Hetzner snapshots and git tags for instant rollback
@@ -26,7 +26,7 @@ Built on the five-layer model the AI community has converged on:
 2. **Hands** — Tools via MCP (the universal standard, 97M monthly installs)
 3. **Memory** — Obsidian vault + SQLite coordination + tiered loading (the moat)
 4. **Spine** — OpenClaw framework + A2A protocol for future multi-agent
-5. **Guardrails** — GUARDRAILS.md, FAILURE.md, circuit breakers, budget caps, human checkpoints
+5. **Guardrails** — GUARDRAILS.md, FAILURE.md, circuit breakers, budget caps, post-hoc review
 
 ## Principles
 
@@ -36,7 +36,7 @@ Built on the five-layer model the AI community has converged on:
 - **Memory is the moat** — models and frameworks are swappable; knowledge compounds
 - **Test on real infrastructure** — VPS-based testing, not Docker containers
 - **Every version archived** — rollback is always one command away
-- **Human curation checkpoint** — 5 minutes/day in the research pipeline
+- **Autonomous with post-hoc review** — CTO acts first, John reviews and corrects after
 
 ## Project Structure
 

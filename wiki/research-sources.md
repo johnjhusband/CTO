@@ -1,4 +1,6 @@
 # Research Sources
+**L0:** YouTube (browser-based for v1), GitHub Trending, HN, arXiv, HuggingFace, changelogs. LLM scoring for relevance. 15+ AI YouTube channels identified.
+**L1:** Primary sources ranked by signal quality: arXiv (highest for research), GitHub Trending (highest for tools), HN via Algolia API (community pre-filtered), Twitter/X (breaking news, noisy), HuggingFace (models/papers), Reddit r/MachineLearning, YouTube AI channels (browser-based for v1, transcript APIs later). Tier 1 YouTube: Matt Wolfe, Matthew Berman, AI Explained, The AI Grid, Wes Roth. v1 uses browser interaction — no separate API keys. CTO can evaluate switching to youtube-transcript-api or Horizon as a macro evolution decision.
 **Last updated:** 2026-04-26
 **Source:** Live web research (April 2026). Audit-corrected April 26.
 

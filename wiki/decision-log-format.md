@@ -1,4 +1,6 @@
 # Decision Log Format
+**L0:** Every upgrade decision logged as structured JSON (adopted/rejected/deferred) with rationale, test results, and rollback info.
+**L1:** Persistent, searchable decision log. Each entry: technology evaluated, source, category, action (adopt/reject/defer), rationale, test results (pass/fail/iterations), rollback instructions (snapshot ID, git tag). Stored as JSON in logs/decisions/. Index in INDEX.md. All decisions reported to John via Telegram. Decisions made autonomously — John reviews after the fact.
 **Last updated:** 2026-04-26
 **Source:** PRD.md, user requirements
 

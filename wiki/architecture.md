@@ -1,4 +1,6 @@
 # CTO Architecture
+**L0:** Five-layer architecture (Brain/Hands/Memory/Spine/Guardrails) on OpenClaw with Obsidian+SQLite memory, MCP tools, A2A comms, VPS-based upgrade testing.
+**L1:** CTO runs on a Hetzner VPS using OpenClaw as the agent framework. Architecture follows community consensus: multi-model LLM via OpenRouter (Layer 1), tools via MCP standard (Layer 2), Obsidian vault + SQLite + tiered loading for memory (Layer 3), OpenClaw orchestration + A2A protocol (Layer 4), GUARDRAILS.md + FAILURE.md + circuit breakers for safety (Layer 5). Upgrades tested on fresh VPS instances, not Docker. Telegram for notifications. Fully autonomous with post-hoc review.
 **Last updated:** 2026-04-26
 **Source:** Second research round (8 agents, April 2026) — community consensus patterns
 
@@ -54,7 +56,7 @@ Selected after requirements-based evaluation prioritizing macro evolution. See [
 ## Research Pipeline
 - Multi-source ingestion (GitHub, HN, arXiv, YouTube, changelogs)
 - LLM relevance scoring + cross-platform deduplication
-- Human curation checkpoint (5 min/day)
+- Post-hoc review by John (corrections calibrate scoring)
 - Telegram daily digest
 - See [research-pipeline.md](research-pipeline.md)
 

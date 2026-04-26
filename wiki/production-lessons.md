@@ -1,4 +1,6 @@
 # Production Lessons — Hard-Won Wisdom
+**L0:** 76% of deployments fail from architecture not models. Narrow scope wins. Error compounds exponentially. Memory is #1 killer. Route 80% to cheap models.
+**L1:** Real production results: Axios 300x speed on defined projects, Salesforce 84% autonomous resolution but pulling back on complex cases, Cloudflare 7 AI reviewers handling 131K reviews in 30 days. Single-task success 54%, large-scale 8%. Top lessons: error compounds (85% per-step = 20% for 10 steps), prove one agent works before adding more, trim prompts (2400→380 tokens cut hallucination 60%), agents bad at architecture — you set it they implement. "Start with simplest architecture that works."
 **Last updated:** 2026-04-26
 **Source:** Case studies and practitioner accounts from second research round
 

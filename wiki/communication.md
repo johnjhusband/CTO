@@ -1,4 +1,6 @@
 # Communication Module
+**L0:** Telegram Bot primary (free, no phone, zero ban risk). Gmail SMTP fallback. WhatsApp deferred.
+**L1:** Telegram Bot API is primary — free, instant setup via @BotFather, zero ban risk, rich formatting, designed for automation. OpenClaw has Telegram built in. Gmail SMTP as fallback (100 emails/day free). WhatsApp deferred: Baileys needs physical phone + ban risk, Business API needs Meta verification. CTO operates autonomously — sends daily digest and immediate alerts, John reviews after the fact.
 **Last updated:** 2026-04-26
 **Source:** Live web research (April 2026). Audit-corrected April 26.
 

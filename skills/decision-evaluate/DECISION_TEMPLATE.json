@@ -1,0 +1,41 @@
+{
+  "id": "CTO-DECISION-NNN",
+  "timestamp": "ISO-8601",
+  "version_before": "current CTO version",
+  "technology": "Name of technology evaluated",
+  "source": "Where CTO found it (URL, video, changelog)",
+  "category": "framework|tool|llm|mcp|skill|process|library|infrastructure|memory|protocol",
+  "architecture_layer": "brain|hands|memory|spine|guardrails",
+  "action": "adopted|rejected|deferred",
+  "summary": "One-line summary of what was evaluated",
+  "community_evidence": {
+    "production_deployments": "Known production users, if any",
+    "practitioner_sentiment": "What Reddit/HN/blogs say",
+    "github_stars": "Current count",
+    "maturity": "experimental|early|production|mature"
+  },
+  "evaluation": {
+    "what_it_makes_obsolete": "Which current CTO component, if any",
+    "cost_of_switching": "Migration effort, risk, ongoing cost",
+    "cost_of_staying": "What CTO misses by not adopting",
+    "can_test_on_vps": true,
+    "material_change": true
+  },
+  "rationale": "Full explanation of why CTO decided to adopt/reject/defer",
+  "test_results": {
+    "tested": false,
+    "vps_provisioned": false,
+    "passed": null,
+    "total_tests": null,
+    "failed_tests": null,
+    "iterations": null,
+    "notes": ""
+  },
+  "rollback": {
+    "snapshot_id": "",
+    "git_tag": "",
+    "instructions": ""
+  },
+  "version_after": "new version if adopted, null if rejected/deferred",
+  "re_evaluate_date": "ISO-8601 date for deferred items, null for adopted/rejected"
+}

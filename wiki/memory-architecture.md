@@ -1,4 +1,6 @@
 # Memory Architecture
+**L0:** Obsidian vault + SQLite coordination + tiered loading (L0/L1/L2). Memory is the moat — models are swappable, knowledge compounds.
+**L1:** Three-tier memory (hot/warm/cold) following community consensus. Obsidian vault for human-readable knowledge with wikilinks and graph. SQLite underneath for concurrent access and structured queries. Tiered context loading per OpenViking pattern: L0 summaries for discovery, L1 overviews for planning, L2 full content on demand (83% token reduction). SOUL.md for persistent identity. Graph memory (Mem0) as future enhancement. Leading frameworks: Mem0 (26% accuracy gain), Zep (temporal graph), Letta (OS-inspired), OpenViking (tiered loading, 15K stars).
 **Last updated:** 2026-04-26
 **Source:** Live web research (April 2026), second research round
 

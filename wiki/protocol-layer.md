@@ -1,4 +1,6 @@
 # Protocol Layer — The New Standards Stack
+**L0:** MCP (tools, 97M installs), A2A (agent-to-agent, 150+ orgs), AGENTS.md (context, 60K repos). All Linux Foundation governed.
+**L1:** Three open standards form the foundational infrastructure. MCP is the universal agent-to-tool protocol (97M monthly SDK installs). A2A is the agent-to-agent communication protocol (JSON-RPC 2.0 over HTTP, supports Agent Cards for discovery). AGENTS.md gives agents project-specific context. All governed by AAIF (Agentic AI Foundation) under Linux Foundation, co-founded by Anthropic, OpenAI, Google, Microsoft, AWS — 170+ member orgs. Building on proprietary protocols is a dead end.
 **Last updated:** 2026-04-26
 **Source:** Live web research (April 2026), second research round
 

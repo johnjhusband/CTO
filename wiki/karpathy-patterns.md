@@ -1,4 +1,6 @@
 # Karpathy Patterns & Technologies
+**L0:** LLM Wiki (compile knowledge), AutoResearch (constrained loop), Agentic Engineering (orchestrate agents), LLM OS (agent=kernel), idea files, ghost awareness.
+**L1:** Karpathy defined key patterns for autonomous agents: LLM Wiki (compile knowledge into interlinked markdown, don't RAG every session — 16M views), AutoResearch/Karpathy Loop (constrained agent + metric + iterate — 66K stars, 700 experiments in 2 days), Agentic Engineering (orchestrate fleets of agents, you own architecture), LLM OS (agent=kernel, tools=syscalls), idea files over code (share markdown instructions), three-file contract (immutable eval + modifiable code + human direction), ghost awareness (design for pattern-matching, add verifiable checkpoints).
 **Last updated:** 2026-04-26
 **Source:** Live web research (April 2026) — Karpathy's posts, talks, repos, interviews
 

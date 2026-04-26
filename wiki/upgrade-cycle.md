@@ -1,4 +1,6 @@
 # Upgrade Cycle (Clone-Test-Replace via VPS)
+**L0:** Provision fresh Hetzner VPS → deploy candidate → test on real infrastructure → snapshot current → promote or destroy. Not Docker.
+**L1:** CTO never upgrades in-place. Each candidate version deploys to a fresh Hetzner VPS via API (not Docker — Docker can't test system-level changes). Full test suite runs on real infrastructure. If pass: snapshot production VPS, promote candidate, destroy old. If fail: iterate or destroy candidate with documented reason. Hetzner bills hourly (~EUR 0.02-0.05 per test run). Rollback from snapshot is one API call. Every version archived with snapshot ID + git tag + decision log.
 **Last updated:** 2026-04-26
 **Source:** PRD.md + architectural correction (Docker cannot test system-level changes)
 

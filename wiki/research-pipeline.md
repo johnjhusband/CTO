@@ -1,19 +1,22 @@
 # Research Pipeline — How CTO Monitors the AI Landscape
+**L0:** Multi-source ingestion → LLM scoring → dedup → autonomous decisions → Telegram digest → knowledge archive. Existing tools: Horizon, agents-radar.
+**L1:** CTO autonomously monitors GitHub, HN, arXiv, YouTube, changelogs. Each item scored 0-10 by LLM against defined interests. Cross-platform deduplication. CTO acts on findings autonomously (adopt/reject/defer). Daily digest sent to Telegram. John reviews after the fact — corrections calibrate scoring. Open-source starting points: Horizon (MCP-native, most complete), agents-radar (GitHub Actions, zero infrastructure). Research methodology defined in SOUL.md. Evaluation framework: community consensus → production evidence → material vs immaterial → test on real infrastructure.
 **Last updated:** 2026-04-26
 **Source:** Live web research (April 2026), second research round
 
 ## Key Facts
 - Purpose-built tools already exist for AI landscape monitoring
 - The pipeline that works in production: Ingest → Score → Deduplicate → Enrich → Human Curation → Distribute → Archive
-- Every production system includes a human curation checkpoint — full autonomy produces too many false positives
-- "5 minutes of morning review replaces hours of manual tracking" (MINT Lab)
+- Most production systems use human curation checkpoints, but CTO operates fully autonomously with post-hoc review
+- John reviews daily digest and corrects; corrections calibrate future scoring
 
 ## The Canonical Pipeline
 
 ```
 Multi-source ingestion → LLM relevance scoring → Cross-platform deduplication →
-Enrichment (summaries, context) → Human curation checkpoint (5 min/day) →
-Distribution (Telegram digest) → Archive (knowledge base)
+Enrichment (summaries, context) → Autonomous decision (adopt/reject/defer) →
+Distribution (Telegram daily digest) → Archive (knowledge base)
+→ John reviews after the fact, corrections feed back into scoring calibration
 ```
 
 ## Existing Open-Source Tools
@@ -69,7 +72,7 @@ Ranked by frequency across all production systems surveyed:
 
 1. **LLM Relevance Scoring** — Most common. Score each item 0-10 against defined interests, apply threshold.
 2. **Community Pre-Filtering** — HN upvotes, GitHub stars, Reddit upvotes already act as pre-filters.
-3. **Human-in-the-Loop** — Automated ingestion + scoring, human final call. This is what survives contact with reality.
+3. **Post-hoc Correction** — CTO acts autonomously on its scoring. John reviews the daily digest and corrects bad calls. Corrections feed back into scoring calibration over time. Note: many production systems use human-in-the-loop, but our requirements demand full autonomy with after-the-fact review.
 
 ## Evaluation Pipeline (How to Decide What to Adopt)
 
@@ -87,10 +90,10 @@ ARIS pattern: use Claude for execution, GPT for critical review. Avoids local mi
 1. Start with **agents-radar** pattern (GitHub Actions, zero infrastructure) or **Horizon** (more complete, MCP-native)
 2. Browser-based YouTube for v1, transcript APIs for later
 3. LLM scoring against CTO's defined interests
-4. Daily digest to Telegram with top 5-10 items
-5. John reviews in 5 minutes, thumbs-up/thumbs-down
-6. Accepted items flow into Obsidian knowledge base
-7. Evaluation pipeline for items marked "evaluate"
+4. CTO autonomously acts on findings (adopt/reject/defer)
+5. Daily digest to Telegram with decisions made and rationale
+6. All findings flow into Obsidian knowledge base
+7. John reviews digest, corrections calibrate future scoring
 
 ## Sources
 - [MINT Lab guide](https://mintresearch.org/guide/)

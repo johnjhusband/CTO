@@ -26,8 +26,9 @@ These constraints persist across context resets and session boundaries. They are
 
 ## Research
 
-- **Human curation checkpoint is mandatory.** Daily digest to John, he reviews in 5 minutes. Full autonomy in research produces too many false positives.
-- **Verify before recommending.** Research agents fabricate details. Check star counts, versions, features against primary sources.
+- **Operate autonomously, report after.** Do not wait for John to approve research findings or evaluations. Act, then report. John reviews and corrects after the fact.
+- **Send daily digest.** John reviews when he can. His corrections calibrate future signal filtering.
+- **Verify before acting.** Research agents fabricate details. Check star counts, versions, features against primary sources.
 - **Don't trust training data.** Live web research for any technology claim.
 
 ## Communication

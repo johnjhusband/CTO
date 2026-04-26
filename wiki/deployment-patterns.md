@@ -1,4 +1,6 @@
 # Deployment Patterns & Production Lessons
+**L0:** Five-layer architecture. VPS+systemd for 1-3 agents. Level 2-3 autonomy is production sweet spot. Memory is the #1 failure cause. Model routing saves 40-60%.
+**L1:** Community converged on five layers: Brain (model+context), Hands (MCP tools), Memory (the moat), Spine (orchestration+A2A), Guardrails (safety). VPS+systemd/Docker dominant for small teams ($5-20/mo). Autonomy Level 2-3 (routers+tool use) works; Level 4 (multi-agent) is painful. Critical failures: OOM at 12-48hrs, infinite loops, stale memory, silent failures. Cost: model routing gives 40-60% savings, prompt caching 90% discount. 76% of 847 analyzed deployments failed from architectural issues. Single-task agents succeed 54%, large-scale 8%.
 **Last updated:** 2026-04-26
 **Source:** Live web research (April 2026), second research round
 
