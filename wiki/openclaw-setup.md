@@ -252,13 +252,14 @@ MCP servers go under `mcpServers` in openclaw.json.
 ### Config Syntax (stdio transport)
 ```json
 {
-  "mcp": { "servers": {
-
-    "server-name": {
-      "command": "npx",
-      "args": ["-y", "@package/name", "optional-arg"],
-      "env": {
-        "API_KEY": "${ENV_VAR_NAME}"
+  "mcp": {
+    "servers": {
+      "server-name": {
+        "command": "npx",
+        "args": ["-y", "@package/name", "optional-arg"],
+        "env": {
+          "API_KEY": "${ENV_VAR_NAME}"
+        }
       }
     }
   }
@@ -280,32 +281,33 @@ openclaw logs --mcp --server name    # View logs
 
 ```json
 {
-  "mcp": { "servers": {
-
-    "vault": {
-      "command": "npx",
-      "args": ["-y", "@bitbonsai/mcpvault@latest", "/opt/cto/wiki"]
-    },
-    "filesystem": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/opt/cto"]
-    },
-    "brave-search": {
-      "command": "npx",
-      "args": ["-y", "@brave/brave-search-mcp-server"],
-      "env": {
-        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
-      }
-    },
-    "fetch": {
-      "command": "uvx",
-      "args": ["mcp-server-fetch"]
-    },
-    "hetzner": {
-      "command": "npx",
-      "args": ["-y", "@lazyants/hetzner-mcp-server"],
-      "env": {
-        "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}"
+  "mcp": {
+    "servers": {
+      "vault": {
+        "command": "npx",
+        "args": ["-y", "@bitbonsai/mcpvault@latest", "/opt/cto/wiki"]
+      },
+      "filesystem": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/opt/cto"]
+      },
+      "brave-search": {
+        "command": "npx",
+        "args": ["-y", "@brave/brave-search-mcp-server"],
+        "env": {
+          "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+        }
+      },
+      "fetch": {
+        "command": "uvx",
+        "args": ["mcp-server-fetch"]
+      },
+      "hetzner": {
+        "command": "npx",
+        "args": ["-y", "@lazyants/hetzner-mcp-server"],
+        "env": {
+          "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}"
+        }
       }
     }
   }
@@ -464,34 +466,35 @@ asyncio.run(main())
       }
     }
   },
-  "mcp": { "servers": {
-
-    "vault": {
-      "command": "npx",
-      "args": ["-y", "@bitbonsai/mcpvault@latest", "/opt/cto/wiki"]
-    },
-    "filesystem": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/opt/cto"]
-    },
-    "github": {
-      "command": "/usr/local/bin/github-mcp-server",
-      "args": [],
-      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" }
-    },
-    "brave-search": {
-      "command": "npx",
-      "args": ["-y", "@brave/brave-search-mcp-server"],
-      "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
-    },
-    "fetch": {
-      "command": "uvx",
-      "args": ["mcp-server-fetch"]
-    },
-    "hetzner": {
-      "command": "npx",
-      "args": ["-y", "@lazyants/hetzner-mcp-server"],
-      "env": { "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}" }
+  "mcp": {
+    "servers": {
+      "vault": {
+        "command": "npx",
+        "args": ["-y", "@bitbonsai/mcpvault@latest", "/opt/cto/wiki"]
+      },
+      "filesystem": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/opt/cto"]
+      },
+      "github": {
+        "command": "/usr/local/bin/github-mcp-server",
+        "args": [],
+        "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" }
+      },
+      "brave-search": {
+        "command": "npx",
+        "args": ["-y", "@brave/brave-search-mcp-server"],
+        "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY}" }
+      },
+      "fetch": {
+        "command": "uvx",
+        "args": ["mcp-server-fetch"]
+      },
+      "hetzner": {
+        "command": "npx",
+        "args": ["-y", "@lazyants/hetzner-mcp-server"],
+        "env": { "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}" }
+      }
     }
   }
 }
