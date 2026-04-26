@@ -20,7 +20,7 @@ The research revealed no single tool does everything CTO needs. The strongest ap
 | Requirement | Hermes Agent | OpenHands | Combined |
 |-------------|-------------|-----------|----------|
 | Runs 24/7 on VPS | YES | YES | YES |
-| Self-improving | YES (learning loop) | Ouroboros research | YES |
+| Self-improving | YES (learning loop) | No native self-improvement | Via Hermes layer |
 | Autonomous coding | No (general agent) | YES (SWE-bench 77.6%) | YES |
 | Multi-model | 200+ (OpenRouter) | 100+ (LiteLLM) | YES |
 | Messaging | 16 platforms | No | YES (via Hermes) |
@@ -34,7 +34,7 @@ The research revealed no single tool does everything CTO needs. The strongest ap
 | Alternative | Why not primary |
 |-------------|----------------|
 | **Agent Zero** (17.3K stars) | Fallback if Hermes too immature. Docker-native, self-modifying. Smaller community. |
-| **Cline CLI 2.0** (58K stars) | Strong headless coding agent. Could replace OpenHands. Less autonomous (pair programmer, not engineer). |
+| **Cline CLI 2.0** (~61K stars) | Strong headless coding agent. Could replace OpenHands. Less autonomous (pair programmer, not engineer). |
 | **OpenClaw** (364K stars) | 512 security vulnerabilities. Learn from patterns, don't deploy. |
 | **Letta** (22.3K stars) | Best memory system but full runtime lock-in. Too constraining for v1. |
 | **AutoGPT Platform** (184K stars) | Visual workflow builder. Overkill for single agent. Polyform Shield license. |

@@ -1,39 +1,30 @@
 # Research Sources
 **Last updated:** 2026-04-26
-**Source:** Live web research (April 2026) — all data verified via web search
+**Source:** Live web research (April 2026). Audit-corrected April 26.
 
 ## Key Facts
-- YouTube transcripts are the **primary** research source
-- `youtube-transcript-api` Python library is the best extraction method (free, reliable, 3 lines of code)
-- yt-dlp reliability has degraded due to YouTube anti-bot protections in 2026
-- YouTube Data API v3 cannot extract public video transcripts (only your own videos)
-- Gemini API can process YouTube URLs directly (audio/video) as a powerful fallback
+- YouTube is the **primary** research source — humans digest AI news well
+- v1 uses **browser-based YouTube interaction** via OpenClaw skills/MCPs (no separate API keys)
+- Alternative transcript methods (youtube-transcript-api, yt-dlp) documented for future optimization
+- Multiple secondary sources for breadth
 
-## Recommended Transcript Pipeline
+## v1 YouTube Pipeline: Browser-Based
 
-### Primary: youtube-transcript-api → Gemini Flash summarization
-1. Discover new videos via YouTube Data API v3 metadata (1 unit/call)
-2. Extract transcripts with `youtube-transcript-api` (free, no auth, ~60-100 req/min)
-3. Summarize/analyze with Gemini 2.5 Flash ($0.30/M input tokens)
+For v1, CTO interacts with YouTube through the browser via OpenClaw's browser automation skills/MCPs. This avoids:
+- Separate API key provisioning (YouTube Data API, Gemini)
+- Rate limit complexity
+- Dependency on third-party Python libraries that may break
 
-### Fallback chain:
-- If youtube-transcript-api fails → try yt-dlp with `--write-auto-subs --skip-download`
-- If no captions exist → send YouTube URL to Gemini API for multimodal transcription (8hrs/day limit)
-- Nuclear option → download audio with yt-dlp, transcribe with Whisper locally
+CTO can browse YouTube, read transcripts (YouTube provides them in the UI), and summarize content using its LLM. Simple, no extra infrastructure.
 
-## Transcript Extraction Methods (Verified)
+### Future Optimization (post-v1)
+Once the foundation is working, CTO can evaluate whether to adopt:
+- `youtube-transcript-api` Python library (free, reliable, 3 lines of code)
+- YouTube Data API v3 for video discovery (free tier, 10K units/day)
+- yt-dlp for batch transcript downloads (degraded reliability in 2026)
+- Gemini API for multimodal YouTube processing
 
-| Method | Reliability | Rate Limits | Cost | Auth Required | Best For |
-|--------|-------------|-------------|------|---------------|----------|
-| **youtube-transcript-api** | HIGH | ~60-100 req/min | Free | None | Primary source |
-| **Gemini API (URL)** | HIGH | 250 RPD free | $0.30/M tokens | API key | No-caption videos |
-| **yt-dlp** | DEGRADED | ~300/hr guest | Free | Cookies optional | Fallback |
-| **Supadata** | HIGH | Per plan | 100 free/mo | API key | AI fallback |
-| **YouTube Data API v3** | N/A for transcripts | 50 captions/day | Free | OAuth (own only) | Metadata only |
-| **Whisper** | GOOD (8-12% WER) | Self-hosted: none | Free local / $0.006/min API | None/key | Last resort |
-
-## YouTube Premium Value
-Marginal for this use case. Main benefit: higher yt-dlp rate limits with exported cookies (~7x). But youtube-transcript-api doesn't support cookie auth currently. Premium does NOT help with YouTube Data API or Gemini API.
+This is exactly the kind of macro evolution decision CTO should make for itself.
 
 ## AI YouTube Channels to Monitor
 
@@ -61,29 +52,16 @@ Marginal for this use case. Main benefit: higher yt-dlp rate limits with exporte
 | **Two Minute Papers** | Bite-sized research breakdowns |
 | **DeepLearning.AI** | Courses, MLOps, GenAI |
 
-### Tier 4: Official/Enterprise
-| Channel | Focus |
-|---------|-------|
-| **Google Cloud Tech** | Vertex AI, ML pipelines |
-| **NVIDIA Developer** | GPUs, frameworks |
-
 ## Secondary Research Sources
 | Source | Method | Why |
 |--------|--------|-----|
-| GitHub Trending | API/scraping | New tools, frameworks, libraries |
+| GitHub Trending | Browser/API | New tools, frameworks, libraries |
 | GitHub Releases | Watch key repos | Version updates to tools CTO uses |
-| Hacker News | API | Community signal on what matters |
-| Product changelogs | Web scraping | Anthropic, OpenAI, Google official updates |
+| Hacker News | API/browser | Community signal on what matters |
+| Product changelogs | Browser | Anthropic, OpenAI, Google official updates |
 | AI newsletters | Email/web | Curated weekly digests |
-| arxiv | API | Research papers (lower priority) |
+| arxiv | API/browser | Research papers (lower priority) |
 
 ## Relationships
 - [Architecture](architecture.md) — how research fits into the system
 - [Decision Log Format](decision-log-format.md) — how research findings become decisions
-
-## Sources
-- [youtube-transcript-api PyPI](https://pypi.org/project/youtube-transcript-api/)
-- [Gemini video understanding](https://ai.google.dev/gemini-api/docs/video-understanding)
-- [yt-dlp GitHub](https://github.com/yt-dlp/yt-dlp)
-- [YouTube Data API quota](https://developers.google.com/youtube/v3/determine_quota_cost)
-- [Best AI YouTube channels 2026](https://ryandoser.com/ai-youtube-channels/)

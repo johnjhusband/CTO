@@ -1,6 +1,6 @@
 # Agent Framework & Tool Research
 **Last updated:** 2026-04-26
-**Source:** Live web research (April 2026) — 13 research agents, all data verified
+**Source:** Live web research (April 2026) — 13 research agents. Audit-corrected April 26.
 
 ## Landscape Summary (April 2026)
 
@@ -10,28 +10,27 @@ The autonomous agent space has exploded since late 2025. This page covers every 
 
 ## Category 1: Self-Improving Autonomous Agents (VPS-Ready)
 
-### Hermes Agent (Nous Research) — 95.6K stars
+### Hermes Agent (Nous Research) — ~118K stars
 - **Released:** Feb 25, 2026 | **License:** MIT | **Language:** Python
 - **What:** Persistent 24/7 background agent with self-improving learning loop
 - Runs as systemd/Docker service, built-in cron scheduler
-- Auto-creates reusable "skills" from successful tasks (40% speedup on repeats)
-- Self-evolution repo using DSPy + GEPA (ICLR 2026 paper)
-- 16 messaging platforms (Telegram, WhatsApp, Discord, Slack, etc.)
+- Auto-creates reusable "skills" from successful tasks (40% speedup on repeats per TokenMix benchmark)
+- Self-evolution repo using DSPy + GEPA (ICLR 2026 Oral paper)
+- 17 messaging platforms (Telegram, WhatsApp, Discord, Slack, etc.)
 - MCP support (client + server), 6 terminal backends
 - Multi-model: 200+ via OpenRouter, Ollama, any provider
 - Cost: ~$7-22/month total
 - **Risks:** 2 months old. Security audit found 4 critical + 9 high issues. Default ALLOW-ALL. GODMODE skill.
 - [GitHub](https://github.com/NousResearch/hermes-agent) | [Docs](https://hermes-agent.nousresearch.com/docs/)
 
-### OpenHands (formerly OpenDevin) — 68-70K stars
-- **Version:** v1.6.0 (Mar 30, 2026) | **License:** MIT | **Language:** Python
+### OpenHands (formerly OpenDevin) — ~72K stars
+- **Version:** v1.6.0 (Mar 30, 2026) | **License:** MIT (enterprise/ excluded) | **Language:** Python
 - **What:** Leading open-source autonomous software engineer
 - Full agentic loop: code, terminal, web browsing, PR creation
 - Sandboxed Docker containers for safe execution
-- "Ouroboros" self-improvement research project
 - Planning Mode (beta), long-horizon work (30+ hour runs documented)
 - Multi-model: 100+ via LiteLLM
-- SWE-bench: up to 77.6% with Claude 3.5 Sonnet
+- SWE-bench: up to 77.6% with Claude 3.5 Sonnet (using OpenHands' own evaluation harness with inference-time scaling — standard single-rollout score is ~60.6%)
 - 490+ contributors, $18.8M Series A
 - VPS-ready: $10-20/mo Hetzner is sufficient
 - [GitHub](https://github.com/OpenHands/OpenHands) | [Website](https://openhands.dev/)
@@ -49,7 +48,7 @@ The autonomous agent space has exploded since late 2025. This page covers every 
 - **License:** MIT | **Language:** Node.js
 - **What:** General-purpose event-driven autonomous agent
 - Fastest-growing GitHub repo in history
-- 5,700+ skills on ClawHub, 16 messaging platforms, cron, multi-agent
+- ~3,300-5,700 skills on ClawHub (reduced from peak after security purge), 25-26 messaging platforms, cron, multi-agent
 - Creator joined OpenAI Feb 2026; non-profit foundation took over
 - **SERIOUS SECURITY:** 512 vulns in audit, 8 critical. Zero-click WebSocket hijack. 1,467 malicious ClawHub skills. 42K exposed instances on Shodan.
 - **Verdict:** Reference architecture and cautionary tale. Learn from its patterns, don't deploy it.
@@ -59,7 +58,7 @@ The autonomous agent space has exploded since late 2025. This page covers every 
 
 ## Category 2: Headless Coding Agents (VPS-Ready)
 
-### Cline CLI 2.0 — 58K stars
+### Cline CLI 2.0 — ~61K stars
 - **License:** Apache 2.0 | **Language:** TypeScript
 - **What:** Top open-source coding agent, now with headless CLI
 - `cline -y` for YOLO mode (full autonomy, no prompts)
@@ -208,9 +207,9 @@ The autonomous agent space has exploded since late 2025. This page covers every 
 
 | Tool | Stars | License | Multi-Model | Self-Improve | Headless | Messaging | Memory | VPS Cost |
 |------|-------|---------|-------------|-------------|----------|-----------|--------|----------|
-| Hermes Agent | 95.6K | MIT | 200+ | Learning loop | Yes | 16 platforms | Skills + FTS5 | ~$7-22/mo |
-| OpenHands | 68-70K | MIT | 100+ | Ouroboros | Yes | No | Session | ~$10-20/mo |
-| Cline CLI | 58K | Apache-2.0 | 10+ | No | Yes (YOLO) | No | No | API only |
+| Hermes Agent | ~118K | MIT | 200+ | Learning loop | Yes | 17 platforms | Skills + FTS5 | ~$7-22/mo |
+| OpenHands | ~72K | MIT | 100+ | No native | Yes | No | Session | ~$10-20/mo |
+| Cline CLI | ~61K | Apache-2.0 | 10+ | No | Yes (YOLO) | No | No | API only |
 | Agent Zero | 17.3K | MIT | LiteLLM | Tool creation | Yes | No | Persistent | API only |
 | Letta | 22.3K | Apache-2.0 | Any | Self-editing memory | Yes | No | 3-tier | ~$5-10/mo |
 

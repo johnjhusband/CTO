@@ -33,24 +33,26 @@
 **Blocked by:** CTO-002
 
 ### CTO-004: Clone-Test-Replace Cycle — Macro Evolution Engine (P0, Feature)
-**Description:** Implement the self-upgrade cycle using Docker — clone CTO, apply upgrade (which may be revolutionary architectural change), test, promote or discard. This is the macro evolution engine: research-driven changes that can replace core components (framework, LLM, memory system, comms stack).
+**Description:** Implement the self-upgrade cycle using fresh Hetzner VPS instances (not Docker — CTO needs full system access that containers can't test). Provision candidate VPS via Hetzner API, deploy candidate version, run test suite on real infrastructure, promote or destroy.
 **Test Plan:**
-- [ ] Can clone current CTO into Docker container
-- [ ] Can apply a code change to the clone (including major component swaps)
-- [ ] Can run test suite inside clone
-- [ ] Passing tests → archive current + promote clone
-- [ ] Failing tests → iterate or abandon with logged reason
-- [ ] Rollback restores previous version
+- [ ] Can provision a new Hetzner VPS via API
+- [ ] Can deploy candidate version to the new VPS
+- [ ] Can run full test suite on candidate VPS (including system-level tests)
+- [ ] Passing tests → snapshot current VPS + promote candidate
+- [ ] Failing tests → iterate or destroy candidate with logged reason
+- [ ] Rollback restores previous version from snapshot
+- [ ] Test VPS is destroyed after promotion or abandonment (cost guard)
 **Status:** Open
 **Blocked by:** CTO-001
 
 ### CTO-005: Version Archive System (P1, Feature)
-**Description:** Git tagging, Docker image archiving, rollback capability
+**Description:** Git tagging, Hetzner VPS snapshot archiving, rollback capability
 **Test Plan:**
 - [ ] Creates git tag for each version
-- [ ] Saves Docker image for each version
-- [ ] Rollback command restores any archived version
-- [ ] Version index is maintained and accurate
+- [ ] Creates Hetzner VPS snapshot before promotion
+- [ ] Rollback restores from snapshot to a new VPS
+- [ ] Version index (VERSIONS.md) is maintained and accurate
+- [ ] Snapshot IDs are recorded with each archived version
 **Status:** Open
 **Blocked by:** CTO-004
 

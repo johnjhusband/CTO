@@ -48,12 +48,14 @@ CTO evolves through two distinct mechanisms:
 The core mission. CTO absorbs what the entire AI community is producing and makes bold architectural changes:
 1. Research engine discovers a significant new technology, framework, or approach
 2. Decision engine evaluates whether it warrants adoption — this could mean replacing core components (LLM provider, memory system, communication stack, even the agent framework itself)
-3. CTO **clones itself** into a Docker container
-4. Clone integrates the new capability (which may be a radical architectural change)
-5. Clone runs a **test suite** validating all existing + new functionality
-6. If tests pass: current CTO is **archived** (versioned backup), clone becomes the new CTO
-7. If tests fail: CTO iterates or abandons with a documented reason
+3. CTO **provisions a new Hetzner VPS** as the test environment
+4. CTO deploys a candidate version to the new VPS with the proposed changes integrated
+5. Candidate runs a **full test suite** validating all existing + new functionality on real infrastructure (not containerized — full system access, real packages, real services)
+6. If tests pass: current CTO VPS is **archived** (snapshot + git tag), candidate VPS becomes the new primary, old VPS is destroyed
+7. If tests fail: CTO iterates on the candidate VPS or destroys it with a documented reason
 8. Every replaced version is archived for rollback
+
+**Why VPS-based testing, not Docker:** CTO has full system-level access — it installs packages, manages services, runs Docker itself, modifies system config. A Docker container cannot faithfully test these capabilities. Macro evolution may change anything in the stack, including the OS-level components. Only a full VPS provides a true test environment. Hetzner's API allows programmatic VPS provisioning and destruction.
 
 The source and direction of macro evolution comes from **research**, not experience. The entire AI community's output — YouTube channels, GitHub, changelogs, papers — is the input. The output may be revolutionary: swapping the agent framework, switching LLM providers, replacing the memory architecture, adopting an entirely new approach to communication.
 
@@ -69,7 +71,7 @@ Micro evolution is valuable but secondary. It pales in comparison to the growth 
 | Action | Autonomy Level |
 |--------|---------------|
 | Research | Fully autonomous |
-| Evaluate/test in sandbox | Fully autonomous |
+| Evaluate/test on candidate VPS | Fully autonomous |
 | Self-upgrade (clone-test-replace) | Fully autonomous, reports decision |
 | Install free tools/packages | Fully autonomous |
 | Spend money | **Must ask John for approval and purchase** |

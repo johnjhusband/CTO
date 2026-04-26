@@ -29,10 +29,10 @@ From the PRD, the CTO must:
 ## Evaluation: OpenClaw
 
 ### R1: Research the AI landscape daily
-**STRONG.** OpenClaw has built-in cron scheduling with retry handling and rate limiting. 13,700+ community skills include web scraping, GitHub integration, RSS feeds, and browser automation. The larger ecosystem means more pre-built research tools available on ClawHub. 24+ messaging platforms means research triggers can come from multiple sources (Slack alerts, email digests, Discord notifications).
+**STRONG.** OpenClaw has built-in cron scheduling with retry handling and rate limiting. ~3,300-5,700 community skills include web scraping, GitHub integration, RSS feeds, and browser automation. The larger ecosystem means more pre-built research tools available on ClawHub. 24+ messaging platforms means research triggers can come from multiple sources (Slack alerts, email digests, Discord notifications).
 
 ### R2: Evaluate and filter
-**STRONG.** OpenClaw can be configured with evaluation workflows. The agent has full system access to run benchmarks, test tools, and produce structured decision reports. The Dreaming feature (GA April 2026) consolidates daily learnings into structured knowledge. Community skills exist for structured comparison and analysis tasks.
+**STRONG.** OpenClaw can be configured with evaluation workflows. The agent has full system access to run benchmarks, test tools, and produce structured decision reports. The Dreaming feature (experimental, opt-in as of April 2026) consolidates daily learnings into structured knowledge. Community skills exist for structured comparison and analysis tasks.
 
 ### R3: Macro evolution (revolutionary change)
 **STRONG.** This is where OpenClaw's architecture shines for this specific requirement. Macro evolution means the CTO might discover it should:
@@ -41,17 +41,17 @@ From the PRD, the CTO must:
 - Swap its memory system
 - Adopt a completely new communication stack
 
-OpenClaw's gateway-first, plugin-based architecture means components are **loosely coupled by design**. The agent framework is one component among many, not the monolithic center. OpenClaw skills are self-contained directories — they can be swapped, replaced, or rewritten without touching the core. Docker integration is available for sandboxed testing of revolutionary changes.
+OpenClaw's gateway-first, plugin-based architecture means components are **loosely coupled by design**. The agent framework is one component among many, not the monolithic center. OpenClaw skills are self-contained directories — they can be swapped, replaced, or rewritten without touching the core. VPS-based testing (provision fresh Hetzner VPS via API) provides true full-system testing of revolutionary changes.
 
 **Key advantage:** OpenClaw's massive community means when a revolutionary new technology appears, there's a high probability someone has already built a skill or integration for it. The CTO doesn't have to build everything from scratch — it can evaluate and adopt community work.
 
-**Key advantage:** OpenClaw's breadth (24+ platforms, 13,700+ skills, browser automation, multi-agent orchestration) gives the CTO more surface area to research, test, and integrate new technologies.
+**Key advantage:** OpenClaw's breadth (24+ platforms, ~3,300-5,700 skills, browser automation, multi-agent orchestration) gives the CTO more surface area to research, test, and integrate new technologies.
 
 ### R4: Micro evolution (incremental improvement)
 **MODERATE.** Not native but achievable:
 - Skill Workshop Plugin (built-in, experimental) — auto-creates skills from observed procedures
 - Self-Improving Agent Skill (979 stars, 168K downloads) — captures patterns, compounds knowledge
-- Dreaming (GA April 2026) — autonomous memory consolidation
+- Dreaming (experimental, opt-in April 2026) — autonomous memory consolidation
 - BSWEN Self-Learning Recipe — observation hooks + cron + user-rated skills
 - Evolver/GEP Protocol — basic prompt evolution with audit trails
 
@@ -91,7 +91,7 @@ Less sophisticated than Hermes's native learning loop, but the user correctly no
 ## Evaluation: Hermes Agent
 
 ### R1: Research the AI landscape daily
-**MODERATE.** Built-in cron scheduler. 118 bundled skills (vs 13,700+). Browser Use integration for web research. 16 messaging platforms for research triggers. Smaller ecosystem means fewer pre-built research tools — more likely to need to build custom skills for specific research sources.
+**MODERATE.** Built-in cron scheduler. 118 bundled skills (vs ~3,300-5,700). Browser Use integration for web research. 17 messaging platforms for research triggers. Smaller ecosystem means fewer pre-built research tools — more likely to need to build custom skills for specific research sources.
 
 ### R2: Evaluate and filter
 **MODERATE.** Full system access for benchmarking and testing. 4-layer memory system helps retain evaluation context across sessions. FTS5 search over past evaluations. However, smaller tool ecosystem means less pre-built evaluation infrastructure.
@@ -101,7 +101,7 @@ Less sophisticated than Hermes's native learning loop, but the user correctly no
 
 **Key concern:** Hermes's self-improvement features (GEPA, learning loop, skill creation) are deeply integrated into its architecture. These are not loosely coupled plugins — they ARE the architecture. Macro evolution that requires replacing the agent framework itself (e.g., CTO discovers it should switch from Hermes to something better) would mean abandoning all the native self-improvement machinery.
 
-**Key concern:** Smaller ecosystem (118 skills vs 13,700+) means when revolutionary new technologies appear, the CTO is more likely to need to build integrations from scratch rather than finding community-built ones.
+**Key concern:** Smaller ecosystem (118 skills vs ~3,300-5,700) means when revolutionary new technologies appear, the CTO is more likely to need to build integrations from scratch rather than finding community-built ones.
 
 **Key advantage:** GEPA's execution trace analysis could help evaluate HOW to implement revolutionary changes by analyzing past attempts.
 
@@ -120,7 +120,7 @@ This is genuinely best-in-class. No other framework comes close for micro evolut
 **MODERATE.** Docker support via terminal backends. Git integration. But no built-in safe upgrade mechanism (same gap as OpenClaw — open feature request). Fewer community deployment patterns.
 
 ### R6: Report all decisions — WhatsApp preferred
-**GOOD.** 16 messaging platforms including WhatsApp. Fewer platforms than OpenClaw (16 vs 24+) but WhatsApp is supported. Messaging is built-in but not the architectural centerpiece the way it is for OpenClaw.
+**GOOD.** 17 messaging platforms including WhatsApp. Fewer platforms than OpenClaw (16 vs 24+) but WhatsApp is supported. Messaging is built-in but not the architectural centerpiece the way it is for OpenClaw.
 
 ### R7: Run 24/7 on Hetzner VPS
 **STRONG.** Purpose-built for VPS deployment. systemd/Docker service. Community recommends Hetzner CX22 (~EUR 5-7/mo). Smaller but growing deployment community.
@@ -138,7 +138,7 @@ This is genuinely best-in-class. No other framework comes close for micro evolut
 **MODERATE.** Subagent system exists but is simpler than OpenClaw's multi-agent orchestration. No roadmap equivalent to OpenClaw's v4.0 multi-agent or A2A gRPC plans. Nous Research is focused on the single-agent experience.
 
 ### Hermes Agent: What You LOSE
-- **Smaller ecosystem** — 118 skills vs 13,700+. More DIY for research tooling.
+- **Smaller ecosystem** — 118 skills vs ~3,300-5,700. More DIY for research tooling.
 - **Fewer messaging platforms** — 16 vs 24+
 - **Tightly coupled self-improvement** — harder to do macro evolution that replaces core components
 - **2 months old** — less battle-tested, expect rough edges
@@ -172,7 +172,7 @@ This is genuinely best-in-class. No other framework comes close for micro evolut
 ## Summary
 
 **OpenClaw wins on the requirements that matter most:**
-- Research breadth (13,700+ skills, 24+ platforms, larger ecosystem)
+- Research breadth (~3,300-5,700 skills, 24+ platforms, larger ecosystem)
 - Macro evolution (loosely coupled architecture, community-built integrations for new tech)
 - Communication (WhatsApp native, messaging-first architecture)
 - Multi-agent future (roadmap for orchestration, A2A, larger community building patterns)
@@ -182,7 +182,7 @@ This is genuinely best-in-class. No other framework comes close for micro evolut
 
 **Hermes's self-improvement is genuinely impressive technology.** But for a CTO whose primary job is to absorb revolutionary changes from the outside world — not to optimize its own internal loops — OpenClaw's broader ecosystem, larger community, and loosely coupled architecture are more aligned with the mission.
 
-The CTO that stays at the cutting edge is the one that absorbs the community's best work fastest. OpenClaw's 364K-star community produces more raw material than Hermes's 95.6K-star community, and its plugin architecture makes that material easier to adopt.
+The CTO that stays at the cutting edge is the one that absorbs the community's best work fastest. OpenClaw's 364K-star community produces more raw material than Hermes's ~118K-star community, and its plugin architecture makes that material easier to adopt.
 
 ## Relationships
 - [Architecture](architecture.md) — framework decision feeds architecture

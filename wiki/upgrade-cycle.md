@@ -1,14 +1,30 @@
-# Upgrade Cycle (Clone-Test-Replace)
+# Upgrade Cycle (Clone-Test-Replace via VPS)
 **Last updated:** 2026-04-26
-**Source:** PRD.md + live research on framework capabilities
+**Source:** PRD.md + architectural correction (Docker cannot test system-level changes)
 
 ## Key Facts
-- CTO never upgrades in-place — always clone first
-- Docker is the sandboxing mechanism for testing
+- CTO never upgrades in-place — always test on a fresh VPS first
+- Each candidate version is deployed to a **new Hetzner VPS**, not a Docker container
+- Docker cannot faithfully test system-level changes (packages, services, network, Docker itself)
 - Every version is archived before replacement
 - Failed upgrades are iterated on or abandoned with documentation
 - Rollback is a first-class operation
-- Both Hermes Agent and Agent Zero support Docker-native operation, making this cycle natural
+- Hetzner API enables programmatic VPS provisioning and destruction
+
+## Why VPS-Based Testing, Not Docker
+
+CTO has full system-level access. Macro evolution can change anything:
+- OS packages (`apt-get install`)
+- System services (`systemd`)
+- Network configuration
+- Docker containers (Docker-in-Docker is fragile and unreliable)
+- The agent framework itself
+- Python/Node.js versions
+- Cron jobs, firewall rules, SSH config
+
+A Docker container cannot test any of these faithfully. Only a full VPS provides a true test environment that mirrors production.
+
+**Cost:** Hetzner bills hourly. A test VPS running for 2 hours costs ~EUR 0.02-0.05. Destroy it after testing — no ongoing cost.
 
 ## The Cycle (Step by Step)
 
@@ -16,64 +32,63 @@
 - Research engine identifies a new technology, tool, or process
 - Decision engine evaluates relevance and potential value
 
-### 2. Clone
-- Current CTO is cloned into a Docker container
-- Clone is an exact replica of the running CTO
-- Clone has its own isolated environment
+### 2. Provision
+- CTO provisions a **new Hetzner VPS** via the Hetzner Cloud API
+- Same specs as production (or configurable for testing different tiers)
+- Fresh Ubuntu install, no prior state
 
-### 3. Integrate
-- New capability is added to the clone
-- This may involve: installing packages, modifying code, adding new modules, changing config, swapping LLM provider
+### 3. Deploy Candidate
+- CTO deploys the candidate version to the new VPS:
+  - Clones the git repo
+  - Applies the proposed changes (new packages, new framework, new config, etc.)
+  - Installs all dependencies
+  - Starts the agent
 
 ### 4. Test
-- Full test suite runs against the clone:
+- Full test suite runs on the candidate VPS:
   - All existing functionality still works (regression)
   - New capability functions correctly
-  - Communication module works
-  - Research engine works
-  - Upgrade cycle itself works (meta-test)
+  - Communication module works (can send test message)
+  - Research engine works (can fetch and parse)
+  - System-level integrations work (services, packages, cron)
+  - Health check passes
 
 ### 5. Decide
 - **Tests pass:** proceed to promotion
-- **Tests fail:** iterate (fix and re-test) or abandon
+- **Tests fail:** iterate (fix and re-test on same candidate VPS) or abandon
 - Decision is logged regardless of outcome
 
 ### 6. Archive
-- Current (soon-to-be-replaced) CTO is archived:
+- Current production CTO is archived:
+  - Hetzner VPS snapshot (one-click restore)
   - Git tag: `v{version}-archived-{date}`
-  - Docker image saved: `cto:v{version}`
   - Decision log entry written
   - Rollback instructions generated
 
 ### 7. Promote
-- Clone becomes the new primary CTO
-- Old CTO container is stopped
-- New CTO takes over the system root
-- Health check confirms new CTO is operational
+- Candidate VPS becomes the new primary CTO
+- DNS/IP updated if needed (or CTO migrates state to candidate)
+- Old production VPS is destroyed (after confirming candidate is healthy)
+- New CTO takes over all duties
 
 ### 8. Report
-- User notified via Telegram Bot (primary) / Gmail (fallback)
+- User notified via WhatsApp/Telegram/fallback
 - Report includes: what changed, why, test results, rollback instructions
 
-## Framework-Specific Notes
-
-### If using Hermes Agent
-- Hermes has built-in self-evolution via `hermes-agent-self-evolution` repo (DSPy + GEPA)
-- Learning loop auto-creates skills from successful tasks
-- **Caution:** No built-in safe upgrade mechanism yet. OpenClaw has the same gap (Issue #44876).
-- Must build custom Docker orchestration for clone-test-replace
-
-### If using Agent Zero
-- Docker-native by design — agents already run in isolated containers
-- Hierarchical agent spawning maps naturally to clone-test pattern
-- Dynamic tool creation means the clone can create its own upgrade tools
-
 ## Rollback Procedure
-1. Stop current CTO
-2. Load archived Docker image for target version
-3. Start archived version
-4. Verify health
-5. Log rollback in decision log
+1. Restore archived Hetzner snapshot to a new VPS (or re-provision from git tag)
+2. Start the restored version
+3. Verify health
+4. Point traffic/state to restored VPS
+5. Destroy the failed version's VPS
+6. Log rollback in decision log
+
+## Hetzner API Integration
+- Provision VPS: `POST /servers` with server type, image, SSH key
+- Create snapshot: `POST /servers/{id}/actions/create_image`
+- Destroy VPS: `DELETE /servers/{id}`
+- List snapshots: `GET /images?type=snapshot`
+- API token stored securely in CTO's environment
 
 ## Relationships
 - [Architecture](architecture.md) — where upgrade cycle fits
@@ -81,6 +96,7 @@
 - [Version Archive](version-archive.md) — storage and retrieval of versions
 
 ## Open Questions
-- Docker image size management — how many versions to keep locally vs push to registry
-- Should CTO test the rollback procedure as part of every upgrade?
-- Maximum iteration count before abandoning an upgrade
+- Hetzner API token provisioning — John must create and provide
+- State migration strategy: how does CTO transfer memory/wiki/logs from old VPS to new?
+- IP address handling: static IP that moves between VPS instances, or DNS update?
+- Maximum test VPS lifetime before auto-destroy (cost guard)
