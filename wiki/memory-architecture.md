@@ -131,6 +131,30 @@ OpenClaw has its own three-tier memory system. It is a component within our arch
 
 These are macro evolution decisions CTO should make for itself based on community research — exactly the kind of upgrade the system is designed to perform.
 
+## Backup Strategy
+
+Memory is the moat. If it's lost, it can't be rebuilt. Three layers of protection:
+
+**Layer 1: Git (continuous)**
+- All wiki pages, skills, decision logs, SOUL.md, MEMORY.md are in git
+- Every commit pushes to GitHub (offsite backup)
+- Git history preserves every version of every file
+
+**Layer 2: Hetzner VPS Snapshots (before every upgrade)**
+- Full disk snapshot before any clone-test-replace promotion
+- Captures everything including runtime state, daily memory files, SQLite indexes
+- Snapshots stored on Hetzner infrastructure (EUR 0.012/GB/month)
+
+**Layer 3: Daily memory export (automated)**
+- CTO exports `memory/` directory contents to git daily
+- Includes daily context files (`memory/YYYY-MM-DD.md`) that aren't in the main repo
+- SQLite index is rebuildable from markdown (memweave pattern) — losing the DB is not data loss, losing the markdown IS
+
+**What's NOT backed up (acceptable losses):**
+- OpenClaw session history (ephemeral, summarized into MEMORY.md)
+- LLM conversation transcripts (key decisions extracted into decision logs)
+- Cached embeddings (rebuildable from source files)
+
 ## Sources
 - [Mem0 State of AI Agent Memory 2026](https://mem0.ai/blog/state-of-ai-agent-memory-2026)
 - [OpenViking GitHub](https://github.com/volcengine/OpenViking)
