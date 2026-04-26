@@ -74,4 +74,4 @@ Two rounds of research (21 agents total) surveyed the full autonomous AI agent l
 
 ## Owner
 
-John Husband — johnjhusband@gmail.com
+John Husband — john@husband.llc

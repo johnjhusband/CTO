@@ -59,7 +59,7 @@
 ### CTO-006: Communication Module v1 (P1, Feature)
 **Description:** Telegram Bot notifications (primary), Gmail SMTP fallback
 **Test Plan:**
-- [ ] Sends email to johnjhusband@gmail.com via SMTP
+- [ ] Sends email to john@husband.llc via SMTP
 - [ ] Email contains daily research digest
 - [ ] Email contains upgrade decision details
 - [ ] Errors/failures are reported immediately
