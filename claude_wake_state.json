@@ -1,0 +1,77 @@
+{
+  "project": "CTO v1",
+  "date": "2026-04-26",
+  "session_summary": "Full research and documentation phase. Two rounds of research (21+ agents), component research (4 agents), OpenRouter non-interactive research (1 agent). All findings documented in wiki. Architecture defined, files restructured for OpenClaw. 15 metacognition principles extracted. 12 of 15 rule violations resolved.",
+
+  "current_state": {
+    "vps": {
+      "ip": "178.104.213.9",
+      "specs": "8 vCPU, 16GB RAM, 150GB disk",
+      "os": "Ubuntu 24.04",
+      "node": "22.22.2 via nvm",
+      "user": "cto (dedicated, non-root)",
+      "ssh": "cto-deploy key, ssh cto-vps",
+      "ssh_root": "ssh cto-vps-root",
+      "repo": "/opt/cto (git clone, deploy key for GitHub access)",
+      "openclaw": "NOT INSTALLED YET"
+    },
+    "github": "github.com/johnjhusband/CTO (private)",
+    "framework": "OpenClaw (selected, not installed)",
+    "telegram": "NOT SET UP (John needs to create bot via @BotFather)",
+    "openrouter": "NOT CONFIGURED (John needs to provide API key)"
+  },
+
+  "what_needs_from_john": [
+    "OpenRouter API key (create at openrouter.ai/keys)",
+    "Telegram bot token (message @BotFather, /newbot)",
+    "Hetzner Cloud API token (console.hetzner.cloud > Security > API Tokens)",
+    "Brave Search API key (optional, 2000 free queries/month)"
+  ],
+
+  "next_steps": [
+    "1. Review all documentation for completeness — iterate until no more research/docs needed",
+    "2. Get API keys from John",
+    "3. Install OpenClaw on VPS (exact commands in wiki/openclaw-setup.md)",
+    "4. Security hardening (firewall, fail2ban — task #22)",
+    "5. Install MCP servers (MCPVault, filesystem, brave-search, fetch, hetzner)",
+    "6. Install memweave for SQLite coordination",
+    "7. Configure Telegram channel",
+    "8. Create test suite (task #18)",
+    "9. Set up daily research cron",
+    "10. Test end-to-end",
+    "11. Implement health checks (task #23)"
+  ],
+
+  "pending_tasks": [
+    "#18 - Test suite doesn't exist (build during implementation)",
+    "#22 - Security review not done (do during installation)",
+    "#23 - Health checks not implemented (requires running system)"
+  ],
+
+  "known_bugs": {
+    "openclaw_onboard": "Issue #17191: --token-provider ignored for non-Anthropic. Use --auth-choice 'openrouter-api-key' workaround.",
+    "openclaw_model_set": "Issue #33290: onboard may not set default model. Run 'openclaw models set' after onboard.",
+    "telegram_proactive": "First message must come FROM user TO bot before bot can send proactively."
+  },
+
+  "key_files": [
+    "SOUL.md - Identity + 15 metacognition principles (loaded first every session)",
+    "AGENTS.md - Operating manual with Change Impact Protocol",
+    "HANDOFF.md - Full context transfer with WHY behind every decision",
+    "wiki/openclaw-setup.md - Complete installation reference with all component configs",
+    "wiki/memory-architecture.md - Memory design (Obsidian-compatible vault + SQLite + tiered loading)",
+    "wiki/architecture.md - Five-layer architecture overview",
+    "skills/research-methodology/SKILL.md - Daily research process",
+    "skills/decision-evaluate/SKILL.md - Five-question evaluation framework"
+  ],
+
+  "critical_principles": [
+    "Research before action — understand the target before touching infrastructure",
+    "Every change cascades — trace downstream impacts recursively",
+    "The community is the architect, not you",
+    "Memory is the moat — models are swappable, knowledge compounds",
+    "Eat your own cooking — follow your own rules",
+    "Never touch what isn't yours",
+    "The handoff IS the upgrade"
+  ]
+}

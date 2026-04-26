@@ -42,6 +42,34 @@ Provider setup for OpenRouter requires "Custom" provider (OpenAI-compatible endp
 9. **Workspace bootstrap** — SKIP (we have our own files)
 10. **Health check** — verify gateway reachable
 
+## Non-Interactive Onboard with OpenRouter (Verified)
+
+**Known bug ([Issue #17191](https://github.com/openclaw/openclaw/issues/17191)):** `--token-provider openrouter` is ignored when using `--auth-choice apiKey`. Use the pre-remapped auth choice instead:
+
+```bash
+# Step 1: Onboard with workaround for auth bug
+openclaw onboard --non-interactive \
+  --install-daemon \
+  --auth-choice "openrouter-api-key" \
+  --openrouter-api-key "$OPENROUTER_API_KEY" \
+  --workspace /opt/cto \
+  --skip-bootstrap \
+  --skip-health \
+  --gateway-bind loopback \
+  --gateway-auth token
+
+# Step 2: Set model explicitly (onboard bug #33290 may not set it)
+openclaw models set "openrouter/anthropic/claude-sonnet-4-6"
+
+# Step 3: Verify
+openclaw doctor
+```
+
+**Alternative: Skip onboard entirely, write config manually:**
+OpenClaw reads `~/.openclaw/openclaw.json`. Write it by hand, set API key via `openclaw models auth paste-token --provider openrouter`, then start gateway with `openclaw gateway run` or install daemon separately.
+
+**Warning:** OpenClaw enforces strict schema validation. Unknown keys cause gateway to refuse to start. Run `openclaw doctor` to validate.
+
 ## Post-Onboard Verification
 
 ```bash
