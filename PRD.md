@@ -95,7 +95,7 @@ Micro evolution is valuable but secondary. It pales in comparison to the growth 
 - **Primary:** Telegram Bot [verified — token works, bot name "CTO", username @HusbandCTObot]
   - Free, no phone needed, zero ban risk [verified]
   - Proactive messaging requires John to message bot first [verified — "chat not found" until first contact]
-- **Fallback:** Gmail SMTP [unverified — not tested], or any channel CTO determines acceptable
+- **Fallback:** Gmail SMTP [verified — SMTP reachable, TLS works. Sending needs App Password], or any channel CTO determines acceptable
 - **Content:** Daily research digest, upgrade decisions, test results, errors/failures
 - **Tone:** Professional, concise, actionable
 

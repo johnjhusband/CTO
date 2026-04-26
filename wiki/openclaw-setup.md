@@ -3,7 +3,7 @@
 **L1:** `npm install -g openclaw@latest` [verified — v2026.4.24] then write `openclaw.json` manually [verified — recommended approach, avoids buggy non-interactive onboard]. `--skip-bootstrap` prevents overwriting our files [verified — skips all 7 default files]. Wiki indexed for search via memorySearch.extraPaths [verified — config key exists]. Skills are snapshot-loaded at session start, NOT lazy-loaded [verified]. OpenClaw auto-loads SOUL.md, AGENTS.md, IDENTITY.md, USER.md, TOOLS.md every session [verified]. MEMORY.md loaded in main private session only [verified]. Telegram config uses `"tg:ID"` format for allowFrom [verified]. OpenRouter is bundled provider, model format `openrouter/provider/model` [verified].
 **Last updated:** 2026-04-26
 **Source:** Verified against official OpenClaw docs and hands-on testing. Full verification status in wiki/assumption-audit.md.
-**Verification note:** All config keys, file auto-loading behavior, and onboard flags verified against docs.openclaw.ai. Package names verified on npm/PyPI. API keys tested. Onboard non-interactive workaround is [unverified — issue #17191 closed not_planned]. JSON configs in this file use the correct `mcp.servers` nesting [verified].
+**Verification note:** All config keys, file auto-loading behavior, and onboard flags verified against docs.openclaw.ai. Package names verified on npm/PyPI. API keys tested. Onboard non-interactive workaround [verified in source code — `openrouter-api-key` is valid choiceId in OpenRouter plugin]. Not tested end-to-end. JSON configs in this file use the correct `mcp.servers` nesting [verified].
 
 ## Installation
 
@@ -47,7 +47,7 @@ Provider setup for OpenRouter requires "Custom" provider (OpenAI-compatible endp
 
 **Known bug ([Issue #17191](https://github.com/openclaw/openclaw/issues/17191)):** `--token-provider openrouter` is ignored when using `--auth-choice apiKey`. The issue was closed not_planned (not fixed).
 
-**[unverified] Possible workaround:** Pass the pre-remapped auth choice directly:
+**[verified in source code] Workaround:** Pass the pre-remapped auth choice directly (confirmed: `openrouter-api-key` is a valid `choiceId` in the OpenRouter plugin at `extensions/openrouter/openclaw.plugin.json`):
 ```bash
 openclaw onboard --non-interactive \
   --install-daemon \
@@ -59,7 +59,7 @@ openclaw onboard --non-interactive \
   --gateway-bind loopback \
   --gateway-auth token
 ```
-This workaround was NOT recommended in the issue — it's an inference from the source code. Must be tested during installation.
+This was confirmed by inspecting the OpenClaw source code on the local machine — the OpenRouter plugin defines `choiceId: "openrouter-api-key"` with `cliFlag: "--openrouter-api-key"`. The GitHub issue (#17191) never recommended this but the source code validates it. Still should be tested during actual installation.
 
 **Recommended approach: Write config manually.**
 OpenClaw reads `~/.openclaw/openclaw.json`. This avoids the buggy onboard path entirely:

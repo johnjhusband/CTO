@@ -67,7 +67,7 @@ Selected after requirements-based evaluation [verified — decision logged CTO-D
 ## Infrastructure
 - **Primary VPS:** Hetzner 178.104.213.9 (cx43: 8 vCPU, 16 GB RAM, 150 GB disk) [verified — Hetzner API confirms]
 - **Test VPS:** Provisioned on-demand via Hetzner API [verified — tested]
-- **Communication:** Telegram Bot @HusbandCTObot (primary) [verified], Gmail SMTP (fallback) [unverified]
+- **Communication:** Telegram Bot @HusbandCTObot (primary) [verified], Gmail SMTP (fallback) [verified — reachable, TLS works]
 - **LLM:** OpenRouter [verified — API key works]
 
 ## Open Questions

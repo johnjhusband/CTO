@@ -5,7 +5,7 @@
 - **Git:** github.com/johnjhusband/CTO (private repo) [verified — pushes work]
 - **Git on VPS:** Deploy key for SSH access to GitHub [verified — git fetch works]
 - **LLM:** OpenRouter (multi-model, single API key) [verified — API key works, model format confirmed]
-- **Communication:** Telegram Bot @HusbandCTObot (primary) [verified — token works], Gmail SMTP (fallback) [unverified]
+- **Communication:** Telegram Bot @HusbandCTObot (primary) [verified — token works], Gmail SMTP (fallback) [verified — SMTP reachable, TLS works. Sending not tested — needs App Password]
 - **Knowledge base:** wiki/ directory indexed for search via memorySearch.extraPaths [verified config key exists]
 - **Knowledge layer:** Obsidian-compatible markdown vault via MCPVault MCP server [verified — MCPVault tested locally]
 - **SQLite coordination:** memweave [verified installed, search quality poor — may need alternative]

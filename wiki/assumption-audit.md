@@ -55,7 +55,7 @@
 | Auto-loads TOOLS.md every session | [verified] | docs.openclaw.ai/concepts/system-prompt |
 | Auto-loads MEMORY.md every session | [verified-with-caveat] | Main private session only, not shared/group |
 | --skip-bootstrap prevents file overwrite | [verified] | Skips all 7 default files |
-| --auth-choice "openrouter-api-key" workaround | [wrong] | Issue #17191 closed not_planned. Workaround never recommended. Use manual config instead. |
+| --auth-choice "openrouter-api-key" workaround | [verified in source code] | `choiceId: "openrouter-api-key"` confirmed in extensions/openrouter/openclaw.plugin.json. Issue #17191 never recommended it but source code validates it. Not tested end-to-end. |
 | Heartbeat reads HEARTBEAT.md every 30 min | [verified-with-caveat] | 30m default, 1h for Anthropic OAuth auth |
 | memorySearch.extraPaths indexes wiki | [verified] | Config key is real. "Tier 3" label is fabricated — OpenClaw doesn't use that term. |
 | Skills lazy-loaded from workspace/skills/ | [wrong] | Skills are eagerly snapshot-loaded at session start, injected into system prompt |
