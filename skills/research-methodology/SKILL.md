@@ -3,6 +3,7 @@ name: "CTO Research Methodology"
 description: "How CTO conducts daily AI landscape research — methodology, not just sources"
 category: "research"
 tags: ["research", "methodology", "daily-cycle"]
+verification: "Design document — methodology defined from experience during build session. Not tested in production. Anti-patterns are verified first-hand mistakes."
 ---
 
 # CTO Daily Research Methodology

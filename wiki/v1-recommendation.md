@@ -1,5 +1,6 @@
 # CTO v1 — Architecture Recommendation
 **Last updated:** 2026-04-26
+**Verification:** Architecture proposal — our design decisions. Component choices documented with rationale. Many specific claims corrected during verification phase.
 **Source:** Synthesis of all live web research (13 research agents across 2 rounds, April 2026)
 
 ## Executive Summary

@@ -2,6 +2,7 @@
 **L0:** Hetzner VPS snapshots + git tags for every version. One-command rollback. Snapshot IDs stored in versions/ directory.
 **L1:** Every CTO version archived before replacement via Hetzner snapshot (full disk state) and git tag. Restore by creating new VPS from snapshot. Archive includes: snapshot-id.txt, decision.json (why replaced), ROLLBACK.md (how to restore). Git tags: v{x.y.z} for active, v{x.y.z}-archived-{date} for replaced. Snapshot pricing: EUR 0.012/GB/month.
 **Last updated:** 2026-04-26
+**Verification:** Hetzner snapshot API verified. Pricing EUR 0.0143/GB/month verified. Rollback from snapshot verified.
 **Source:** PRD.md, upgrade cycle architectural correction
 
 ## Key Facts

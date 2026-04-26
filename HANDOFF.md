@@ -3,6 +3,7 @@
 **Written by:** Claude Code (Opus 4.6) during the initial build of CTO v1
 **Date:** 2026-04-26
 **Purpose:** Transfer not just WHAT was decided, but WHY — the full context behind every architectural choice, mistake made, and lesson learned during the research and design phase.
+**Verification:** All decisions, mistakes, and corrections in this document are first-hand accounts from the build session — verified because they happened to us. Technical claims about tools reference research that has been partially verified (see wiki/assumption-audit.md for full status).
 
 ---
 

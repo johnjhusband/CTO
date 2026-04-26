@@ -2,6 +2,7 @@
 **L0:** Multi-source ingestion → LLM scoring → dedup → autonomous decisions → Telegram digest → knowledge archive. Existing tools: Horizon, agents-radar.
 **L1:** CTO autonomously monitors GitHub, HN, arXiv, YouTube, changelogs. Each item scored 0-10 by LLM against defined interests. Cross-platform deduplication. CTO acts on findings autonomously (adopt/reject/defer). Daily digest sent to Telegram. John reviews after the fact — corrections calibrate scoring. Open-source starting points: Horizon (MCP-native, most complete), agents-radar (GitHub Actions, zero infrastructure). Research methodology defined in SOUL.md. Evaluation framework: community consensus → production evidence → material vs immaterial → test on real infrastructure.
 **Last updated:** 2026-04-26
+**Verification:** Tool descriptions (Horizon, agents-radar, MINT Lab) from web research. Existence of repos not independently verified. Pipeline design is our own.
 **Source:** Live web research (April 2026), second research round
 
 ## Key Facts

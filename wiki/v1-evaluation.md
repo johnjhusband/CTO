@@ -1,5 +1,6 @@
 # CTO v1 Framework Evaluation: OpenClaw vs Hermes Agent
 **Last updated:** 2026-04-26
+**Verification:** Requirements-based evaluation using our criteria. Framework capabilities from research (corrected in audit). Scoring weights are our design.
 **Source:** Live web research + corrected requirements analysis
 
 ## Evaluation Standard: CTO Requirements (Not Framework Features)

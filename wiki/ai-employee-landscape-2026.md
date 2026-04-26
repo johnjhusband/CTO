@@ -1,6 +1,7 @@
 # AI Employee / AI Workforce Systems: State of the Art (April 2026)
 
 **Last updated:** 2026-04-26
+**Verification:** Research summary from web search agents. Case studies, statistics, and company claims NOT independently verified. Treat as landscape overview, not confirmed facts.
 **Source:** Comprehensive web research across 19 search queries, 100+ sources
 
 ---

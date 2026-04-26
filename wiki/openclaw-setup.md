@@ -1,8 +1,9 @@
 # OpenClaw Installation & Configuration
-**L0:** Install via npm, onboard via CLI (non-interactive or manual config), skip bootstrap to keep our files, workspace at /opt/cto, wiki indexed via extraPaths. MCP config key is `mcp.servers` not `mcpServers`.
-**L1:** `npm install -g openclaw@latest` then either `openclaw onboard` or write `openclaw.json` manually. Skip bootstrap (--skip-bootstrap) to prevent overwriting our files. Point workspace at /opt/cto. Wiki indexed for search via memorySearch.extraPaths. Skills are snapshot-loaded at session start (NOT lazy-loaded). OpenClaw auto-loads SOUL.md, AGENTS.md, IDENTITY.md, USER.md, TOOLS.md every session. MEMORY.md loaded in main private session only.
+**L0:** Install via npm [verified], onboard via CLI or manual config [verified — manual recommended due to bug #17191], skip bootstrap to keep our files [verified], workspace at /opt/cto, wiki indexed via extraPaths [verified]. MCP config key is `mcp.servers` not `mcpServers` [verified].
+**L1:** `npm install -g openclaw@latest` [verified — v2026.4.24] then write `openclaw.json` manually [verified — recommended approach, avoids buggy non-interactive onboard]. `--skip-bootstrap` prevents overwriting our files [verified — skips all 7 default files]. Wiki indexed for search via memorySearch.extraPaths [verified — config key exists]. Skills are snapshot-loaded at session start, NOT lazy-loaded [verified]. OpenClaw auto-loads SOUL.md, AGENTS.md, IDENTITY.md, USER.md, TOOLS.md every session [verified]. MEMORY.md loaded in main private session only [verified]. Telegram config uses `"tg:ID"` format for allowFrom [verified]. OpenRouter is bundled provider, model format `openrouter/provider/model` [verified].
 **Last updated:** 2026-04-26
-**Source:** Verified research on OpenClaw onboard wizard and workspace mechanics
+**Source:** Verified against official OpenClaw docs and hands-on testing. Full verification status in wiki/assumption-audit.md.
+**Verification note:** All config keys, file auto-loading behavior, and onboard flags verified against docs.openclaw.ai. Package names verified on npm/PyPI. API keys tested. Onboard non-interactive workaround is [unverified — issue #17191 closed not_planned]. JSON configs in this file use the correct `mcp.servers` nesting [verified].
 
 ## Installation
 

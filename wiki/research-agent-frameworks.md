@@ -2,6 +2,7 @@
 **L0:** OpenClaw (364K stars, MIT) chosen for CTO. Hermes (~118K) strong on micro-evolution. OpenHands (~72K) for autonomous coding. Cline (~61K) for headless CLI. 20+ tools evaluated.
 **L1:** Two research rounds evaluated 20+ tools. OpenClaw selected for macro evolution (loosely coupled, 364K star ecosystem, 25-26 messaging platforms, community breadth). Hermes Agent (~118K stars, self-improving learning loop, GEPA ICLR paper) excels at micro-evolution but tightly coupled. OpenHands (~72K, MIT) leads autonomous software engineering. Cline CLI 2.0 (~61K, Apache 2.0) for headless coding. Paperclip (53-58K) for future multi-agent orchestration. Cloud-only tools (Devin, Manus, Cursor) not viable for VPS. Open Interpreter stalled, AutoGen deprecated.
 **Last updated:** 2026-04-26
+**Verification:** Star counts verified in first audit (10/37 wrong, corrected). Remaining feature claims from research agents — individual capabilities NOT independently tested.
 **Source:** Live web research (April 2026) — 13 research agents. Audit-corrected April 26.
 
 ## Landscape Summary (April 2026)

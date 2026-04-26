@@ -2,6 +2,7 @@
 **L0:** Multi-model via OpenRouter. Route 80% to cheap models, 20% to frontier. Budget-constrained, no open-ended token spend.
 **L1:** CTO uses OpenRouter for multi-model routing — single API key, 200+ models. GPT-5.4 nano ($0.10/$0.40/M) for routine research scoring, GPT-5.4 mini ($0.75/$4.50/M) for evaluation, o4-mini ($1.10/$4.40/M) for complex decisions. Estimated $5-30/month. ChatGPT Pro ($200/mo) is UI-only, no API access. CTO can evaluate and switch its own LLM backend as part of macro evolution. Prompt caching (90% discount) and batch processing (50% discount) for cost optimization.
 **Last updated:** 2026-04-26
+**Verification:** OpenRouter verified (API works, prepaid billing, model format). Pricing claims from OpenRouter website. Cost estimates are projections.
 **Source:** Live web research (April 2026) — all data verified via web search
 
 ## Key Facts
