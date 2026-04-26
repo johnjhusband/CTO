@@ -12,54 +12,65 @@ It is the first employee in a planned AI workforce. Once CTO is stable and self-
 
 ## How It Works
 
-1. **Daily Research** — CTO scans YouTube transcripts, GitHub, changelogs, and the broader web for new AI technologies, frameworks, and tools
-2. **Evaluate** — Filters signal from noise, determines what's worth integrating
-3. **Clone-Test-Replace** — Clones itself into a Docker container, applies the upgrade, runs a full test suite. If tests pass, the clone becomes the new CTO. If they fail, it iterates or abandons with a documented reason
-4. **Archive** — Every replaced version is archived with git tags and Docker images for instant rollback
-5. **Report** — Every decision is logged and reported to the owner
+1. **Daily Research** — CTO scans GitHub, HN, arXiv, YouTube, changelogs, and the broader web for new AI technologies (with a 5-minute human curation checkpoint)
+2. **Evaluate** — Filters signal from noise via LLM relevance scoring, determines what's worth integrating
+3. **Clone-Test-Replace** — Provisions a fresh Hetzner VPS, deploys the candidate version, runs full test suite on real infrastructure. If tests pass, the candidate becomes the new CTO. If they fail, it iterates or abandons with a documented reason.
+4. **Archive** — Every replaced version is archived with Hetzner snapshots and git tags for instant rollback
+5. **Report** — Every decision is logged and reported to the owner via Telegram
+
+## Architecture
+
+Built on the five-layer model the AI community has converged on:
+
+1. **Brain** — Multi-model LLM via OpenRouter (cheap for routine, escalate for complex)
+2. **Hands** — Tools via MCP (the universal standard, 97M monthly installs)
+3. **Memory** — Obsidian vault + SQLite coordination + tiered loading (the moat)
+4. **Spine** — OpenClaw framework + A2A protocol for future multi-agent
+5. **Guardrails** — GUARDRAILS.md, FAILURE.md, circuit breakers, budget caps, human checkpoints
 
 ## Principles
 
 - **Fully autonomous** — no human approval needed except for purchases
-- **Self-improving** — CTO upgrades itself, including its own LLM, framework, and tools
-- **Not locked to any provider** — may use Claude, OpenAI, Gemini, open-source models, or whatever is best at the time
+- **Macro evolution first** — revolutionary changes from research, not just incremental self-improvement
+- **Not locked to any provider** — may use Claude, OpenAI, Gemini, open-source, or whatever is best
+- **Memory is the moat** — models and frameworks are swappable; knowledge compounds
+- **Test on real infrastructure** — VPS-based testing, not Docker containers
 - **Every version archived** — rollback is always one command away
-- **Test before deploy** — nothing goes live without passing the test suite in a sandbox
+- **Human curation checkpoint** — 5 minutes/day in the research pipeline
 
 ## Project Structure
 
 ```
 CTO/
-├── README.md           # This file
-├── PRD.md              # Product Requirements Document
-├── beads.md            # Task tracking
-├── wiki/               # Structured knowledge base
-│   ├── architecture.md
-│   ├── research-agent-frameworks.md
-│   ├── research-sources.md
-│   ├── communication.md
-│   ├── llm-strategy.md
-│   ├── upgrade-cycle.md
-│   ├── decision-log-format.md
-│   ├── version-archive.md
-│   ├── v1-recommendation.md
-│   ├── v1-evaluation.md
-│   └── karpathy-patterns.md
-├── docs/               # Additional documentation
-├── versions/           # Archived CTO versions
-└── tests/              # Test suite
+├── README.md                       # This file
+├── PRD.md                          # Product Requirements Document
+├── beads.md                        # Task tracking
+├── wiki/                           # Structured knowledge base
+│   ├── architecture.md             # Five-layer architecture
+│   ├── memory-architecture.md      # Memory: Obsidian + SQLite + tiered loading
+│   ├── protocol-layer.md           # MCP, A2A, AGENTS.md standards
+│   ├── deployment-patterns.md      # Production lessons and patterns
+│   ├── research-pipeline.md        # How CTO monitors the AI landscape
+│   ├── research-agent-frameworks.md # Framework and tool evaluations
+│   ├── research-sources.md         # YouTube channels, GitHub, HN, etc.
+│   ├── communication.md            # Telegram primary, Gmail fallback
+│   ├── llm-strategy.md             # Multi-model routing via OpenRouter
+│   ├── upgrade-cycle.md            # VPS-based clone-test-replace
+│   ├── decision-log-format.md      # Decision JSON schema
+│   ├── version-archive.md          # Snapshots + git tags
+│   ├── v1-evaluation.md            # OpenClaw vs Hermes requirements evaluation
+│   ├── karpathy-patterns.md        # Design principles from Karpathy
+│   └── production-lessons.md       # Hard-won wisdom from case studies
+├── docs/                           # Additional documentation
+├── versions/                       # Archived CTO versions
+└── tests/                          # Test suite
 ```
 
 ## Status
 
-**Phase: Research Complete → Framework Decision Pending**
+**Phase: Research Round 2 Complete → Architecture Defined → Implementation**
 
-All technology research is complete (April 26, 2026). 13 research agents evaluated 20+ tools across the autonomous agent landscape. See:
-- [v1 Evaluation](wiki/v1-evaluation.md) — requirements-based comparison of OpenClaw vs Hermes Agent
-- [v1 Recommendation](wiki/v1-recommendation.md) — full architecture proposal (being updated)
-- [Karpathy Patterns](wiki/karpathy-patterns.md) — design principles from Karpathy's work
-
-Next step: finalize framework decision, then begin CTO-001 (Core Agent Scaffold).
+Two rounds of research (21 agents total) surveyed the full autonomous AI agent landscape. OpenClaw selected as framework. Five-layer architecture defined based on community consensus. VPS provisioned at 178.104.213.9 (8 vCPU, 16 GB RAM, 150 GB disk).
 
 ## Owner
 

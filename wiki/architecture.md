@@ -1,52 +1,80 @@
 # CTO Architecture
 **Last updated:** 2026-04-26
-**Source:** Live web research (April 2026) + requirements analysis + architectural corrections
+**Source:** Second research round (8 agents, April 2026) — community consensus patterns
 
 ## Key Facts
-- CTO is a fully autonomous AI agent running on a dedicated Hetzner VPS
-- Self-improving through macro evolution (research-driven) and micro evolution (experience-driven)
-- Macro evolution tests on a **fresh VPS**, not Docker containers — full system access requires full system testing
-- Not locked to any LLM provider — multi-model via OpenRouter/LiteLLM
-- Every version archived via Hetzner snapshots + git tags for rollback
-- Only restriction: cannot spend money without user approval
-- Budget-constrained
+- Architecture follows the five-layer model the community has converged on
+- Built on open standards: MCP (tools), A2A (agent communication), AGENTS.md (context)
+- Memory is the moat — models and frameworks are swappable
+- Macro evolution tests on fresh Hetzner VPS, not Docker containers
+- "Agent = Model + Harness" — the harness matters more than the model
+
+## Five-Layer Architecture
+
+### 1. Brain — LLM + Context Management
+- Multi-model via OpenRouter — route 80% to cheap models, escalate for complex
+- Context engineering > model selection
+- Skills-based context loading (~1,000 tokens metadata vs 10,000 token monolithic prompt)
+
+### 2. Hands — Tools via MCP
+- All tool integrations through MCP (97M monthly installs, Linux Foundation standard)
+- No custom tool wrappers
+- OpenClaw as the agent framework connecting brain to hands
+
+### 3. Memory — The Moat
+- **Obsidian vault** as human-readable knowledge layer with `[[wikilinks]]` and graph
+- **SQLite coordination layer** for concurrent access and structured queries
+- **Tiered loading** (L0/L1/L2 per OpenViking pattern) to minimize token costs
+- **SOUL.md** for persistent agent identity
+- See [memory-architecture.md](memory-architecture.md) for full details
+
+### 4. Spine — Orchestration + Communication
+- OpenClaw gateway for orchestration, cron, messaging
+- A2A protocol for future inter-agent communication (CFO, CEO, CMO)
+- Telegram Bot for user notifications
+- See [protocol-layer.md](protocol-layer.md)
+
+### 5. Guardrails — Safety + Observability
+- GUARDRAILS.md — persistent safety constraints surviving context resets
+- FAILURE.md — graduated intervention (slowdown → throttle → escalate → shutdown)
+- Circuit breakers on all external calls
+- Hard budget caps (steps, cost, runtime)
+- Human curation checkpoint in research pipeline
 
 ## Framework: OpenClaw
-Selected after requirements-based evaluation prioritizing macro evolution. See [v1-evaluation.md](v1-evaluation.md) for full rationale.
+Selected after requirements-based evaluation prioritizing macro evolution. See [v1-evaluation.md](v1-evaluation.md).
 
-## Components
-1. **Research Engine** — YouTube transcript extraction (browser-based via skills/MCPs), GitHub/HN/web scrapers
-2. **Decision Engine** — evaluates findings against current capabilities, filters signal
-3. **Test Environment** — fresh Hetzner VPS provisioned via API for testing upgrades (not Docker)
-4. **Upgrade Manager** — handles provision → deploy → test → archive → promote cycle
-5. **Version Archive** — Hetzner snapshots, git tags, decision logs for every version
-6. **Communication Module** — Telegram Bot (primary), Gmail SMTP (fallback)
-7. **Scheduler** — OpenClaw built-in cron triggers daily research cycle
-8. **LLM Router** — multi-model via OpenRouter, cheap models for routine, escalate for complex
+## Upgrade Cycle: VPS-Based Testing
+- Provision fresh Hetzner VPS via API for each upgrade test
+- Full system access testing (packages, services, network — not Docker)
+- Snapshot current VPS before promotion
+- Destroy test VPS after decision
+- See [upgrade-cycle.md](upgrade-cycle.md)
 
-## Upgrade Cycle Flow
-```
-Research → Evaluate → Provision candidate VPS ��� Deploy candidate →
-Run test suite on candidate → Pass? → Snapshot current → Promote candidate → Destroy old → Report
-                               Fail? → Iterate or destroy candidate → Document reason → Report
-```
+## Research Pipeline
+- Multi-source ingestion (GitHub, HN, arXiv, YouTube, changelogs)
+- LLM relevance scoring + cross-platform deduplication
+- Human curation checkpoint (5 min/day)
+- Telegram daily digest
+- See [research-pipeline.md](research-pipeline.md)
 
 ## Infrastructure
 - **Primary VPS:** Hetzner 178.104.213.9 (8 vCPU, 16 GB RAM, 150 GB disk)
 - **Test VPS:** Provisioned on-demand via Hetzner API, destroyed after testing
 - **Communication:** Telegram Bot (primary), Gmail SMTP (fallback)
 - **LLM:** OpenRouter for multi-model access
-- **YouTube:** Browser-based interaction via skills/MCPs for v1
 
 ## Relationships
-- [Research Sources](research-sources.md) — where CTO looks for new tech
-- [Upgrade Cycle](upgrade-cycle.md) — detailed VPS-based clone-test-replace process
-- [Decision Log Format](decision-log-format.md) — how decisions are recorded
-- [LLM Strategy](llm-strategy.md) — provider evaluation and routing
-- [Communication](communication.md) — notification channels
-- [Karpathy Patterns](karpathy-patterns.md) — design principles
+- [Memory Architecture](memory-architecture.md)
+- [Protocol Layer](protocol-layer.md)
+- [Deployment Patterns](deployment-patterns.md)
+- [Research Pipeline](research-pipeline.md)
+- [Upgrade Cycle](upgrade-cycle.md)
+- [Karpathy Patterns](karpathy-patterns.md)
+- [Decision Log Format](decision-log-format.md)
 
 ## Open Questions
 - Hetzner API token for programmatic VPS provisioning
 - State migration between VPS instances during promotion
-- IP address strategy (static IP vs DNS update)
+- OpenViking vs Mem0 vs simpler SQLite hybrid for v1 memory
+- When to add graph memory (Mem0g) — v1 or later?
