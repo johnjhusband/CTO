@@ -91,7 +91,7 @@ Every time an agent wakes up, SOUL.md is loaded. Defines identity, values, voice
 
 Research on 41,300 AI agent posts showed +72 percentage point improvement in safety compliance from adding identity/persona. Persona is structural, not cosmetic.
 
-## Recommendation for CTO
+## CTO Memory Architecture (Agreed Design)
 
 1. **Obsidian vault** as human-readable knowledge layer (wiki pages, decisions, research)
 2. **SQLite coordination layer** underneath for concurrent access and structured queries
@@ -99,6 +99,29 @@ Research on 41,300 AI agent posts showed +72 percentage point improvement in saf
 4. **SOUL.md** for CTO's persistent identity
 5. **Graph memory** (Mem0 or similar) as CTO matures — evaluate as macro evolution decision
 6. Consider **OpenViking** for the context database if the scale warrants it
+
+This is the agreed architecture. It must not be downgraded for implementation convenience.
+
+## How This Maps onto OpenClaw's Native Memory
+
+OpenClaw has its own three-tier memory system. It is a component within our architecture, not a replacement:
+
+| Our Architecture | OpenClaw Native | Gap |
+|-----------------|----------------|-----|
+| Obsidian vault with wikilinks + graph | wiki/ indexed via memorySearch.extraPaths | OpenClaw searches but doesn't provide wikilinks or graph view. Obsidian adds this as the human-facing layer. |
+| SQLite coordination layer | OpenClaw uses SQLite internally for memory search index | Partial overlap. May need additional SQLite tables for structured queries OpenClaw doesn't support. |
+| Tiered loading (L0/L1/L2) | OpenClaw loads MEMORY.md (Tier 1) + daily files (Tier 2) + searches Tier 3 | Our L0/L1 headers on wiki pages help when retrieved but OpenClaw doesn't natively understand the L0/L1/L2 convention. The agent must be taught this in AGENTS.md. |
+| SOUL.md identity | OpenClaw auto-loads SOUL.md every session | Direct match. |
+| Graph memory (Mem0) | Not in OpenClaw | Future enhancement. Must be added as a skill or integration. |
+| OpenViking context database | Not in OpenClaw | Future enhancement. Evaluate as macro evolution decision. |
+
+## Implementation Priority
+
+**v1:** Use OpenClaw's native memory as the foundation. Add Obsidian as the human-facing knowledge layer on top. Teach CTO the L0/L1/L2 convention via AGENTS.md so it loads summaries first and full content on demand.
+
+**v1.1+:** Evaluate whether to add SQLite coordination tables beyond what OpenClaw provides natively. Evaluate Mem0 for graph memory. Evaluate OpenViking for context database.
+
+These are macro evolution decisions CTO should make for itself based on community research — exactly the kind of upgrade the system is designed to perform.
 
 ## Sources
 - [Mem0 State of AI Agent Memory 2026](https://mem0.ai/blog/state-of-ai-agent-memory-2026)

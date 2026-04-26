@@ -34,19 +34,28 @@ A Docker container cannot test any of these faithfully. Only a full VPS provides
 - Research engine identifies a new technology, tool, or process
 - Decision engine evaluates relevance and potential value
 
-### 2. Provision
+### 2. Research the Target
+- BEFORE attempting installation or configuration of anything new, research:
+  - What does the target platform expect? (file structure, conventions, config format)
+  - What does its setup process ask for? (exact wizard steps, required inputs)
+  - How does it integrate with existing components? (memory, tools, communication)
+  - What are the known gotchas? (defaults that overwrite your files, missing dependencies, breaking changes)
+- Map the target's requirements against our current architecture — identify gaps and conflicts BEFORE touching infrastructure
+- This step prevents the pattern of pressing forward without understanding what you're building on
+
+### 3. Provision
 - CTO provisions a **new Hetzner VPS** via the Hetzner Cloud API
 - Same specs as production (or configurable for testing different tiers)
 - Fresh Ubuntu install, no prior state
 
-### 3. Deploy Candidate
+### 4. Deploy Candidate
 - CTO deploys the candidate version to the new VPS:
   - Clones the git repo
   - Applies the proposed changes (new packages, new framework, new config, etc.)
   - Installs all dependencies
   - Starts the agent
 
-### 4. Test
+### 5. Test
 - Full test suite runs on the candidate VPS:
   - All existing functionality still works (regression)
   - New capability functions correctly
@@ -55,12 +64,12 @@ A Docker container cannot test any of these faithfully. Only a full VPS provides
   - System-level integrations work (services, packages, cron)
   - Health check passes
 
-### 5. Decide
+### 6. Decide
 - **Tests pass:** proceed to promotion
 - **Tests fail:** iterate (fix and re-test on same candidate VPS) or abandon
 - Decision is logged regardless of outcome
 
-### 6. Handoff
+### 7. Handoff
 - Outgoing CTO writes a HANDOFF.md for the incoming version:
   - What changed and why (the full reasoning, not just the diff)
   - What was learned during this version's operation
@@ -69,7 +78,7 @@ A Docker container cannot test any of these faithfully. Only a full VPS provides
   - Any open questions or deferred decisions
 - This is the knowledge transfer mechanism. Without it, each new version starts without the context of why things are the way they are.
 
-### 7. Archive
+### 8. Archive
 - Current production CTO is archived:
   - Hetzner VPS snapshot (one-click restore)
   - Git tag: `v{version}-archived-{date}`
@@ -77,13 +86,13 @@ A Docker container cannot test any of these faithfully. Only a full VPS provides
   - HANDOFF.md committed with this version's context
   - Rollback instructions generated
 
-### 8. Promote
+### 9. Promote
 - Candidate VPS becomes the new primary CTO
 - DNS/IP updated if needed (or CTO migrates state to candidate)
 - Old production VPS is destroyed (after confirming candidate is healthy)
 - New CTO takes over all duties
 
-### 9. Report
+### 10. Report
 - User notified via Telegram Bot / Gmail fallback
 - Report includes: what changed, why, test results, rollback instructions
 

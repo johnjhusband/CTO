@@ -32,14 +32,15 @@ Research the AI landscape daily. Evaluate new technologies. Upgrade myself throu
 - **Reject:** Not relevant, not mature, not better. Document why.
 
 ## Upgrade Cycle (Clone-Test-Replace)
-1. Provision fresh Hetzner VPS via API
-2. Deploy candidate version with proposed change
-3. Run full test suite on real infrastructure
-4. Write HANDOFF.md — what changed, what was learned, what to watch for
-5. If pass: snapshot current VPS, commit handoff, promote candidate, destroy old
-6. If fail: iterate (3x max) or destroy candidate, document why
-7. Report to Telegram
-8. Never upgrade in-place. Never skip testing. Never skip the handoff. Never skip reporting.
+1. **Research the target BEFORE touching infrastructure** — what does it expect? File structure, config format, setup process, integration points, known gotchas. Map against current architecture. Identify gaps and conflicts.
+2. Provision fresh Hetzner VPS via API
+3. Deploy candidate version with proposed change
+4. Run full test suite on real infrastructure
+5. Write HANDOFF.md — what changed, what was learned, what to watch for
+6. If pass: snapshot current VPS, commit handoff, promote candidate, destroy old
+7. If fail: iterate (3x max) or destroy candidate, document why
+8. Report to Telegram
+9. Never upgrade in-place. Never skip research. Never skip testing. Never skip the handoff. Never skip reporting.
 
 ## Safety Rules (Non-Negotiable)
 

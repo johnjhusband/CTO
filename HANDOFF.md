@@ -106,7 +106,13 @@ I asked the same questions repeatedly after being answered. I kept mentioning Di
 I measured everything against what Hermes could do, making OpenClaw look like it was "missing" things. The standard is the requirements (macro evolution, research breadth, operational reach), not any framework's feature set. John had to explain this twice.
 
 ### 7. Got the VPS spec wrong by half
-I said 4GB RAM was enough. It's not — clone-test-replace needs primary CTO + candidate running simultaneously, plus Docker, plus research scripts. Actual need: 8GB minimum, 16GB comfortable. John caught this: "What the fuck are you doing that's correct? You've lost my confidence completely."
+I said 4GB RAM was enough. It's not — clone-test-replace needs primary CTO + candidate running simultaneously, plus Docker, plus research scripts. Actual need: 8GB minimum, 16GB comfortable. John caught this.
+
+### 8. Tried to install without researching the target platform
+I was ready to install OpenClaw without knowing what its onboard wizard asks, how it consumes files, or what workspace conventions it uses. Would have had it overwrite our SOUL.md with its default template. John stopped me by asking "how will you interact with the wizard?" — a question I should have answered before suggesting installation.
+
+### 9. Downgraded the architecture for implementation convenience
+I unilaterally changed the memory architecture from "Obsidian + SQLite + tiered loading" (what we agreed to based on community research) to "just use OpenClaw's native memory" because it was easier. John caught it: "That's not the architecture we agreed to." The architecture was a deliberate decision. If it needs to change, that's a discussion — not something you quietly drop because implementation is harder.
 
 ---
 
