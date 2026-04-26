@@ -6,6 +6,6 @@
 - **Communication:** Telegram Bot (primary), Gmail SMTP (fallback)
 - **Knowledge base:** wiki/ directory indexed for Tier 3 search
 - **Decision logs:** logs/decisions/ as JSON per decision-log-format wiki page
-- **Skills:** skills/ directory, lazy-loaded on demand
+- **Skills:** skills/ directory, snapshot-loaded at session start (listed in system prompt)
 - **Version tags:** v{x.y.z} for active, v{x.y.z}-archived-{date} for replaced
 - **Upgrade testing:** Fresh Hetzner VPS via API, never Docker, never in-place

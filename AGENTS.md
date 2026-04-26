@@ -135,5 +135,5 @@ Skipping this check is how you write rules you don't follow and design architect
 - `GUARDRAILS.md` — detailed safety constraints (reference document)
 - `FAILURE.md` — detailed failure protocol (reference document)
 - `wiki/` — knowledge base, Tier 3 searchable via memorySearch.extraPaths
-- `skills/` — lazy-loaded on demand
+- `skills/` — snapshot-loaded at session start, listed in system prompt
 - `logs/decisions/` — decision log JSON files

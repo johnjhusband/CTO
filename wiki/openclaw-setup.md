@@ -1,6 +1,6 @@
 # OpenClaw Installation & Configuration
-**L0:** Install via npm, onboard via CLI (non-interactive mode over SSH), skip bootstrap to keep our files, workspace at /opt/cto, wiki indexed via extraPaths.
-**L1:** `npm install -g openclaw@latest` then `openclaw onboard --non-interactive` with flags for provider, API key, gateway bind/port/auth, daemon install. Skip bootstrap (--skip-bootstrap) to prevent overwriting our SOUL.md/AGENTS.md. Point workspace at /opt/cto. Wiki indexed for semantic search via memorySearch.extraPaths. Skills lazy-loaded from workspace/skills/. OpenClaw auto-loads SOUL.md, AGENTS.md, IDENTITY.md, USER.md, MEMORY.md into system prompt every session.
+**L0:** Install via npm, onboard via CLI (non-interactive or manual config), skip bootstrap to keep our files, workspace at /opt/cto, wiki indexed via extraPaths. MCP config key is `mcp.servers` not `mcpServers`.
+**L1:** `npm install -g openclaw@latest` then either `openclaw onboard` or write `openclaw.json` manually. Skip bootstrap (--skip-bootstrap) to prevent overwriting our files. Point workspace at /opt/cto. Wiki indexed for search via memorySearch.extraPaths. Skills are snapshot-loaded at session start (NOT lazy-loaded). OpenClaw auto-loads SOUL.md, AGENTS.md, IDENTITY.md, USER.md, TOOLS.md every session. MEMORY.md loaded in main private session only.
 **Last updated:** 2026-04-26
 **Source:** Verified research on OpenClaw onboard wizard and workspace mechanics
 
@@ -42,12 +42,12 @@ Provider setup for OpenRouter requires "Custom" provider (OpenAI-compatible endp
 9. **Workspace bootstrap** — SKIP (we have our own files)
 10. **Health check** — verify gateway reachable
 
-## Non-Interactive Onboard with OpenRouter (Verified)
+## Non-Interactive Onboard with OpenRouter
 
-**Known bug ([Issue #17191](https://github.com/openclaw/openclaw/issues/17191)):** `--token-provider openrouter` is ignored when using `--auth-choice apiKey`. Use the pre-remapped auth choice instead:
+**Known bug ([Issue #17191](https://github.com/openclaw/openclaw/issues/17191)):** `--token-provider openrouter` is ignored when using `--auth-choice apiKey`. The issue was closed not_planned (not fixed).
 
+**[unverified] Possible workaround:** Pass the pre-remapped auth choice directly:
 ```bash
-# Step 1: Onboard with workaround for auth bug
 openclaw onboard --non-interactive \
   --install-daemon \
   --auth-choice "openrouter-api-key" \
@@ -57,18 +57,20 @@ openclaw onboard --non-interactive \
   --skip-health \
   --gateway-bind loopback \
   --gateway-auth token
-
-# Step 2: Set model explicitly (onboard bug #33290 may not set it)
-openclaw models set "openrouter/anthropic/claude-sonnet-4-6"
-
-# Step 3: Verify
-openclaw doctor
 ```
+This workaround was NOT recommended in the issue — it's an inference from the source code. Must be tested during installation.
 
-**Alternative: Skip onboard entirely, write config manually:**
-OpenClaw reads `~/.openclaw/openclaw.json`. Write it by hand, set API key via `openclaw models auth paste-token --provider openrouter`, then start gateway with `openclaw gateway run` or install daemon separately.
+**Recommended approach: Write config manually.**
+OpenClaw reads `~/.openclaw/openclaw.json`. This avoids the buggy onboard path entirely:
 
-**Warning:** OpenClaw enforces strict schema validation. Unknown keys cause gateway to refuse to start. Run `openclaw doctor` to validate.
+1. Install OpenClaw: `npm install -g openclaw@latest`
+2. Write `~/.openclaw/openclaw.json` manually (see complete reference below)
+3. Set API key: `openclaw models auth paste-token --provider openrouter`
+4. Set model: `openclaw models set "openrouter/anthropic/claude-sonnet-4"`
+5. Install daemon: handled separately via systemd
+6. Verify: `openclaw doctor`
+
+**Warning:** OpenClaw enforces strict schema validation [verified]. Unknown keys cause gateway to refuse to start. Run `openclaw doctor` to validate.
 
 ## Post-Onboard Verification
 
@@ -147,10 +149,11 @@ Wiki pages are indexed for semantic/hybrid search and retrieved when relevant �
 
 ### How Skills Load
 
-Skills in `workspace/skills/` are lazy-loaded:
-- System prompt lists available skills with file paths
-- Model reads SKILL.md on demand when needed
-- Not loaded into every session (saves tokens)
+Skills in `workspace/skills/` are snapshot-loaded at session start [verified]:
+- OpenClaw snapshots eligible skills when a session starts
+- Injected as compact XML list into the system prompt
+- Reused for subsequent turns in the same session
+- Skills refresh mid-session if watcher is enabled or new node appears
 
 Precedence order:
 1. `<workspace>/skills` (highest — our custom skills)
@@ -181,7 +184,7 @@ SOUL.md, AGENTS.md, GUARDRAILS.md rules are followed because the LLM is asked to
       "enabled": true,
       "botToken": "YOUR_BOT_TOKEN",
       "dmPolicy": "allowlist",
-      "allowFrom": [YOUR_NUMERIC_USER_ID],
+      "allowFrom": ["tg:YOUR_NUMERIC_USER_ID"],
       "textChunkLimit": 4000,
       "chunkMode": "newline",
       "linkPreview": false
@@ -249,7 +252,8 @@ MCP servers go under `mcpServers` in openclaw.json.
 ### Config Syntax (stdio transport)
 ```json
 {
-  "mcpServers": {
+  "mcp": { "servers": {
+
     "server-name": {
       "command": "npx",
       "args": ["-y", "@package/name", "optional-arg"],
@@ -276,7 +280,8 @@ openclaw logs --mcp --server name    # View logs
 
 ```json
 {
-  "mcpServers": {
+  "mcp": { "servers": {
+
     "vault": {
       "command": "npx",
       "args": ["-y", "@bitbonsai/mcpvault@latest", "/opt/cto/wiki"]
@@ -437,7 +442,7 @@ asyncio.run(main())
       "enabled": true,
       "botToken": "...",
       "dmPolicy": "allowlist",
-      "allowFrom": [JOHN_TELEGRAM_ID]
+      "allowFrom": ["tg:JOHN_TELEGRAM_ID"]
     }
   },
   "agents": {
@@ -459,7 +464,8 @@ asyncio.run(main())
       }
     }
   },
-  "mcpServers": {
+  "mcp": { "servers": {
+
     "vault": {
       "command": "npx",
       "args": ["-y", "@bitbonsai/mcpvault@latest", "/opt/cto/wiki"]
