@@ -1,0 +1,12 @@
+node_modules/
+.env
+*.env
+.openclaw/credentials/
+logs/
+versions/*/docker-image.tar
+*.tar
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+raw/
