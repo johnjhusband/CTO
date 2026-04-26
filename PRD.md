@@ -84,15 +84,18 @@ Micro evolution is valuable but secondary. It pales in comparison to the growth 
 
 ### 4.5 Version Archiving
 - Every replaced CTO version archived with:
-  - Full filesystem snapshot (or Docker image)
-  - Git tag
+  - Hetzner VPS snapshot [verified — API tested, EUR 0.0143/GB/month confirmed]
+  - Git tag [verified — git works on VPS]
+  - HANDOFF.md context transfer document
   - Decision log entry explaining what changed
   - Rollback instructions
-- Rollback is a first-class operation — one command to restore any previous version
+- Rollback is a first-class operation — restore from snapshot via Hetzner API [verified — create from snapshot confirmed]
 
 ### 4.6 Communication
-- **Primary:** Telegram Bot (free, no phone needed, zero ban risk, designed for automation)
-- **Fallback:** Gmail SMTP, or any channel CTO determines a human would find acceptable
+- **Primary:** Telegram Bot [verified — token works, bot name "CTO", username @HusbandCTObot]
+  - Free, no phone needed, zero ban risk [verified]
+  - Proactive messaging requires John to message bot first [verified — "chat not found" until first contact]
+- **Fallback:** Gmail SMTP [unverified — not tested], or any channel CTO determines acceptable
 - **Content:** Daily research digest, upgrade decisions, test results, errors/failures
 - **Tone:** Professional, concise, actionable
 
@@ -117,12 +120,11 @@ Micro evolution is valuable but secondary. It pales in comparison to the growth 
 │  │  (Daily)     │    └────────────────────────┘  │
 │  │              │                                 │
 │  │  Decision    │    ┌────────────────────────┐  │
-│  │  Engine      │───▶│   Test Sandbox         │  │
-│  │              │    │  (Docker)              │  │
-│  │  Comms       │    │  - Clone CTO           │  │
-│  │  Module      │    │  - Apply upgrade       │  │
-│  └──────┬───────┘    │  - Run test suite      │  │
-│         │            │  - Promote or discard   │  │
+│  │  Engine      │───▶│   Test Environment     │  │
+│  │              │    │  (Fresh Hetzner VPS)   │  │
+│  │  Comms       │    │  - Deploy candidate    │  │
+│  │  Module      │    │  - Run test suite      │  │
+│  └──────┬───────┘    │  - Promote or destroy  │  │
 │         │            └────────────────────────┘  │
 │         │                                         │
 │         ▼            ┌────────────────────────┐  │
@@ -141,9 +143,9 @@ Micro evolution is valuable but secondary. It pales in comparison to the growth 
 
 ## 6. LLM Strategy
 
-CTO is **not locked to any provider**. It uses whichever LLM is most capable at autonomous agent work at the time, accessed via multi-model routing (OpenRouter or LiteLLM). CTO should evaluate and potentially switch its own LLM backend as part of its macro evolution cycle.
+CTO is **not locked to any provider** [verified — OpenRouter supports 200+ models via single API]. Uses multi-model routing via OpenRouter [verified — API key works, model IDs confirmed]. Model ref format: `openrouter/provider/model` [verified against docs].
 
-Budget-constrained: no open-ended token purchases. Use subscription-based or cheap API models for routine work, escalate to stronger models for complex decisions. CTO must ask John before any new spending.
+Budget-constrained: prepaid credits on OpenRouter [verified — not postpaid]. $1 free credits for new accounts [verified] — insufficient for Claude Sonnet, need to add credits [verified]. Free models available with `:free` suffix [verified]. CTO must ask John before any new spending.
 
 ## 7. Test Plan
 
@@ -196,10 +198,13 @@ Budget-constrained: no open-ended token purchases. Use subscription-based or che
 | Security exposure from system access | VPS is dedicated to CTO; no shared production workloads |
 | YouTube API/access changes | Multiple research sources; fallback to web scraping |
 
-## 11. Open Questions (Updated After Research Phase)
+## 11. Open Questions (Updated After Verification Phase)
 
-1. Hetzner VPS: use existing 116.203.68.119 or provision dedicated CTO instance?
-2. Agent framework: OpenClaw vs Hermes Agent (evaluation in progress)
-3. YouTube: browser-based interaction via skills/MCPs for v1
-4. What does "stable CTO" look like before building CFO? Define graduation criteria.
-5. Telegram Bot for notifications (free, no phone, zero ban risk)
+1. ~~Hetzner VPS~~ — RESOLVED: New dedicated VPS at 178.104.213.9 (cx43) [verified]
+2. ~~Agent framework~~ — RESOLVED: OpenClaw selected [decision logged CTO-DECISION-001]
+3. ~~YouTube~~ — RESOLVED: Browser-based for v1 [decision]
+4. What does "stable CTO" look like before building CFO? Define graduation criteria. [open]
+5. ~~Communication~~ — RESOLVED: Telegram Bot [verified working, decision logged CTO-DECISION-003]
+6. OpenRouter needs more credits for paid models — how much should John add? [open]
+7. memweave search quality is poor (0.14 scores) — alternative needed? [open, verified by testing]
+8. SearXNG vs Brave for web search — SearXNG is free but needs Docker [open]
