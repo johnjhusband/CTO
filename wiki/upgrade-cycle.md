@@ -35,7 +35,13 @@ A Docker container cannot test any of these faithfully. Only a full VPS provides
 - Research engine identifies a new technology, tool, or process
 - Decision engine evaluates relevance and potential value
 
-### 2. Research the Target
+### 2. Validate Architecture Against Community Sentiment
+- Run the full Architecture Validation Process (see [architecture-validation-process.md](architecture-validation-process.md))
+- Start from fresh community evidence, NOT existing documentation
+- Inventory → Categorize → Hypothesize → Validate → Iterate → Compare to current
+- Only proceed to Step 3 after architecture is validated
+
+### 3. Research the Target
 - BEFORE attempting installation or configuration of anything new, research:
   - What does the target platform expect? (file structure, conventions, config format)
   - What does its setup process ask for? (exact wizard steps, required inputs)
@@ -48,19 +54,19 @@ A Docker container cannot test any of these faithfully. Only a full VPS provides
 
 *Origin: memweave was installed without knowing it needs an embedding API key or local embedding model. The research covered capabilities and configuration but not prerequisites.*
 
-### 3. Provision
+### 4. Provision
 - CTO provisions a **new Hetzner VPS** via the Hetzner Cloud API
 - Same specs as production (or configurable for testing different tiers)
 - Fresh Ubuntu install, no prior state
 
-### 4. Deploy Candidate
+### 5. Deploy Candidate
 - CTO deploys the candidate version to the new VPS:
   - Clones the git repo
   - Applies the proposed changes (new packages, new framework, new config, etc.)
   - Installs all dependencies
   - Starts the agent
 
-### 5. Test
+### 6. Test
 - Full test suite runs on the candidate VPS:
   - All existing functionality still works (regression)
   - New capability functions correctly
@@ -69,12 +75,12 @@ A Docker container cannot test any of these faithfully. Only a full VPS provides
   - System-level integrations work (services, packages, cron)
   - Health check passes
 
-### 6. Decide
+### 7. Decide
 - **Tests pass:** proceed to promotion
 - **Tests fail:** iterate (fix and re-test on same candidate VPS) or abandon
 - Decision is logged regardless of outcome
 
-### 7. Handoff
+### 8. Handoff
 - Outgoing CTO writes a HANDOFF.md for the incoming version:
   - What changed and why (the full reasoning, not just the diff)
   - What was learned during this version's operation
@@ -83,7 +89,7 @@ A Docker container cannot test any of these faithfully. Only a full VPS provides
   - Any open questions or deferred decisions
 - This is the knowledge transfer mechanism. Without it, each new version starts without the context of why things are the way they are.
 
-### 8. Archive
+### 9. Archive
 - Current production CTO is archived:
   - Hetzner VPS snapshot (one-click restore)
   - Git tag: `v{version}-archived-{date}`
@@ -91,13 +97,13 @@ A Docker container cannot test any of these faithfully. Only a full VPS provides
   - HANDOFF.md committed with this version's context
   - Rollback instructions generated
 
-### 9. Promote
+### 10. Promote
 - Candidate VPS becomes the new primary CTO
 - DNS/IP updated if needed (or CTO migrates state to candidate)
 - Old production VPS is destroyed (after confirming candidate is healthy)
 - New CTO takes over all duties
 
-### 10. Report
+### 11. Report
 - User notified via Telegram Bot / Gmail fallback
 - Report includes: what changed, why, test results, rollback instructions
 
