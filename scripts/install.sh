@@ -39,6 +39,13 @@ echo ""
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
+# Update system packages
+echo "--- Updating system packages ---"
+sudo apt-get update -qq 2>/dev/null
+sudo apt-get upgrade -y -qq 2>/dev/null || echo "WARN: apt upgrade had issues"
+echo "System updated"
+echo ""
+
 # Verify prerequisites
 echo "--- Checking prerequisites ---"
 node --version || { echo "FAIL: Node.js not found."; exit 1; }
