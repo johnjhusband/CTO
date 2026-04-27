@@ -23,7 +23,7 @@ It is the first employee in a planned AI workforce. Once CTO is stable and self-
 Built on the five-layer model the AI community has converged on:
 
 1. **Brain** — Multi-model LLM via OpenRouter (cheap for routine, escalate for complex)
-2. **Hands** — Tools via MCP (the universal standard, 97M monthly installs)
+2. **Hands** — Tools via MCP (the universal standard, 139M monthly downloads)
 3. **Memory** — Obsidian vault + SQLite coordination + tiered loading (the moat)
 4. **Spine** — OpenClaw framework + A2A protocol for future multi-agent
 5. **Guardrails** — GUARDRAILS.md, FAILURE.md, circuit breakers, budget caps, post-hoc review

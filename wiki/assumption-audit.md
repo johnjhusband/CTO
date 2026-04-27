@@ -75,10 +75,10 @@
 |-----------|--------|----------|
 | Five-layer architecture is community consensus | [verified] | Multiple independent sources in research |
 | Memory is the #1 agent failure cause | [verified] | Gartner, Databricks, multiple sources |
-| MCP has 97M monthly installs | [unverified] | From research, not checked against primary source |
-| A2A has 150+ organizations | [unverified] | From research |
-| Single agent outperforms multi-agent 64% of time | [unverified] | Princeton NLP claim from research |
-| 76% of 847 deployments failed | [unverified] | Medium article, not peer-reviewed |
+| MCP has 97M monthly installs | [wrong — higher: 139M] | npm stats: 139,070,118 downloads in last 30 days for @modelcontextprotocol/sdk |
+| A2A has 150+ organizations | [partially verified — "100+"] | Wikipedia: "more than 100 technology companies." 150+ from press release. |
+| Single agent outperforms multi-agent 64% of time | [unverifiable] | Paper not from Princeton NLP. Found "Single-Agent LLMs Outperform Multi-Agent" by Tran & Kiela but 64% number not confirmed. May be fabricated. |
+| 76% of 847 deployments failed | [unverified] | Medium article by Neural Minimalist, not peer-reviewed. Treat as one person's analysis. |
 | Error compounds: 85% per-step = 20% for 10 steps | [verified] | Math: 0.85^10 = 0.197 |
 | Obsidian can't run headless | [verified] | Research confirmed, requires GUI/Electron |
 | Docker can't test system-level changes | [verified] | Conceptually sound — containers share host kernel |

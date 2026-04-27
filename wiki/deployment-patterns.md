@@ -35,7 +35,7 @@ Hetzner at ~$5-7/mo is the most-cited value pick. 2 vCPU / 4 GB RAM handles exte
 
 **Consensus: Level 2-3 is the sweet spot. Level 4 is painful for production.**
 
-Princeton NLP: single agent matched or outperformed multi-agent on 64% of benchmarked tasks.
+Research suggests single agents can match multi-agent on many tasks [unverifiable — "Princeton NLP 64%" claim could not be found on arxiv. A related paper by Tran & Kiela exists but the specific 64% number is unconfirmed. The principle (don't over-architect) is widely supported regardless of exact percentage].
 
 ## Critical Failure Modes
 

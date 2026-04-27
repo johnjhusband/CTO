@@ -1,6 +1,6 @@
 # Memory Architecture
 **L0:** Obsidian vault + SQLite coordination + tiered loading (L0/L1/L2). Memory is the moat — models are swappable, knowledge compounds.
-**L1:** Three-tier memory (hot/warm/cold) following community consensus. Obsidian vault for human-readable knowledge with wikilinks and graph. SQLite underneath for concurrent access and structured queries. Tiered context loading per OpenViking pattern: L0 summaries for discovery, L1 overviews for planning, L2 full content on demand (83% token reduction). SOUL.md for persistent identity. Graph memory (Mem0) as future enhancement. Leading frameworks: Mem0 (26% accuracy gain), Zep (temporal graph), Letta (OS-inspired), OpenViking (tiered loading, 15K stars).
+**L1:** Three-tier memory (hot/warm/cold) following community consensus. Obsidian vault for human-readable knowledge with wikilinks and graph. SQLite underneath for concurrent access and structured queries. Tiered context loading per OpenViking pattern: L0 summaries for discovery, L1 overviews for planning, L2 full content on demand (83% token reduction). SOUL.md for persistent identity. Graph memory (Mem0) as future enhancement. Leading frameworks: Mem0 (26% accuracy gain), Zep (temporal graph), Letta (OS-inspired), OpenViking (tiered loading, 23K stars [verified]).
 **Last updated:** 2026-04-26
 **Verification:** Obsidian headless limitation verified. MCPVault verified working. memweave verified installed but search quality poor. OpenViking and Mem0 claims from research, not independently verified.
 **Source:** Live web research (April 2026), second research round
@@ -40,11 +40,11 @@ Trend is toward **hybrid vector + graph** approaches.
 
 | Framework | Approach | Key Strength |
 |-----------|----------|-------------|
-| **Mem0** | Hybrid Postgres storage | 26% accuracy gains over plain vector; widely adopted |
+| **Mem0** | Hybrid Postgres storage | accuracy improvements reported [specific "26%" claim unverified — Mem0 README shows different numbers]; widely adopted |
 | **Zep** | Temporal Knowledge Graph | Relational accuracy, evolving facts and entity relationships |
 | **Letta** | OS-inspired virtual context | Tiered memory mimicking OS hierarchy; agents control own memory |
 | **LinkedIn CMA** | Shared memory infrastructure | Stateful context across application agents |
-| **OpenViking** (ByteDance) | Context Database with tiered loading | 49% improvement, 83% token reduction, 15K+ GitHub stars |
+| **OpenViking** (ByteDance) | Context Database with tiered loading | 49% improvement, 83% token reduction, 23K GitHub stars [verified] |
 
 ## OpenViking — The Leapfrog Option
 

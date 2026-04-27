@@ -59,7 +59,7 @@ I am Claude Code, running locally on John's Ubuntu machine. I conducted two roun
 **What the second research round revealed:**
 - Flat markdown is already considered outdated for agent memory
 - Community converged on graph + vector hybrid with tiered loading
-- OpenViking (ByteDance, 15K stars) showed 49% improvement and 83% token reduction with tiered context loading (L0/L1/L2)
+- OpenViking (ByteDance, 23K stars [verified]) showed 49% improvement and 83% token reduction with tiered context loading (L0/L1/L2)
 - Obsidian adds `[[wikilinks]]`, graph view, CLI (60x faster than grep), official Agent Skills
 - But Obsidian alone can't handle concurrent writes (silent corruption) or structured queries
 - Emerging consensus: markdown for human-readable storage + SQLite for search/coordination

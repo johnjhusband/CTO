@@ -1,6 +1,6 @@
 # CTO Architecture
 **L0:** Five-layer architecture (Brain/Hands/Memory/Spine/Guardrails) on OpenClaw with Obsidian-compatible vault + SQLite memory, MCP tools, A2A comms, VPS-based upgrade testing.
-**L1:** CTO runs on a Hetzner VPS [verified — cx43 at 178.104.213.9] using OpenClaw [verified — npm package exists v2026.4.24, not yet installed]. Architecture follows community consensus [verified — multiple independent sources]: multi-model LLM via OpenRouter [verified — API works] (Layer 1), tools via MCP standard [verified — 97M installs claim from research, not independently confirmed] (Layer 2), Obsidian-compatible vault + SQLite + tiered loading for memory (Layer 3) [partially verified — MCPVault works, memweave search quality poor], OpenClaw orchestration [verified — cron, heartbeat, gateway confirmed against docs] + A2A protocol [unverified — not in OpenClaw natively] (Layer 4), GUARDRAILS.md + FAILURE.md + circuit breakers for safety (Layer 5) [design — not implemented].
+**L1:** CTO runs on a Hetzner VPS [verified — cx43 at 178.104.213.9] using OpenClaw [verified — npm package exists v2026.4.24, not yet installed]. Architecture follows community consensus [verified — multiple independent sources]: multi-model LLM via OpenRouter [verified — API works] (Layer 1), tools via MCP standard [verified — 139M monthly downloads verified via npm] (Layer 2), Obsidian-compatible vault + SQLite + tiered loading for memory (Layer 3) [partially verified — MCPVault works, memweave search quality poor], OpenClaw orchestration [verified — cron, heartbeat, gateway confirmed against docs] + A2A protocol [unverified — not in OpenClaw natively] (Layer 4), GUARDRAILS.md + FAILURE.md + circuit breakers for safety (Layer 5) [design — not implemented].
 **Last updated:** 2026-04-26
 **Source:** Second research round (8 agents, April 2026) — community consensus patterns. Verification against official docs completed.
 
@@ -28,7 +28,7 @@
 - **Obsidian-compatible markdown vault** with `[[wikilinks]]` [verified — MCPVault tested, wikilinks parseable]
 - Accessed via filesystem MCP server on VPS, Obsidian app on desktop for John [verified — Obsidian can't run headless]
 - **SQLite coordination layer** (memweave) [verified installed, search quality poor at 0.14 scores — may need alternative]
-- **Tiered loading** (L0/L1/L2 per OpenViking pattern) [verified — OpenViking exists 15K stars. Our L0/L1 headers exist. OpenClaw doesn't natively understand the convention — must be taught via AGENTS.md]
+- **Tiered loading** (L0/L1/L2 per OpenViking pattern) [verified — OpenViking exists 23K stars [verified via GitHub API]. Our L0/L1 headers exist. OpenClaw doesn't natively understand the convention — must be taught via AGENTS.md]
 - **SOUL.md** for persistent agent identity [verified — OpenClaw auto-loads it first every session]
 - See [memory-architecture.md](memory-architecture.md) for full details
 
