@@ -178,14 +178,27 @@ OCEOF
 echo "openclaw.json written to $OPENCLAW_DIR/"
 echo ""
 
-# Set OpenRouter API key
+# Set OpenRouter API key via auth profiles
 echo "--- Configuring OpenRouter ---"
 if [ -n "${OPENROUTER_API_KEY:-}" ]; then
-    export NVM_DIR="$HOME/.nvm"
-    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-    echo "$OPENROUTER_API_KEY" | openclaw models auth paste-token --provider openrouter 2>/dev/null && echo "OpenRouter key configured" || echo "WARN: Could not configure OpenRouter key via CLI — may need manual setup"
+    # Write directly to auth profiles (avoids interactive paste-token prompt)
+    AUTH_DIR="$OPENCLAW_DIR/auth-profiles"
+    mkdir -p "$AUTH_DIR"
+    python3 -c "
+import json, os
+auth_file = os.path.join('$AUTH_DIR', 'openrouter.json')
+auth = {'provider': 'openrouter', 'method': 'api-key', 'token': '$OPENROUTER_API_KEY'}
+with open(auth_file, 'w') as f:
+    json.dump(auth, f)
+os.chmod(auth_file, 0o600)
+print('OpenRouter key written to auth profile')
+"
+    # Also set as env var in .openclaw/.env for the gateway
+    echo "OPENROUTER_API_KEY=${OPENROUTER_API_KEY}" >> "$OPENCLAW_DIR/.env"
+    chmod 600 "$OPENCLAW_DIR/.env"
+    echo "OpenRouter key configured"
 else
-    echo "WARN: OPENROUTER_API_KEY not set in .env"
+    echo "WARN: OPENROUTER_API_KEY not set in .env — run: openclaw models auth paste-token --provider openrouter"
 fi
 echo ""
 
