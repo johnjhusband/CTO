@@ -5,6 +5,14 @@
 **Source:** Verified against official OpenClaw docs and hands-on testing. Full verification status in wiki/assumption-audit.md.
 **Verification note:** All config keys, file auto-loading behavior, and onboard flags verified against docs.openclaw.ai. Package names verified on npm/PyPI. API keys tested. Onboard non-interactive workaround [verified in source code — `openrouter-api-key` is valid choiceId in OpenRouter plugin]. Not tested end-to-end. JSON configs in this file use the correct `mcp.servers` nesting [verified].
 
+## Prerequisites (Before Installation)
+
+1. **OpenRouter account with credits** — create at openrouter.ai, add minimum $5 credits. The $1 free credit is NOT enough for most models. Without credits, the bot will connect but fail to respond. [verified — installation failed silently without credits]
+2. **Telegram bot token** — create via @BotFather on Telegram [verified]
+3. **Hetzner API token** — create at console.hetzner.cloud [verified]
+4. **Node.js 22+** on VPS [verified]
+5. **Dedicated non-root user** on VPS [verified]
+
 ## Installation
 
 ```bash
