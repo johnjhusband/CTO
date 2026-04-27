@@ -94,6 +94,12 @@ npm list -g @bitbonsai/mcpvault &> /dev/null && echo "MCPVault already installed
 }
 echo ""
 
+# Install Python venv (required for mcp-server-fetch)
+echo "--- Installing Python dependencies ---"
+sudo apt-get update -qq 2>/dev/null
+sudo apt-get install -y -qq python3.12-venv 2>/dev/null || echo "WARN: Could not install python3.12-venv"
+echo ""
+
 # Install mcp-server-fetch (Python)
 echo "--- Installing mcp-server-fetch ---"
 if python3 -c "import mcp_server_fetch" 2>/dev/null; then
@@ -119,6 +125,7 @@ cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF
     "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"
   },
   "gateway": {
+    "mode": "local",
     "bind": "loopback",
     "auth": { "mode": "token" },
     "port": 18789
@@ -225,6 +232,7 @@ cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF2
     "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"
   },
   "gateway": {
+    "mode": "local",
     "bind": "loopback",
     "auth": { "mode": "token" },
     "port": 18789
