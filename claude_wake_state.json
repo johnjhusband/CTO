@@ -1,46 +1,18 @@
 {
   "project": "CTO v1",
   "date": "2026-04-26",
-  "session_summary": "Verification and tagging phase. All API keys verified working. All packages verified on npm/PyPI. OpenClaw behavior verified against official docs (6 wrong claims found and corrected). Started tagging every record as [verified]/[unverified]. PRD done. Remaining documents need tagging.",
+  "session_summary": "Architecture validation phase. All factual claims verified (33 correct, 16 wrong, 3 unverifiable — 33% error rate). Now running architecture SENTIMENT validation — 4 agents checking whether community agrees with our architectural choices, not just whether numbers are right.",
 
-  "critical_next_task": "Continue tagging [verified]/[unverified] on ALL remaining documents: beads.md, README.md, SOUL.md, AGENTS.md, HANDOFF.md, TOOLS.md, MEMORY.md, HEARTBEAT.md, IDENTITY.md, USER.md, GUARDRAILS.md, FAILURE.md, all wiki/*.md, all skills. PRD is done. Then install OpenClaw.",
+  "critical_state": "4 architecture validation agents running. Results will determine if architecture needs revision before installation. DO NOT INSTALL until validation results are reviewed with John.",
 
-  "key_corrections_this_session": [
-    "MCP config key is mcp.servers not mcpServers",
-    "Skills are snapshot-loaded at session start, NOT lazy-loaded",
-    "Telegram allowFrom uses 'tg:ID' format, not bare integer",
-    "Onboard --auth-choice 'openrouter-api-key' workaround was never recommended (issue closed not_planned) — use manual config",
-    "'Tier 3' label is fabricated — OpenClaw doesn't use this term",
-    "memweave has NO FTS-only mode — hybrid search requires embeddings",
-    "memweave search quality is poor (0.14 scores) — may need alternative",
-    "SearXNG is official OpenClaw web search provider — Brave may not be needed",
-    "VPS is cx43 not cx33",
-    "Node.js was only under root — had to install nvm for cto user",
-    "Hetzner SSH key must be uploaded via API before server creation"
-  ],
+  "architecture_validation_process": "Documented in wiki/architecture-validation-process.md. 52 questions in wiki/architecture-validation-questions.md. Process: fresh inventory → categorize → hypothesize → validate → iterate → compare → only then build.",
 
-  "api_keys_status": {
-    "OpenRouter": "verified working, needs more credits for paid models",
-    "Telegram": "verified working, John must message @HusbandCTObot first",
-    "Hetzner": "verified working, SSH key uploaded (id=111410859), server create/delete tested",
-    "OpenAI": "verified working",
-    "Brave": "not obtained — may not be needed (SearXNG alternative)",
-    "GitHub PAT": "not obtained — optional"
-  },
+  "key_insight_this_session": "Verifying facts (star counts, package names) is not the same as validating architecture (is this the right design?). 33% of factual claims were wrong. The architectural assumptions haven't been challenged yet.",
 
-  "vps_state": {
-    "ip": "178.104.213.9",
-    "type": "cx43",
-    "user": "cto (non-root, nvm+node22)",
-    "repo": "/opt/cto (behind — needs git pull)",
-    "openclaw": "NOT INSTALLED"
-  },
-
-  "assumption_audit": "wiki/assumption-audit.md has full results. Key reference for what's verified vs not.",
-
-  "open_decisions": [
-    "How much OpenRouter credits to add",
-    "memweave or alternative for SQLite coordination (poor search quality)",
-    "SearXNG (free, needs Docker) vs Brave ($5/mo, simpler) for web search"
+  "agents_running": [
+    "Fresh community inventory — unbiased sentiment about autonomous AI April 2026",
+    "OpenClaw validation — criticisms, problems, what people switch to",
+    "Memory architecture validation — is Obsidian+SQLite+tiered loading what production uses?",
+    "Component validation — MCP, OpenRouter, Telegram, VPS testing, SearXNG, autonomy, self-improvement"
   ]
 }
