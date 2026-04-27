@@ -1,8 +1,35 @@
 #!/bin/bash
 # CTO v1 Installation Script
-# Installs OpenClaw + engram + MCPVault on Ubuntu 24.04 VPS
-# Prerequisites: Node.js 22+ via nvm, dedicated 'cto' user
+# Installs OpenClaw + engram + MCP servers on Ubuntu 24.04 VPS
+#
+# Prerequisites (must be done BEFORE running this script):
+#   1. OpenRouter account with $5+ credits (openrouter.ai)
+#   2. Telegram bot created via @BotFather (token ready)
+#   3. Hetzner Cloud API token (console.hetzner.cloud)
+#   4. .env file at /opt/cto/.env with:
+#      OPENROUTER_API_KEY=sk-or-...
+#      TELEGRAM_BOT_TOKEN=...
+#      TELEGRAM_USER_ID=...
+#      HETZNER_API_TOKEN=...
+#      OPENAI_API_KEY=... (optional, for embeddings)
+#   5. Dedicated non-root user (e.g., 'cto')
+#   6. Node.js 22+ via nvm
+#   7. Git repo cloned to /opt/cto
+#
 # Run as: cto user (non-root)
+# Usage: bash /opt/cto/scripts/install.sh
+#
+# Learned from actual installation 2026-04-27:
+#   - Bonjour plugin crashes on headless VPS (disable it)
+#   - skills.autoInstall is not a valid config key (don't use it)
+#   - auth-profiles.json uses "key" not "token" (breaking change 2026.2.19)
+#   - auth-profiles.json needs "profiles" wrapper object and "id" field
+#   - auth-profiles.json goes in ~/.openclaw/agents/main/agent/ (per-agent path)
+#   - IPv6 causes Telegram connection delays (disable on VPS)
+#   - OpenRouter model IDs must be exact (google/gemini-2.0-flash-001 not gemini-2.0-flash)
+#   - OPENROUTER_API_KEY must also be in openclaw.json env section
+#   - systemd lingering required for gateway to survive logout
+
 set -euo pipefail
 
 echo "=== CTO v1 Installation Script ==="
@@ -14,9 +41,19 @@ export NVM_DIR="$HOME/.nvm"
 
 # Verify prerequisites
 echo "--- Checking prerequisites ---"
-node --version || { echo "FAIL: Node.js not found. Install nvm + Node 22 first."; exit 1; }
+node --version || { echo "FAIL: Node.js not found."; exit 1; }
 npm --version || { echo "FAIL: npm not found."; exit 1; }
 python3 --version || { echo "FAIL: Python3 not found."; exit 1; }
+[ -f /opt/cto/.env ] || { echo "FAIL: /opt/cto/.env not found."; exit 1; }
+
+# Load env vars
+set -a
+source /opt/cto/.env
+set +a
+
+[ -n "${OPENROUTER_API_KEY:-}" ] || { echo "FAIL: OPENROUTER_API_KEY not set in .env"; exit 1; }
+[ -n "${TELEGRAM_BOT_TOKEN:-}" ] || { echo "FAIL: TELEGRAM_BOT_TOKEN not set in .env"; exit 1; }
+[ -n "${TELEGRAM_USER_ID:-}" ] || { echo "FAIL: TELEGRAM_USER_ID not set in .env"; exit 1; }
 echo "Prerequisites OK"
 echo ""
 
@@ -36,23 +73,16 @@ if command -v engram &> /dev/null; then
     echo "engram already installed: $(engram version)"
 else
     ENGRAM_VERSION=$(curl -sI https://github.com/Gentleman-Programming/engram/releases/latest | grep -i '^location:' | grep -oP 'v[\d.]+' | head -1)
-    echo "Latest engram version: $ENGRAM_VERSION"
     ENGRAM_URL="https://github.com/Gentleman-Programming/engram/releases/download/${ENGRAM_VERSION}/engram_${ENGRAM_VERSION#v}_linux_amd64.tar.gz"
-    echo "Downloading from: $ENGRAM_URL"
+    echo "Downloading engram ${ENGRAM_VERSION} from: ${ENGRAM_URL}"
     curl -L -o /tmp/engram.tar.gz "$ENGRAM_URL"
     tar -xzf /tmp/engram.tar.gz -C /tmp/
-    # Install to user's local bin if no sudo, or /usr/local/bin with sudo
-    if [ -w /usr/local/bin ]; then
-        mv /tmp/engram /usr/local/bin/
-    else
-        mkdir -p "$HOME/.local/bin"
-        mv /tmp/engram "$HOME/.local/bin/"
-        export PATH="$HOME/.local/bin:$PATH"
-        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
-    fi
+    mkdir -p "$HOME/.local/bin"
+    mv /tmp/engram "$HOME/.local/bin/"
+    export PATH="$HOME/.local/bin:$PATH"
+    grep -q '.local/bin' "$HOME/.bashrc" || echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
     rm -f /tmp/engram.tar.gz
-    engram version
-    echo "engram installed"
+    echo "engram installed: $(engram version)"
 fi
 echo ""
 
@@ -64,76 +94,46 @@ npm list -g @bitbonsai/mcpvault &> /dev/null && echo "MCPVault already installed
 }
 echo ""
 
-# Install fetch MCP server (Python, via pip)
+# Install mcp-server-fetch (Python)
 echo "--- Installing mcp-server-fetch ---"
-if pip3 show mcp-server-fetch &> /dev/null 2>&1; then
+if python3 -c "import mcp_server_fetch" 2>/dev/null; then
     echo "mcp-server-fetch already installed"
 else
     pip3 install --user mcp-server-fetch 2>/dev/null || {
         python3 -m venv "$HOME/.mcp-venv"
         "$HOME/.mcp-venv/bin/pip" install mcp-server-fetch
-        echo "mcp-server-fetch installed in venv at ~/.mcp-venv"
     }
+    echo "mcp-server-fetch installed"
 fi
-echo ""
-
-# Install GitHub MCP server (Go binary)
-echo "--- Installing github-mcp-server ---"
-if command -v github-mcp-server &> /dev/null; then
-    echo "github-mcp-server already installed"
-else
-    GH_MCP_URL="https://github.com/github/github-mcp-server/releases/latest/download/github-mcp-server_linux_amd64.tar.gz"
-    curl -L -o /tmp/gh-mcp.tar.gz "$GH_MCP_URL" 2>/dev/null
-    if [ -s /tmp/gh-mcp.tar.gz ] && file /tmp/gh-mcp.tar.gz | grep -q gzip; then
-        tar -xzf /tmp/gh-mcp.tar.gz -C /tmp/
-        if [ -w /usr/local/bin ]; then
-            mv /tmp/github-mcp-server /usr/local/bin/
-        else
-            mv /tmp/github-mcp-server "$HOME/.local/bin/"
-        fi
-        rm -f /tmp/gh-mcp.tar.gz
-        echo "github-mcp-server installed"
-    else
-        echo "WARN: github-mcp-server download failed — install manually later"
-        rm -f /tmp/gh-mcp.tar.gz
-    fi
-fi
-echo ""
-
-# Pull latest repo
-echo "--- Syncing repo ---"
-cd /opt/cto
-git pull 2>/dev/null || echo "WARN: git pull failed — may need auth"
 echo ""
 
 # Write openclaw.json
-echo "--- Configuring OpenClaw ---"
+# Sources: OpenClaw docs, OpenRouter integration guide, GitHub issues #17191, #21448
+echo "--- Writing openclaw.json ---"
 OPENCLAW_DIR="$HOME/.openclaw"
 mkdir -p "$OPENCLAW_DIR"
 
-# Load env vars from .env
-if [ -f /opt/cto/.env ]; then
-    set -a
-    source /opt/cto/.env
-    set +a
-fi
-
 cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF
 {
+  "env": {
+    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"
+  },
   "gateway": {
     "bind": "loopback",
     "auth": { "mode": "token" },
     "port": 18789
   },
-  "skills": {
-    "autoInstall": false
+  "plugins": {
+    "entries": {
+      "bonjour": { "enabled": false }
+    }
   },
   "channels": {
     "telegram": {
       "enabled": true,
-      "botToken": "${TELEGRAM_BOT_TOKEN:-}",
+      "botToken": "${TELEGRAM_BOT_TOKEN}",
       "dmPolicy": "allowlist",
-      "allowFrom": ["tg:${TELEGRAM_USER_ID:-}"]
+      "allowFrom": ["tg:${TELEGRAM_USER_ID}"]
     }
   },
   "agents": {
@@ -142,7 +142,7 @@ cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF
       "skipBootstrap": true,
       "model": {
         "primary": "openrouter/anthropic/claude-sonnet-4",
-        "fallbacks": ["openrouter/google/gemini-2.0-flash"]
+        "fallbacks": ["openrouter/google/gemini-2.5-flash"]
       },
       "thinkingDefault": "adaptive",
       "heartbeat": {
@@ -174,70 +174,131 @@ cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF
   }
 }
 OCEOF
-
-echo "openclaw.json written to $OPENCLAW_DIR/"
-echo ""
-
-# Set OpenRouter API key via auth profiles
-echo "--- Configuring OpenRouter ---"
-if [ -n "${OPENROUTER_API_KEY:-}" ]; then
-    # Write directly to auth profiles (avoids interactive paste-token prompt)
-    AUTH_DIR="$OPENCLAW_DIR/auth-profiles"
-    mkdir -p "$AUTH_DIR"
-    python3 -c "
-import json, os
-auth_file = os.path.join('$AUTH_DIR', 'openrouter.json')
-auth = {'provider': 'openrouter', 'method': 'api-key', 'token': '$OPENROUTER_API_KEY'}
-with open(auth_file, 'w') as f:
-    json.dump(auth, f)
-os.chmod(auth_file, 0o600)
-print('OpenRouter key written to auth profile')
-"
-    # Also set as env var in .openclaw/.env for the gateway
-    echo "OPENROUTER_API_KEY=${OPENROUTER_API_KEY}" >> "$OPENCLAW_DIR/.env"
-    chmod 600 "$OPENCLAW_DIR/.env"
-    echo "OpenRouter key configured"
-else
-    echo "WARN: OPENROUTER_API_KEY not set in .env — run: openclaw models auth paste-token --provider openrouter"
-fi
-echo ""
-
-# Disable Bonjour plugin (crashes on headless VPS — known issue #62652)
-echo "--- Disabling Bonjour plugin ---"
-python3 -c "
-import json
-with open('$OPENCLAW_DIR/openclaw.json') as f:
-    d = json.load(f)
-if 'plugins' not in d:
-    d['plugins'] = {}
-if 'entries' not in d['plugins']:
-    d['plugins']['entries'] = {}
-d['plugins']['entries']['bonjour'] = {'enabled': False}
-# Remove invalid skills.autoInstall key if present
-if 'skills' in d and 'autoInstall' in d.get('skills', {}):
-    del d['skills']['autoInstall']
-    if not d['skills']:
-        del d['skills']
-with open('$OPENCLAW_DIR/openclaw.json', 'w') as f:
-    json.dump(d, f, indent=2)
-print('Bonjour disabled, config cleaned')
-"
-echo ""
-
-# Security hardening
-echo "--- Security hardening ---"
 chmod 600 "$OPENCLAW_DIR/openclaw.json"
-echo "Config permissions set to 600"
+echo "openclaw.json written"
 echo ""
 
-# Enable systemd lingering (gateway survives logout)
-echo "--- Enabling systemd lingering ---"
-sudo loginctl enable-linger $(whoami) 2>/dev/null && echo "Lingering enabled" || echo "WARN: Could not enable lingering — run 'sudo loginctl enable-linger cto' as root"
+# Write auth-profiles.json (per-agent path)
+# Source: GitHub issue #21448 — uses "key" not "token" since 2026.2.19
+echo "--- Writing auth profiles ---"
+AGENT_DIR="$OPENCLAW_DIR/agents/main/agent"
+mkdir -p "$AGENT_DIR"
+cat > "$AGENT_DIR/auth-profiles.json" << AUTHEOF
+{
+  "profiles": [
+    {
+      "id": "openrouter-default",
+      "type": "api-key",
+      "provider": "openrouter",
+      "key": "${OPENROUTER_API_KEY}"
+    }
+  ]
+}
+AUTHEOF
+chmod 600 "$AGENT_DIR/auth-profiles.json"
+# Also copy to root openclaw dir
+cp "$AGENT_DIR/auth-profiles.json" "$OPENCLAW_DIR/auth-profiles.json"
+chmod 600 "$OPENCLAW_DIR/auth-profiles.json"
+echo "Auth profiles written (key field, profiles wrapper, per-agent path)"
 echo ""
 
 # Install daemon
 echo "--- Installing OpenClaw daemon ---"
-openclaw onboard --non-interactive --install-daemon --skip-bootstrap --skip-health --workspace /opt/cto --accept-risk 2>&1 | tail -5
+openclaw onboard --non-interactive \
+    --install-daemon \
+    --skip-bootstrap \
+    --skip-health \
+    --workspace /opt/cto \
+    --accept-risk 2>&1 | tail -5 || echo "WARN: onboard had issues — check openclaw doctor"
+echo ""
+
+# Enable systemd lingering
+echo "--- Enabling systemd lingering ---"
+sudo loginctl enable-linger "$(whoami)" 2>/dev/null && echo "Lingering enabled" || echo "WARN: Run 'sudo loginctl enable-linger cto' as root"
+echo ""
+
+# Re-write openclaw.json (onboard may have overwritten it)
+echo "--- Re-applying config (onboard may have overwritten) ---"
+cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF2
+{
+  "env": {
+    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"
+  },
+  "gateway": {
+    "bind": "loopback",
+    "auth": { "mode": "token" },
+    "port": 18789
+  },
+  "plugins": {
+    "entries": {
+      "bonjour": { "enabled": false }
+    }
+  },
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "botToken": "${TELEGRAM_BOT_TOKEN}",
+      "dmPolicy": "allowlist",
+      "allowFrom": ["tg:${TELEGRAM_USER_ID}"]
+    }
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "/opt/cto",
+      "skipBootstrap": true,
+      "model": {
+        "primary": "openrouter/anthropic/claude-sonnet-4",
+        "fallbacks": ["openrouter/google/gemini-2.5-flash"]
+      },
+      "thinkingDefault": "adaptive",
+      "heartbeat": {
+        "every": "30m",
+        "model": "openrouter/google/gemini-2.5-flash",
+        "lightContext": true,
+        "isolatedSession": true
+      },
+      "memorySearch": {
+        "extraPaths": ["/opt/cto/wiki", "/opt/cto/logs/decisions"]
+      }
+    }
+  },
+  "mcp": {
+    "servers": {
+      "vault": {
+        "command": "npx",
+        "args": ["-y", "@bitbonsai/mcpvault@latest", "/opt/cto/wiki"]
+      },
+      "filesystem": {
+        "command": "npx",
+        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/opt/cto"]
+      },
+      "engram": {
+        "command": "engram",
+        "args": ["mcp"]
+      }
+    }
+  }
+}
+OCEOF2
+chmod 600 "$OPENCLAW_DIR/openclaw.json"
+echo "Config re-applied"
+echo ""
+
+# Generate gateway token (preserve if onboard created one)
+echo "--- Gateway token ---"
+if grep -q '"token"' "$OPENCLAW_DIR/openclaw.json" 2>/dev/null; then
+    echo "Gateway token exists (from onboard)"
+else
+    openclaw doctor --generate-gateway-token 2>/dev/null || echo "WARN: Run openclaw doctor to generate gateway token"
+fi
+echo ""
+
+# Start gateway
+echo "--- Starting gateway ---"
+systemctl --user daemon-reload
+systemctl --user restart openclaw-gateway
+sleep 15
+systemctl --user status openclaw-gateway --no-pager | head -5
 echo ""
 
 # Verify
@@ -250,9 +311,10 @@ echo ""
 
 echo "=== Installation complete ==="
 echo ""
-echo "Next steps:"
-echo "1. Run 'openclaw doctor' to validate config"
-echo "2. Run 'openclaw gateway run' to test (foreground)"
-echo "3. Install daemon: 'openclaw onboard --install-daemon --skip-bootstrap'"
-echo "4. John: message @HusbandCTObot on Telegram to enable proactive messaging"
-echo "5. Add OpenRouter credits at openrouter.ai/settings/credits"
+echo "IMPORTANT: John must message @HusbandCTObot on Telegram first"
+echo "to enable proactive messaging (known Telegram Bot API requirement)."
+echo ""
+echo "Post-install checks:"
+echo "  openclaw doctor"
+echo "  openclaw gateway status"
+echo "  systemctl --user status openclaw-gateway"
