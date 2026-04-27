@@ -189,15 +189,42 @@ else
 fi
 echo ""
 
+# Disable Bonjour plugin (crashes on headless VPS — known issue #62652)
+echo "--- Disabling Bonjour plugin ---"
+python3 -c "
+import json
+with open('$OPENCLAW_DIR/openclaw.json') as f:
+    d = json.load(f)
+if 'plugins' not in d:
+    d['plugins'] = {}
+if 'entries' not in d['plugins']:
+    d['plugins']['entries'] = {}
+d['plugins']['entries']['bonjour'] = {'enabled': False}
+# Remove invalid skills.autoInstall key if present
+if 'skills' in d and 'autoInstall' in d.get('skills', {}):
+    del d['skills']['autoInstall']
+    if not d['skills']:
+        del d['skills']
+with open('$OPENCLAW_DIR/openclaw.json', 'w') as f:
+    json.dump(d, f, indent=2)
+print('Bonjour disabled, config cleaned')
+"
+echo ""
+
 # Security hardening
 echo "--- Security hardening ---"
 chmod 600 "$OPENCLAW_DIR/openclaw.json"
 echo "Config permissions set to 600"
 echo ""
 
-# Generate gateway token
-echo "--- Generating gateway token ---"
-openclaw doctor --generate-gateway-token 2>/dev/null || echo "WARN: Could not generate gateway token — run openclaw doctor manually"
+# Enable systemd lingering (gateway survives logout)
+echo "--- Enabling systemd lingering ---"
+sudo loginctl enable-linger $(whoami) 2>/dev/null && echo "Lingering enabled" || echo "WARN: Could not enable lingering — run 'sudo loginctl enable-linger cto' as root"
+echo ""
+
+# Install daemon
+echo "--- Installing OpenClaw daemon ---"
+openclaw onboard --non-interactive --install-daemon --skip-bootstrap --skip-health --workspace /opt/cto --accept-risk 2>&1 | tail -5
 echo ""
 
 # Verify
