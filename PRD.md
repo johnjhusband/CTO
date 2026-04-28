@@ -200,7 +200,7 @@ Budget-constrained: prepaid credits on OpenRouter [verified — not postpaid]. $
 
 ## 11. Open Questions (Updated After Verification Phase)
 
-1. ~~Hetzner VPS~~ — RESOLVED: New dedicated VPS at 178.104.213.9 (cx43) [verified]
+1. ~~Hetzner VPS~~ — RESOLVED: New dedicated VPS at 116.203.68.119 (cx43) [verified]
 2. ~~Agent framework~~ — RESOLVED: OpenClaw selected [decision logged CTO-DECISION-001]
 3. ~~YouTube~~ — RESOLVED: Browser-based for v1 [decision]
 4. What does "stable CTO" look like before building CFO? Define graduation criteria. [open]

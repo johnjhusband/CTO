@@ -9,7 +9,7 @@
 ### CTO-008: VPS Provisioning (P0, Feature) — PARTIALLY DONE
 **Description:** Set up VPS for CTO deployment
 **Status:** Partially complete
-- [x] VPS accessible via SSH [verified — 178.104.213.9, cx43, cto user]
+- [x] VPS accessible via SSH [verified — 116.203.68.119, cx43, cto user]
 - [x] Node.js 22 installed [verified — nvm for cto user]
 - [x] Python 3.12 + pip + venv [verified on VPS]
 - [x] Dedicated non-root user (cto) [verified]

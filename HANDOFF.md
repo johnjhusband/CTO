@@ -145,7 +145,7 @@ I wrote "Research the Target before touching infrastructure" as Step 2 in the up
 - Ubuntu 24.04 (8 vCPU, 16 GB RAM, 150 GB disk)
 - Node.js 22.22.2 via nvm
 - Nothing else — Docker was installed then removed at John's direction
-- SSH access via `cto-deploy` key (178.104.213.9)
+- SSH access via `cto-deploy` key (116.203.68.119)
 
 ---
 

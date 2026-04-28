@@ -3,8 +3,9 @@
 
 ## Current State
 - **Version:** 0.1.0 [defined]
-- **Framework:** OpenClaw on Hetzner VPS (178.104.213.9) [verified — VPS confirmed cx43, OpenClaw not yet installed]
-- **Status:** Pre-installation — all documentation and verification complete, OpenClaw not yet installed
+- **Framework:** OpenClaw on Hetzner VPS (116.203.68.119) [installed and running]
+- **Status:** INSTALLED AND OPERATIONAL. Gateway running via systemd. Telegram connected. Claude Sonnet 4 via OpenRouter.
+- **First response:** 2026-04-27 via Telegram. Installation verified working.
 - **Architecture:** Five-layer (Brain/Hands/Memory/Spine/Guardrails) [verified — community consensus from multiple sources]
 
 ## Key Decisions Made [all logged in logs/decisions/]

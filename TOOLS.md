@@ -1,6 +1,6 @@
 # Tools & Conventions
 
-- **VPS:** Hetzner 178.104.213.9, cx43 (8 vCPU, 16 GB RAM, 150 GB disk) [verified — Hetzner API confirms]
+- **VPS:** Hetzner 116.203.68.119, cx43 (8 vCPU, 16 GB RAM, 150 GB disk) [verified — Hetzner API confirms]
 - **SSH:** cto-deploy key, user `cto` (non-root) [verified — SSH tested]
 - **Git:** github.com/johnjhusband/CTO (private repo) [verified — pushes work]
 - **Git on VPS:** Deploy key for SSH access to GitHub [verified — git fetch works]

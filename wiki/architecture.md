@@ -1,6 +1,6 @@
 # CTO Architecture
 **L0:** Five-layer architecture on OpenClaw (augmented memory, no Docker). Fully autonomous for self-improvement. OpenRouter for testing, OpenAI for production. engram for SQLite. Built-in web search.
-**L1:** CTO runs on Hetzner VPS [verified — cx43 at 178.104.213.9] using OpenClaw [verified — v2026.4.24] with augmented memory layer. No Docker — CTO manages its own system-level components directly. Fully autonomous for self-improvement (narrowly scoped, verifiable domain). OpenRouter for testing [verified], OpenAI subscription for production. engram for SQLite coordination (replacing memweave). OpenClaw's built-in web search [verified — auto-detects providers]. Telegram for notifications [verified]. Architecture validated against community sentiment — see validation results and John's decisions.
+**L1:** CTO runs on Hetzner VPS [verified — cx43 at 116.203.68.119] using OpenClaw [verified — v2026.4.24] with augmented memory layer. No Docker — CTO manages its own system-level components directly. Fully autonomous for self-improvement (narrowly scoped, verifiable domain). OpenRouter for testing [verified], OpenAI subscription for production. engram for SQLite coordination (replacing memweave). OpenClaw's built-in web search [verified — auto-detects providers]. Telegram for notifications [verified]. Architecture validated against community sentiment — see validation results and John's decisions.
 **Last updated:** 2026-04-27
 **Source:** Architecture validation (4 agents) + John's decisions. See [architecture-decisions-john.md](architecture-decisions-john.md) and [architecture-validation-results.md](architecture-validation-results.md).
 
@@ -60,7 +60,7 @@ CTO manages its own system-level components. Docker prevents this. Security isol
 - See [upgrade-cycle.md](upgrade-cycle.md)
 
 ## Infrastructure
-- **Primary VPS:** Hetzner 178.104.213.9 (cx43: 8 vCPU, 16 GB RAM, 150 GB disk) [verified]
+- **Primary VPS:** Hetzner 116.203.68.119 (cx43: 8 vCPU, 16 GB RAM, 150 GB disk) [verified]
 - **Test VPS:** On-demand via Hetzner API [verified — create/delete tested]
 - **Communication:** Telegram Bot @HusbandCTObot [verified]
 - **LLM:** OpenRouter (testing) [verified], OpenAI (production) [available]
