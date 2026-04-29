@@ -156,8 +156,7 @@ cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF
       "skipBootstrap": true,
       "model": {
         "primary": "openrouter/google/gemini-2.5-flash",
-        "thinking": "openrouter/anthropic/claude-sonnet-4",
-        "fallbacks": ["openrouter/google/gemini-2.0-flash-001"]
+        "fallbacks": ["openrouter/anthropic/claude-sonnet-4"]
       },
       "thinkingDefault": "adaptive",
       "heartbeat": {
@@ -264,8 +263,7 @@ cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF2
       "skipBootstrap": true,
       "model": {
         "primary": "openrouter/google/gemini-2.5-flash",
-        "thinking": "openrouter/anthropic/claude-sonnet-4",
-        "fallbacks": ["openrouter/google/gemini-2.0-flash-001"]
+        "fallbacks": ["openrouter/anthropic/claude-sonnet-4"]
       },
       "thinkingDefault": "adaptive",
       "heartbeat": {
