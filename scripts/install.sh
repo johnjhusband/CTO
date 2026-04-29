@@ -155,8 +155,9 @@ cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF
       "workspace": "/opt/cto",
       "skipBootstrap": true,
       "model": {
-        "primary": "openrouter/anthropic/claude-sonnet-4",
-        "fallbacks": ["openrouter/google/gemini-2.5-flash"]
+        "primary": "openrouter/google/gemini-2.5-flash",
+        "thinking": "openrouter/anthropic/claude-sonnet-4",
+        "fallbacks": ["openrouter/google/gemini-2.0-flash-001"]
       },
       "thinkingDefault": "adaptive",
       "heartbeat": {
@@ -262,8 +263,9 @@ cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF2
       "workspace": "/opt/cto",
       "skipBootstrap": true,
       "model": {
-        "primary": "openrouter/anthropic/claude-sonnet-4",
-        "fallbacks": ["openrouter/google/gemini-2.5-flash"]
+        "primary": "openrouter/google/gemini-2.5-flash",
+        "thinking": "openrouter/anthropic/claude-sonnet-4",
+        "fallbacks": ["openrouter/google/gemini-2.0-flash-001"]
       },
       "thinkingDefault": "adaptive",
       "heartbeat": {
