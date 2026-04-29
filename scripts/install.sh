@@ -120,6 +120,34 @@ else
 fi
 echo ""
 
+# Set up SSH deploy key for GitHub (so CTO can git pull on its own)
+echo "--- Setting up GitHub deploy key ---"
+if [ -f "$HOME/.ssh/github-deploy" ]; then
+    echo "Deploy key already exists"
+else
+    ssh-keygen -t ed25519 -C "cto-vps-deploy" -f "$HOME/.ssh/github-deploy" -N ""
+    cat > "$HOME/.ssh/config" << SSHEOF
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/github-deploy
+    IdentitiesOnly yes
+SSHEOF
+    chmod 600 "$HOME/.ssh/config"
+    ssh-keyscan github.com >> "$HOME/.ssh/known_hosts" 2>/dev/null
+    echo ""
+    echo "IMPORTANT: Add this deploy key to GitHub repo settings:"
+    echo "  Repository → Settings → Deploy keys → Add deploy key"
+    echo "  Title: cto-vps-deploy"
+    echo "  Key:"
+    cat "$HOME/.ssh/github-deploy.pub"
+    echo ""
+    echo "Or run: gh repo deploy-key add ~/.ssh/github-deploy.pub -R johnjhusband/CTO --title cto-vps-deploy"
+fi
+# Switch git remote to SSH
+cd /opt/cto && git remote set-url origin git@github.com:johnjhusband/CTO.git 2>/dev/null
+echo ""
+
 # Write openclaw.json
 # Sources: OpenClaw docs, OpenRouter integration guide, GitHub issues #17191, #21448
 echo "--- Writing openclaw.json ---"

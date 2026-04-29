@@ -5,6 +5,22 @@
 **Source:** Verified against official OpenClaw docs and hands-on testing. Full verification status in wiki/assumption-audit.md.
 **Verification note:** All config keys, file auto-loading behavior, and onboard flags verified against docs.openclaw.ai. Package names verified on npm/PyPI. API keys tested. Onboard non-interactive workaround [verified in source code — `openrouter-api-key` is valid choiceId in OpenRouter plugin]. Not tested end-to-end. JSON configs in this file use the correct `mcp.servers` nesting [verified].
 
+## Known Issues Discovered During Installation [all verified first-hand]
+
+1. **Bonjour plugin crashes on headless VPS** — `CIAO PROBING CANCELLED` unhandled rejection. Fix: disable in config `plugins.entries.bonjour.enabled: false` [GitHub issue #62652]
+2. **`skills.autoInstall` is not a valid config key** — schema validation rejects it, gateway won't start
+3. **`model.thinking` is not a valid config key** — crashes gateway with "Invalid input". Use `thinkingDefault` at agent defaults level instead
+4. **auth-profiles.json format changed in 2026.2.19** — uses `"key"` not `"token"`, needs `"profiles"` wrapper and `"id"` field [GitHub issue #21448]
+5. **auth-profiles.json must be at per-agent path** — `~/.openclaw/agents/main/agent/auth-profiles.json`, not `~/.openclaw/auth-profiles.json`
+6. **`gateway.mode: "local"` is required** — config without it is rejected as "suspicious or clobbered"
+7. **Onboard overwrites openclaw.json** — must re-apply custom config after `openclaw onboard`
+8. **IPv6 causes Telegram connection delays** — disable on VPS: `sysctl -w net.ipv6.conf.all.disable_ipv6=1`
+9. **OpenRouter model IDs must be exact** — `google/gemini-2.0-flash` doesn't exist, use `google/gemini-2.0-flash-001`
+10. **OpenRouter key limit ≠ account balance** — key can have $1 limit with $10 in account. Set limit at openrouter.ai/settings/keys
+11. **Heartbeat costs add up** — 48 calls/day at 30-min interval, even on cheap models
+12. **python3.12-venv package required** — not installed by default on Ubuntu 24.04 minimal
+13. **Telegram proactive messaging blocked** — bot can't send until user messages it first
+
 ## Prerequisites (Before Installation)
 
 1. **OpenRouter account with credits** — create at openrouter.ai, add minimum $5 credits. The $1 free credit is NOT enough for most models. Without credits, the bot will connect but fail to respond. [verified — installation failed silently without credits]

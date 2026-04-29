@@ -1,5 +1,5 @@
 # LLM Strategy
-**L0:** Multi-model via OpenRouter. Route 80% to cheap models, 20% to frontier. Budget-constrained, no open-ended token spend.
+**L0:** OpenRouter Auto model picks best model per-request. $10/month key limit. Heartbeat costs add up (48 calls/day). `model.thinking` is NOT a valid config key — use `thinkingDefault` only.
 **L1:** CTO uses OpenRouter for multi-model routing — single API key, 200+ models. GPT-5.4 nano ($0.10/$0.40/M) for routine research scoring, GPT-5.4 mini ($0.75/$4.50/M) for evaluation, o4-mini ($1.10/$4.40/M) for complex decisions. Estimated $5-30/month. ChatGPT Pro ($200/mo) is UI-only, no API access. CTO can evaluate and switch its own LLM backend as part of macro evolution. Prompt caching (90% discount) and batch processing (50% discount) for cost optimization.
 **Last updated:** 2026-04-26
 **Verification:** OpenRouter verified (API works, prepaid billing, model format). Pricing claims from OpenRouter website. Cost estimates are projections.
@@ -7,11 +7,19 @@
 
 ## Key Facts
 - CTO is **not locked to any single provider**
-- Budget is constrained — no open-ended token purchases
+- Budget: $10/month OpenRouter key limit, $200/month ceiling acceptable [set by John]
+- Using `openrouter/openrouter/auto` — OpenRouter picks best model per-request based on complexity [verified working]
+- Fallback: `openrouter/google/gemini-2.5-flash` [verified]
 - ChatGPT Pro ($200/mo) is UI-only, does NOT include API access
 - OpenAI API is separate, pay-per-token
-- Self-hosted models are viable for edge cases but not the core architecture
-- Hermes Agent and Agent Zero both support 200+ models via OpenRouter/LiteLLM
+
+## Lessons Learned from Installation [verified — all happened]
+- **$1 free credit is insufficient** — Claude Sonnet burns through it in ~10 messages
+- **Heartbeat costs add up** — 48 calls/day at 30-min intervals. Use cheapest model for heartbeat.
+- **`model.thinking` is NOT a valid config key** — crashes the gateway. Use `thinkingDefault: "adaptive"` at the agent defaults level instead.
+- **OpenRouter model IDs must be exact** — `google/gemini-2.0-flash` doesn't exist, it's `google/gemini-2.0-flash-001`
+- **OpenRouter Auto** (`openrouter/openrouter/auto`) routes to cheapest effective model automatically
+- **Key limit vs account balance are different** — key can have $1 limit even with $10 in account. Set at openrouter.ai/settings/keys.
 
 ## ChatGPT Pro ($200/mo) — What It Actually Includes
 - Access to GPT-5.5, GPT-5.5 Pro, o1 Pro mode via web/mobile/desktop UI
