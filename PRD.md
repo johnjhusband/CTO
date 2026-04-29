@@ -206,5 +206,5 @@ Budget-constrained: prepaid credits on OpenRouter [verified — not postpaid]. $
 4. What does "stable CTO" look like before building CFO? Define graduation criteria. [open]
 5. ~~Communication~~ — RESOLVED: Telegram Bot [verified working, decision logged CTO-DECISION-003]
 6. OpenRouter needs more credits for paid models — how much should John add? [open]
-7. memweave search quality is poor (0.14 scores) — alternative needed? [open, verified by testing]
+7. ~~memweave~~ — RESOLVED: Replaced with engram (Go binary, MCP-native). memweave had poor search quality (0.14 scores).
 8. SearXNG vs Brave for web search — SearXNG is free but needs Docker [open]

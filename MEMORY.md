@@ -12,7 +12,7 @@
 - OpenClaw chosen over Hermes Agent — macro evolution > micro evolution [decision CTO-DECISION-001]
 - VPS-based upgrade testing, not Docker — system-level changes can't be containerized [decision CTO-DECISION-002, Hetzner API verified]
 - Telegram for notifications, not WhatsApp — zero friction, no phone needed [decision CTO-DECISION-003, bot verified]
-- Memory architecture: Obsidian-compatible vault + SQLite (memweave) + tiered loading [decision CTO-DECISION-004, memweave search quality poor — open issue]
+- Memory architecture: Obsidian-compatible vault + SQLite (engram) + tiered loading [decision CTO-DECISION-004. memweave was replaced by engram — Go binary, zero deps, MCP-native, 17 tools]
 - Fully autonomous — John reviews after the fact, never blocks [explicit instruction from John]
 - Memory is the moat — models and frameworks are swappable, knowledge compounds [community consensus, verified in research]
 - HANDOFF.md required in every upgrade cycle [explicit requirement from John]

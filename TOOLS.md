@@ -8,7 +8,7 @@
 - **Communication:** Telegram Bot @HusbandCTObot (primary) [verified — token works], Gmail SMTP (fallback) [verified — SMTP reachable, TLS works. Sending not tested — needs App Password]
 - **Knowledge base:** wiki/ directory indexed for search via memorySearch.extraPaths [verified config key exists]
 - **Knowledge layer:** Obsidian-compatible markdown vault via MCPVault MCP server [verified — MCPVault tested locally]
-- **SQLite coordination:** memweave [verified installed, search quality poor — may need alternative]
+- **SQLite coordination:** engram (Go binary, MCP-native, 17 tools) [installed — replaced memweave which had poor search quality]
 - **Decision logs:** logs/decisions/ as JSON per decision-log-format wiki page [verified — 4 entries exist]
 - **Skills:** skills/ directory, snapshot-loaded at session start [verified against OpenClaw docs]
 - **Version tags:** v{x.y.z} for active, v{x.y.z}-archived-{date} for replaced [defined, not yet tested]
