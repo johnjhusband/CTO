@@ -55,7 +55,7 @@ The research revealed no single tool does everything CTO needs. The strongest ap
 - Budget-constrained — no open-ended token spend
 - Multi-model routing: cheap models for routine, escalate for complex
 - OpenRouter: single API key for 200+ models
-- ChatGPT Pro ($200/mo) is UI-only, cannot be used programmatically
+- ~~ChatGPT Pro ($200/mo) is UI-only~~ WRONG — OpenAI explicitly allows subscription access through OpenClaw via Codex OAuth. $200/mo flat rate, no per-token billing. [verified April 2026]
 
 **Model strategy:**
 | Task | Model | Cost |
@@ -164,7 +164,7 @@ When CTO is stable and it's time to build CFO, CEO, CMO:
 | **Total** | **~$12-45/month** |
 
 ## What's NOT in v1
-- ChatGPT Pro subscription ($200/mo) — UI-only, API is separate and cheaper
+- ~~ChatGPT Pro subscription ($200/mo) — UI-only~~ WRONG — OpenClaw can use ChatGPT subscription via Codex OAuth. This is the production LLM strategy.
 - WhatsApp integration — deferred, Telegram first
 - Self-hosted LLMs — edge case, API is better and cheaper for now
 - Paperclip / multi-agent orchestration — single agent only

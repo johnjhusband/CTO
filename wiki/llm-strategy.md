@@ -1,6 +1,6 @@
 # LLM Strategy
 **L0:** OpenRouter Auto model picks best model per-request. $10/month key limit. Heartbeat costs add up (48 calls/day). `model.thinking` is NOT a valid config key — use `thinkingDefault` only.
-**L1:** CTO uses OpenRouter for multi-model routing — single API key, 200+ models. GPT-5.4 nano ($0.10/$0.40/M) for routine research scoring, GPT-5.4 mini ($0.75/$4.50/M) for evaluation, o4-mini ($1.10/$4.40/M) for complex decisions. Estimated $5-30/month. ChatGPT Pro ($200/mo) is UI-only, no API access. CTO can evaluate and switch its own LLM backend as part of macro evolution. Prompt caching (90% discount) and batch processing (50% discount) for cost optimization.
+**L1:** CTO uses OpenRouter for multi-model routing — single API key, 200+ models. GPT-5.4 nano ($0.10/$0.40/M) for routine research scoring, GPT-5.4 mini ($0.75/$4.50/M) for evaluation, o4-mini ($1.10/$4.40/M) for complex decisions. Estimated $5-30/month. ChatGPT Pro ($200/mo) works with OpenClaw via Codex OAuth — flat rate, no per-token billing [verified]. CTO can evaluate and switch its own LLM backend as part of macro evolution. Prompt caching (90% discount) and batch processing (50% discount) for cost optimization.
 **Last updated:** 2026-04-26
 **Verification:** OpenRouter verified (API works, prepaid billing, model format). Pricing claims from OpenRouter website. Cost estimates are projections.
 **Source:** Live web research (April 2026) — all data verified via web search
@@ -10,8 +10,8 @@
 - Budget: $10/month OpenRouter key limit, $200/month ceiling acceptable [set by John]
 - Using `openrouter/openrouter/auto` — OpenRouter picks best model per-request based on complexity [verified working]
 - Fallback: `openrouter/google/gemini-2.5-flash` [verified]
-- ChatGPT Pro ($200/mo) is UI-only, does NOT include API access
-- OpenAI API is separate, pay-per-token
+- ~~ChatGPT Pro ($200/mo) is UI-only~~ WRONG — OpenAI explicitly allows subscription access through OpenClaw via Codex OAuth. $200/mo flat rate for CTO. [verified — OpenClaw docs, OpenRouter integration guide]
+- OpenAI API is also available as separate pay-per-token (not needed — subscription works via OpenClaw)
 
 ## Lessons Learned from Installation [verified — all happened]
 - **$1 free credit is insufficient** — Claude Sonnet burns through it in ~10 messages
@@ -26,9 +26,9 @@
 - 20x higher rate limits than Plus
 - 250 Deep Research runs/month
 - Expanded Codex agent access (20x Plus usage)
-- **Does NOT include API access** — API is separate billing
-- **Cannot be used programmatically by an autonomous agent**
-- OpenAI Codex (included) has `codex exec --json` for programmatic use — potential path
+- ~~Does NOT include API access~~ WRONG for OpenClaw — subscription works via Codex OAuth
+- ~~Cannot be used programmatically~~ WRONG for OpenClaw — OpenAI explicitly allows this exception
+- OpenClaw uses `openai-codex` provider to route through ChatGPT subscription [verified]
 
 ## OpenAI API Pricing (April 2026)
 
