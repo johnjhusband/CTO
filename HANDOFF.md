@@ -151,14 +151,48 @@ I wrote "Research the Target before touching infrastructure" as Step 2 in the up
 
 ## What Needs to Happen Next
 
-1. Install and configure OpenClaw on the VPS
-2. Harden security (loopback, token, disable ClawHub auto-install)
-3. Load all skills from the repo
-4. Set up Telegram bot for notifications
-5. Configure OpenRouter for LLM access (John needs to provide API key)
-6. Set up the daily research cron cycle
-7. Test end-to-end: does a research cycle produce a correct Telegram report?
-8. Begin autonomous operation
+1. Install and configure OpenClaw on the VPS ✅ (completed 2026-04-27)
+2. Harden security (loopback, token, disable ClawHub auto-install) ✅
+3. Load all skills from the repo ✅
+4. Set up Telegram bot for notifications ✅
+5. Configure OpenRouter for LLM access ✅
+6. Set up the daily research cron cycle — IN PROGRESS
+7. Test end-to-end: does a research cycle produce a correct Telegram report? — NOT YET
+8. Begin autonomous operation — NOT YET
+
+---
+
+## Startup Checklist (For Every New CTO Instance)
+
+Every new CTO instance must complete these steps before doing anything else.
+
+### 1. Confirm Keys
+Verify these environment variables are present and non-empty:
+- `HETZNER_API_TOKEN` — VPS provisioning
+- `OPENROUTER_API_KEY` — LLM calls
+- `OPENAI_API_KEY` — fallback LLM
+- `TELEGRAM_BOT_TOKEN` — reporting
+- `SSH_AUTH_SOCK` — git/SSH operations
+
+If any are missing, STOP and report to John.
+
+### 2. Verify Git Access
+Run `git pull` in /opt/cto. If it fails, check SSH key and remote URL.
+
+### 3. Re-read All Documentation
+Read in order: SOUL.md, AGENTS.md, MEMORY.md, TOOLS.md, HEARTBEAT.md, this file.
+
+### 4. Verify Memory Backend
+Run `engram mem_stats`. If observations = 0, the database is empty — you are starting fresh. Previous research lives only in .md files and must be re-validated.
+
+### 5. Run Daily Research Cycle
+Follow skills/research-methodology/SKILL.md. Persist ALL findings to engram (SQLite), not just .md files. An unpersisted research cycle is a lost research cycle.
+
+### 6. Report to John
+Send startup confirmation and first research digest via Telegram.
+
+### Key Handoff Note
+Keys live in environment variables managed by OpenClaw's systemd unit. When cloning to a new VPS, these must be transferred to the new instance's environment config before the old instance is destroyed. Never store keys in code or .md files.
 
 ---
 
