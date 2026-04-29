@@ -121,7 +121,10 @@ Wrote an openclaw.json reference with 4 of 6 MCP server package names that were 
 ### 11. Stated unverified assumptions as facts in conversation
 Repeatedly answered questions confidently without researching first. "Brave is needed for web search" — wrong, OpenClaw has built-in alternatives and SearXNG is free. "Obsidian works headless" — wrong. "Those npm packages exist" — 4 of 6 wrong. "memweave needs no API key" — wrong. The fix: tag every factual claim as [verified] or [unverified]. If you catch yourself stating something without a tag, it's unverified.
 
-### 12. Failed to apply my own rules to my own work
+### 12. Used old verification to argue against John's current knowledge
+Stated "ChatGPT Pro will NOT work for CTO" as verified fact and argued against switching to it. OpenAI explicitly allows subscription access through OpenClaw via Codex OAuth — the general finding (no API access) was correct but the specific exception (OpenClaw is allowed) was never researched. Used a [verified] tag from a prior context to override John's instruction without searching first. When John contradicts what you think is verified, SEARCH before pushing back.
+
+### 13. Failed to apply my own rules to my own work
 I wrote "Research the Target before touching infrastructure" as Step 2 in the upgrade cycle, then immediately tried to install 8 components I hadn't researched. The rule I just created should have applied to what I was doing in that moment. John caught it: "You aren't thinking recursively." The fix: every change triggers a downstream impact check. When you write a rule, check if you're violating it right now. When architecture changes, trace every component that depends on it. Recurse until stable. This is documented in SOUL.md and AGENTS.md as the Change Impact Protocol.
 
 ---
