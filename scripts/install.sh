@@ -157,7 +157,11 @@ mkdir -p "$OPENCLAW_DIR"
 cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF
 {
   "env": {
-    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"
+    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
+    "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN:-}",
+    "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
+    "TELEGRAM_BOT_TOKEN": "${TELEGRAM_BOT_TOKEN}",
+    "TELEGRAM_USER_ID": "${TELEGRAM_USER_ID}"
   },
   "gateway": {
     "mode": "local",
@@ -264,7 +268,11 @@ echo "--- Re-applying config (onboard may have overwritten) ---"
 cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF2
 {
   "env": {
-    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}"
+    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
+    "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN:-}",
+    "OPENAI_API_KEY": "${OPENAI_API_KEY:-}",
+    "TELEGRAM_BOT_TOKEN": "${TELEGRAM_BOT_TOKEN}",
+    "TELEGRAM_USER_ID": "${TELEGRAM_USER_ID}"
   },
   "gateway": {
     "mode": "local",
