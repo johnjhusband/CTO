@@ -6,7 +6,7 @@ These constraints persist across context resets and session boundaries. They are
 
 - **NEVER spend money without John's explicit approval.** This includes API subscriptions, VPS upgrades, paid tools, domain purchases — anything with a dollar amount.
 - **Hard budget cap:** If daily API spend approaches the agreed limit, pause and report. Do not continue burning tokens.
-- **Route 80% of LLM calls to cheap models.** Only escalate to expensive models for complex reasoning. Track cost per task.
+- **LLM cost:** ChatGPT Pro ($200/mo) via Codex OAuth — flat rate, no per-token billing. [verified — OpenAI explicitly allows this for OpenClaw]
 
 ## Infrastructure
 
@@ -22,6 +22,7 @@ These constraints persist across context resets and session boundaries. They are
 - **No ClawHub auto-install.** Every skill vetted before installation.
 - **No credentials in code.** Environment variables or secrets manager only.
 - **No root unless necessary.** Run agent process as dedicated user.
+- **Elevated exec auto-approved.** CTO can run sudo/elevated commands without human approval. Configure `tools.elevated.allowFrom` to include all channels. [settled by John — security risk accepted for full autonomy]
 - **Think "how would I hack this?" before implementing anything.**
 
 ## Research

@@ -8,8 +8,8 @@
 ### 1. Memory: Augment OpenClaw, Don't Depend On It
 OpenClaw's native memory is broken. We know this. We are adding our own memory layer on top (Obsidian-compatible vault + SQLite via engram + tiered loading). OpenClaw's memory problems are mitigated by our design, not by fixing OpenClaw.
 
-### 2. LLM Provider: OpenRouter for Testing, OpenAI for Production
-OpenRouter is fine for testing and development. When production reliability matters, OpenAI Pro/Max subscription can be used directly. This is not a permanent architectural decision — CTO can evaluate and switch providers as part of macro evolution.
+### 2. LLM Provider: ChatGPT Pro ($200/mo) via Codex OAuth
+OpenRouter proved unreliable (ran out of credits, key limit confusion, outages). Switching to ChatGPT Pro $200/month subscription accessed through OpenClaw's `openai-codex` provider via OAuth. Flat rate, no per-token billing. [verified — OpenAI explicitly allows subscription access through OpenClaw]. OpenRouter remains available as fallback if needed.
 
 ### 3. Autonomy: Fully Autonomous for Self-Improvement
 The validation found 88% of orgs report AI agent incidents. That applies to general-purpose agents. CTO is narrowly scoped — its only job is to improve itself. This is a verifiable domain (the community confirmed self-improvement works in verifiable domains). Full autonomy for self-improvement is critical to the mission. John provides oversight via reports, corrections, and kill switch — not pre-approval gates.
@@ -32,3 +32,12 @@ John provides oversight through:
 - Periodic architecture review
 
 The autonomy of this agent for self-improvement is critical. Do not add blocking approval gates.
+
+### 8. Elevated Exec: Auto-Approved
+CTO can run sudo/elevated commands without human approval. The OpenClaw `/approve` mechanism doesn't work from Telegram mobile (no approval card appears). John accepted the security risk for full autonomy. Configure `tools.elevated.allowFrom` to include all channels.
+
+### 9. Communication: Replace Telegram with A2A-Based Interface
+Telegram has limitations: bot conflict when cloning (two CTOs can't share one bot), no programmatic bot creation via BotFather, `/approve` cards don't work on mobile. Investigating A2A (Google's Agent-to-Agent protocol) as the communication layer with a human-facing interface built on top. If A2A is open source, building a human interface is simpler than a full agent-to-agent system.
+
+### 10. Git Access: Read/Write
+CTO needs read AND write access to its git repo. The previous deploy key was read-only, which blocked CTO from pushing changes. Deploy keys or PATs must have write access.
