@@ -20,6 +20,7 @@
 11. **Heartbeat costs add up** — 48 calls/day at 30-min interval, even on cheap models
 12. **python3.12-venv package required** — not installed by default on Ubuntu 24.04 minimal
 13. **Telegram proactive messaging blocked** — bot can't send until user messages it first
+14. **Elevated exec blocked on Telegram mobile** — approval buttons never appear, channel detection returns "unknown". Fix: set `agents.defaults.sandbox.mode: "off"` [verified — OpenClaw bugs #23856, #51245, #48499]. Only for single-user trusted setups.
 
 ## Prerequisites (Before Installation)
 

@@ -186,6 +186,9 @@ cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF
     "defaults": {
       "workspace": "/opt/cto",
       "skipBootstrap": true,
+      "sandbox": {
+        "mode": "off"
+      },
       "model": {
         "primary": "openrouter/openrouter/auto",
         "fallbacks": ["openrouter/google/gemini-2.5-flash"]
@@ -297,6 +300,9 @@ cat > "$OPENCLAW_DIR/openclaw.json" << OCEOF2
     "defaults": {
       "workspace": "/opt/cto",
       "skipBootstrap": true,
+      "sandbox": {
+        "mode": "off"
+      },
       "model": {
         "primary": "openrouter/openrouter/auto",
         "fallbacks": ["openrouter/google/gemini-2.5-flash"]
