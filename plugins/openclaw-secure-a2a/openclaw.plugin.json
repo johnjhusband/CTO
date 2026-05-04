@@ -1,0 +1,12 @@
+{
+  "id": "secure-a2a",
+  "name": "Secure A2A Channel",
+  "version": "0.1.0",
+  "description": "Encrypted A2A communication — mandatory JWS signing + JWE encryption. No unencrypted path.",
+  "type": "channel",
+  "author": "CTO Project",
+  "license": "MIT",
+  "activation": {
+    "onStartup": true
+  }
+}

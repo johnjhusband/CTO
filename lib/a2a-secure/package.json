@@ -1,0 +1,19 @@
+{
+  "name": "@cto/a2a-secure",
+  "version": "0.1.0",
+  "description": "Mandatory JWS/JWE encryption layer for A2A protocol",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "jose": "^6.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "@types/node": "^22.0.0"
+  }
+}

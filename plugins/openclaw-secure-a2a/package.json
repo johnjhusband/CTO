@@ -1,0 +1,27 @@
+{
+  "name": "@cto/openclaw-secure-a2a",
+  "version": "0.1.0",
+  "description": "Secure A2A channel for OpenClaw — mandatory JWS/JWE encryption, contacts-based auth",
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "openclaw": {
+    "extensions": ["./index.ts"],
+    "setupEntry": "./setup-entry.ts",
+    "channel": {
+      "id": "secure-a2a",
+      "label": "Secure A2A",
+      "blurb": "Encrypted agent-to-agent communication. The only communication channel."
+    }
+  },
+  "dependencies": {
+    "jose": "^6.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0",
+    "@types/node": "^22.0.0"
+  }
+}
