@@ -87,8 +87,9 @@ The script's first action verifies each item is present. Missing env vars print 
 
 The script pulls only published packages and binaries. No curl-piping anything already in the repo.
 
-### 2.1 npm packages (global, OpenClaw side)
-- `openclaw@latest` (CLI, gateway, daemon installer)
+### 2.1 npm packages (global)
+- `openclaw@latest` (CLI, gateway, daemon installer — must be v2026.5.6+ for device-code SSH bug fix per OpenClaw issue #74212)
+- `@openai/codex` (upstream Codex CLI — drives the device-code OAuth flow that both hemispheres consume; one approval populates `~/.codex/auth.json`)
 - `@bitbonsai/mcpvault@latest` (Obsidian-compatible vault MCP)
 - `@modelcontextprotocol/server-filesystem` (filesystem MCP)
 - `@brave/brave-search-mcp-server` (web search MCP)
@@ -249,15 +250,30 @@ systemctl --user list-unit-files | grep -E "openclaw|hermes" || { echo "FAIL: ga
 
 ## Section 5 — Configure OpenClaw and Hermes
 
-### 5.1 Codex OAuth — both halves, same subscription
-```bash
-# OpenClaw side
-openclaw models auth login --provider openai-codex --device-code
-# Prints URL + one-time code; John approves on phone
+### 5.1 Codex OAuth — single device-code approval drives both hemispheres [updated 2026-05-11]
 
-# Hermes side
-hermes model  # opens model picker; select openai-codex provider, complete device-code flow
+**Strategy:** Run the upstream Codex CLI's device-code flow ONCE. That populates `~/.codex/auth.json`. Both OpenClaw and Hermes consume that auth state — Hermes natively imports it; OpenClaw v2026.5.6+ can reuse it (the older bug #74212 that swallowed the SSH device code was fixed in 2026.5.6).
+
+```bash
+# Step 1 — ONE device-code flow via upstream Codex CLI
+codex login --device-auth
+# Prints URL + 8-char code. John opens URL on phone, signs into Business workspace,
+# enters code, clicks Authorize. ~/.codex/auth.json is now populated.
+
+# Token sanity check
+jq '{auth_mode, last_refresh, has_access_token: ((.tokens.access_token // "") != "")}' ~/.codex/auth.json
+
+# Step 2 — Register profile with OpenClaw (reuses ~/.codex/auth.json on v2026.5.6+)
+openclaw models auth login --provider openai-codex --device-code
+# If OpenClaw asks for a SECOND device code, approve again on phone.
+
+# Step 3 — Register profile with Hermes (auto-imports ~/.codex/auth.json)
+hermes model add openai-codex --device-code  # or interactive: hermes model
 ```
+
+**Token auto-refresh:** Once authenticated, OpenAI's docs commit to: *"If `last_refresh` is older than about 8 days, Codex refreshes the token bundle before the run continues... If a request gets a 401, Codex also has a built-in refresh-and-retry path."* No manual re-auth needed during normal operation.
+
+**To revoke later:** `chatgpt.com` → Settings → Security → Connected Devices / Active Sessions → find the Codex CLI / OpenClaw / Hermes entries → revoke. CTO loses access on next refresh attempt.
 
 ### 5.2 OpenClaw config — write `/home/cto/.openclaw/openclaw.json`
 

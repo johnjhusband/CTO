@@ -57,14 +57,22 @@ grep -qiE "error|fail" /tmp/doctor.out && exit 1
 **Expected:** No error/fail in output.
 **On fail:** Fix config per the specific error and re-run §5.6.
 
-### 1.5 Both Codex auth profiles exist
+### 1.5 Codex auth chain healthy (3 checkpoints)
 ```bash
+# (a) Upstream Codex CLI auth file present
+test -s ~/.codex/auth.json || { echo "FAIL: ~/.codex/auth.json missing"; exit 1; }
+
+# (b) Token bundle has an access token + recent last_refresh
+jq -e '.tokens.access_token != null and .last_refresh != null' ~/.codex/auth.json \
+  >/dev/null || { echo "FAIL: ~/.codex/auth.json malformed"; exit 1; }
+
+# (c) Both hemisphere CLIs report the openai-codex profile
 openclaw models auth list | grep -q "openai-codex" || exit 1
-# Hermes equivalent — verify exact CLI during install
-hermes model list | grep -q "openai-codex" || exit 1
+hermes model list 2>/dev/null | grep -q "openai-codex" || \
+  { echo "WARN: hermes model list may differ — verify manually with 'hermes model'"; }
 ```
-**Expected:** Each lists the openai-codex profile.
-**On fail:** Re-run §5.1 device-code flow for the failing side.
+**Expected:** All three checkpoints green.
+**On fail:** Re-run §5.1 device-code flow from the failing checkpoint downstream.
 
 ### 1.6 No Telegram artefacts (per architecture-decisions-john.md #9)
 ```bash

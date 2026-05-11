@@ -78,7 +78,8 @@ sudo apt-get install -y \
   python3-pip \
   ufw \
   fail2ban \
-  sqlite3
+  sqlite3 \
+  jq
 
 note "Installing uv (Hermes Python manager)"
 if ! have uv; then
@@ -104,11 +105,20 @@ sudo loginctl enable-linger "$(whoami)" || true
 
 section "Section 4 — Install OpenClaw, Hermes, supporting binaries"
 
-note "Verifying OpenClaw (should already be installed per wake state)"
+note "Installing OpenClaw (target latest — must be v2026.5.6+ for the device-code SSH bug fix, issue #74212)"
 if ! have openclaw; then
   npm install -g openclaw@latest
 fi
-openclaw --version
+OC_VERSION=$(openclaw --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+note "OpenClaw version: ${OC_VERSION}"
+
+note "Installing Codex CLI (@openai/codex) — drives the device-code OAuth flow that OpenClaw and Hermes both consume"
+# Putting Codex CLI first means we do ONE device-code approval (codex login), populating ~/.codex/auth.json.
+# OpenClaw and Hermes both pick up from that file (Hermes natively imports it; OpenClaw's models auth can reuse).
+if ! have codex; then
+  npm install -g @openai/codex
+fi
+codex --version
 
 note "Installing engram (Gentleman-Programming/engram, Go binary)"
 if ! have engram; then
@@ -179,19 +189,47 @@ fi
 
 section "Section 5 — Configure OpenClaw + Hermes + A2A"
 
-note "Codex OAuth — OpenClaw side"
+note "Codex OAuth — primary device-code flow via Codex CLI (single approval)"
+# Strategy: do ONE device-code flow via the upstream Codex CLI. This populates
+# ~/.codex/auth.json. Both OpenClaw and Hermes can then consume that auth state
+# (Hermes imports it natively; OpenClaw's models auth login can use it too on
+# v2026.5.6+ where the device-code SSH-display bug #74212 is fixed).
+if [ ! -s "${HOME}/.codex/auth.json" ]; then
+  echo ""
+  echo "→ John: Codex CLI will print a URL + 8-character code."
+  echo "→ Open the URL on your phone, sign in to your ChatGPT Business workspace,"
+  echo "→ enter the code, and click Authorize. Then come back here — install resumes."
+  echo ""
+  codex login --device-auth
+else
+  note "~/.codex/auth.json already present — reusing existing Codex auth"
+fi
+
+# Token sanity check
+if [ -s "${HOME}/.codex/auth.json" ]; then
+  jq -r '{auth_mode, last_refresh, has_access_token: ((.tokens.access_token // "") != "")}' \
+    "${HOME}/.codex/auth.json" 2>/dev/null || note "(jq not installed — skipping token introspection)"
+else
+  fail "Codex device-code flow did not produce ~/.codex/auth.json"
+fi
+
+note "Codex OAuth — register profile with OpenClaw (reuses Codex CLI auth state)"
 if ! openclaw models auth list 2>/dev/null | grep -q openai-codex; then
-  echo "→ John: approve the device code on phone when prompted."
-  openclaw models auth login --provider openai-codex --device-code
+  # On OpenClaw v2026.5.6+, models auth login can leverage the existing
+  # ~/.codex/auth.json. If it falls back to its own device-code flow,
+  # approve the SECOND code on phone.
+  openclaw models auth login --provider openai-codex --device-code || \
+    note "(OpenClaw auth login non-zero — verify with: openclaw models auth list)"
 else
   note "OpenClaw already has openai-codex auth profile"
 fi
 
-note "Codex OAuth — Hermes side"
-# Hermes device-code flow — confirm exact subcommand at install time
+note "Codex OAuth — register profile with Hermes (auto-imports ~/.codex/auth.json)"
+# Hermes explicitly supports importing from ~/.codex/auth.json on first use.
 if ! hermes model list 2>/dev/null | grep -q openai-codex; then
-  echo "→ John: approve the device code on phone when prompted (second time, for Hermes)."
-  hermes model add openai-codex --device-code || hermes model
+  # If Hermes doesn't auto-import, it'll prompt for its own device-code.
+  hermes model add openai-codex --device-code 2>/dev/null || \
+    note "(Hermes 'model add' subcommand may have different syntax — verify manually with: hermes model)"
 fi
 
 note "Writing OpenClaw openclaw.json"

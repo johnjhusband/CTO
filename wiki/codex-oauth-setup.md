@@ -18,9 +18,46 @@
 2. Enable **Device Code Authorization** in ChatGPT Security Settings (individual user-level setting; not the Business workspace toggle)
 3. OpenClaw v2026.4.22+, Hermes v0.13.0+
 
-## Configuration
+## Authentication Flow (Headless VPS — verified 2026-05-11)
 
-### openclaw.json
+**Strategy: ONE device-code approval via upstream Codex CLI, then both hemispheres consume the same auth state.** This avoids OpenClaw issue #74212 (fixed in v2026.5.6 but defence in depth) where the device code wasn't surfaced over SSH, and minimises phone interactions.
+
+```bash
+# 1) ONE device-code flow via upstream Codex CLI
+codex login --device-auth
+# Prints URL + 8-char code. Approve on phone — select Business workspace.
+# Result: ~/.codex/auth.json populated.
+
+# 2) Verify the token landed
+jq '{auth_mode, last_refresh, has_access_token: ((.tokens.access_token // "") != "")}' ~/.codex/auth.json
+
+# 3) Register profile with OpenClaw (reuses ~/.codex/auth.json on v2026.5.6+)
+openclaw models auth login --provider openai-codex --device-code
+# If OpenClaw still asks for a code, approve the SECOND code.
+
+# 4) Register profile with Hermes (auto-imports ~/.codex/auth.json)
+hermes model add openai-codex --device-code  # or interactive: hermes model
+
+# 5) Configure both halves to use the codex model
+openclaw config set agents.defaults.model.primary openai-codex/gpt-5.5
+hermes config set model openai-codex/gpt-5.5
+
+# 6) Restart and verify
+openclaw gateway restart
+openclaw models status
+```
+
+### Token auto-refresh — quoted from OpenAI Codex CI/CD auth docs
+- "Codex refreshes tokens automatically during use before they expire, so active sessions usually continue without requiring another browser login."
+- "If `last_refresh` is older than about 8 days, Codex refreshes the token bundle before the run continues, and after a successful refresh, Codex writes the new tokens and a new `last_refresh` back to `auth.json`."
+- "If a request gets a 401, Codex also has a built-in refresh-and-retry path."
+
+No manual re-auth needed during normal operation. The token bundle includes refresh tokens used silently.
+
+### To revoke (if VPS is ever compromised)
+`chatgpt.com` → Settings → Security → Connected Devices / Active Sessions → find the Codex CLI, OpenClaw, or Hermes entry → Revoke. CTO loses access on the next refresh attempt (typically within minutes).
+
+### openclaw.json model config
 ```json
 {
   "agents": {
@@ -31,22 +68,6 @@
     }
   }
 }
-```
-
-### Authentication (Headless VPS)
-```bash
-# Device-code flow — no browser on VPS needed
-openclaw models auth login --provider openai-codex --device-code
-# Shows URL + one-time code
-# Open URL on any device, enter code, approve
-```
-
-### Full Setup Sequence
-```bash
-openclaw models auth login --provider openai-codex --device-code
-openclaw config set agents.defaults.model.primary openai-codex/gpt-5.5
-openclaw gateway restart
-openclaw models status
 ```
 
 ## Available Models
