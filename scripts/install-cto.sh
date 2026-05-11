@@ -100,9 +100,12 @@ if ! have uv; then
 fi
 have uv || fail "uv install failed"
 
-note "Installing A2A SDK"
-pip install --user --quiet a2a-sdk
-python3 -c "import a2a" || fail "a2a SDK import failed"
+note "A2A SDK install skipped — v1.0 minimal registry uses only Python stdlib"
+# Ubuntu 24.04 enforces PEP 668 (externally-managed-environment); the a2a-sdk
+# install was speculative for the v1.1 formal A2A protocol calls. The v1.0
+# registry server I install in §5.4 uses only http.server + json + os from
+# stdlib, so no extra packages needed. When we move to v1.1, install via
+# `pipx install a2a-sdk` or a dedicated venv at /opt/cto/a2a/.venv.
 
 note "OS tweaks (IPv6 off, systemd lingering on)"
 if [ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" != "1" ]; then
