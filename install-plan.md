@@ -60,12 +60,16 @@ Co-locating OpenClaw and Hermes on one VPS. Conflicts identified and resolved be
 These cannot be automated. John completes them before running the install script. The script fails fast if any required item is missing.
 
 ### 1.1 Subscriptions and tokens
-1. **ChatGPT Pro $200/mo subscription** — created at chatgpt.com/pricing. [verified — wiki/codex-oauth-setup.md]
-2. **Device Code Authorization enabled** in ChatGPT Security Settings. Required for headless OAuth on the VPS. [verified — same source]
-3. **GitHub Personal Access Token** with `repo` scope (private CTO repo).
-4. **Hetzner Cloud API token** at console.hetzner.cloud, Read & Write (for the upgrade-cycle MCP).
-5. **(Optional) OpenAI API key** for embeddings — Codex subscription does NOT cover embeddings. Pennies/month.
-6. **(Optional) OpenRouter API key with $5+ credits** as fallback if Codex OAuth is throttled.
+1. **ChatGPT Business** (existing — John already pays $30/seat). Workspace admin toggles **must** be enabled at https://chatgpt.com/admin/settings → Settings and Permissions:
+   - **"Allow members to use Codex Local"** = ON
+   - **"Enable device code authentication for Codex CLI"** = ON
+   - Wait up to 10 minutes for propagation.
+   - [Both enabled by John 2026-05-11 — verified by him in workspace UI.]
+2. **GitHub Personal Access Token** with `repo` scope (private CTO repo). [pending]
+3. **Hetzner Cloud API token** at console.hetzner.cloud, Read & Write (for the upgrade-cycle MCP). [pending]
+4. **(Optional) OpenAI API key** for embeddings — Codex subscription does NOT cover embeddings. Pennies/month. [pending]
+5. **(Optional) OpenRouter API key with $5+ credits** as fallback if Codex OAuth is throttled. [pending — John's prior OpenRouter experience makes quota pressure on Business expected, but the fallback path is OpenRouter]
+6. **NOT NEEDED — ChatGPT Pro $200/mo:** Per CTO-DECISION-008, Business is the primary tier. Pro is the documented future escape (on a separate email) only if observed Business Codex quotas constrain CTO operation. Do not sign up for Pro today.
 
 ### 1.2 VPS state (already true per wake state, verify before install)
 7. **VPS at 46.224.81.84** — cx43 (8 vCPU, 16 GB RAM, 150 GB disk), Ubuntu 24.04 [verified — wake state].

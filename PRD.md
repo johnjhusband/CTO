@@ -164,9 +164,13 @@ See `hemisphere.md` for the full design, `hermes.md` for the right hemisphere re
 
 ## 6. LLM Strategy
 
-CTO is **not locked to any provider** [verified — OpenRouter supports 200+ models via single API]. Uses multi-model routing via OpenRouter [verified — API key works, model IDs confirmed]. Model ref format: `openrouter/provider/model` [verified against docs].
+CTO is **not locked to any provider**. Primary auth path (CTO-DECISION-008, 2026-05-11): John's existing **ChatGPT Business standard seat** ($30/seat/month) via the `openai-codex` provider on both hemispheres, device-code OAuth. Workspace admin Codex Local + device-code-auth toggles enabled.
 
-Budget-constrained: prepaid credits on OpenRouter [verified — not postpaid]. $1 free credits for new accounts [verified] — insufficient for Claude Sonnet, need to add credits [verified]. Free models available with `:free` suffix [verified]. CTO must ask John before any new spending.
+Documented Business Codex 5-hour quotas: GPT-5.4-mini 1,200-7,000 local msgs / 5h; GPT-5.3-Codex 600-3,000 local + 200-1,200 cloud / 5h; GPT-5.4 400-2,000 / 5h. John expects quota pressure based on prior OpenRouter experience; instrument observation from day one.
+
+**Escape if Business quotas constrain operation:** ChatGPT Pro $200/mo on a *separate email* (Pro cannot coexist with Business on the same email since no Personal workspace exists). No PAYG Codex seats — explicitly avoiding accidental-overspend risk.
+
+**Fallback:** OpenRouter retained in Hermes/OpenClaw configs for the case where Codex OAuth is throttled or unavailable. Prepaid, not postpaid. CTO must ask John before any new spending.
 
 ## 7. Test Plan
 

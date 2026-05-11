@@ -1,0 +1,40 @@
+{
+  "id": "CTO-DECISION-008",
+  "timestamp": "2026-05-12T00:00:00Z",
+  "version_before": "0.1.0",
+  "version_after": "0.2.0",
+  "technology": "Primary LLM auth: ChatGPT Business standard seat (existing) via Codex OAuth — Pro on a separate email as the future escape if quotas constrain",
+  "source": "John's decision 2026-05-11 after research into Team/Business vs Pro upgrade paths. Architecture-decisions-john.md #2 originally specified Pro $200/mo; reality is John has Business at $30/seat and Pro cannot be added to the same email (no Personal workspace exists / was merged).",
+  "category": "llm-provider",
+  "architecture_layer": "brain",
+  "action": "adopted",
+  "supersedes_scope_of": "architecture-decisions-john.md #2 (which specified ChatGPT Pro $200/mo). The Codex OAuth approach is unchanged; the subscription tier is the change.",
+  "summary": "CTO operates against John's existing ChatGPT Business standard seat ($30/seat/month, single seat for John) using the openai-codex OAuth provider on both hemispheres. Codex Local + device-code authentication enabled at the workspace-admin level (chatgpt.com/admin/settings → Settings and Permissions). If observed Codex quota usage proves insufficient for autonomous CTO operation, the documented escape is to subscribe to ChatGPT Pro on a separate email (since Pro cannot be added to the existing Business workspace) and re-point the Codex OAuth profiles to the Pro account's email.",
+  "rationale": "John's existing Business seat already includes Codex with usable 5-hour-window quotas (1,200-7,000 GPT-5.4-mini local msgs / 5h, 600-3,000 GPT-5.3-Codex local + 200-1,200 cloud / 5h, 400-2,000 GPT-5.4 / 5h). Adding Pro $200/mo on top would require a separate email (Pro cannot coexist with Business on the same email once a Personal workspace has been merged or never existed). The Codex-seat PAYG option exists but introduces accidental-overspend risk that John deliberately wants to avoid (budget memory: '$200/mo ChatGPT sub, Hetzner VPS, no token purchases, ask John for any spending'). Conservative path: start with Business, observe quota behavior, add Pro on a separate email only if quotas demonstrably constrain operation.",
+  "expectations": {
+    "quota_risk": "John explicitly expects we may hit quota limits, drawing parallel to prior OpenRouter experience. Plan for this — instrument quota observation early, treat first quota wall as expected not surprising.",
+    "math_threshold_for_pro_upgrade": "Not yet defined. Will be derived from observed Codex usage during first weeks of operation. Likely: if standard-seat quota throttles CTO during a normal day's research + heartbeats + occasional GEPA pass, that's the trigger to add Pro."
+  },
+  "evaluation": {
+    "what_it_makes_obsolete": "architecture-decisions-john.md #2 'ChatGPT Pro $200/mo' as the singular LLM tier. The Codex OAuth mechanism survives; the tier is Business now.",
+    "cost_of_switching": "Documentation updates across install plan, hemisphere cost section, llm-strategy.md, codex-oauth-setup.md, MEMORY.md, PRD.md. No infrastructure change — Codex OAuth flow is identical Business vs Pro.",
+    "cost_of_staying_pro_design": "John would need to either (a) sign up for a separate Pro email today ($200/mo for capacity we don't yet know we need), or (b) accept the install plan being inaccurate about the actual subscription path. Neither is justified pre-operation.",
+    "monthly_cost": "$30/seat (Business, already paid by John). Additional cost only if Pro is added later on a separate email: +$200/mo. Total ceiling if Pro is added: $230/mo. No PAYG exposure — Codex seats not used.",
+    "material_change": true
+  },
+  "test_results": {
+    "tested": false,
+    "notes": "Codex Local + device-code toggles already enabled in John's Business workspace admin. End-to-end verification happens during install (test-plan.md §1.5 confirms openai-codex auth profile exists, §3.2 confirms both halves hit Codex during a real prompt)."
+  },
+  "rollback": {
+    "instructions": "Switch the openai-codex profile on either hemisphere to point at a different email (Pro account, separate OpenAI account, or revert to OpenRouter fallback). No data migration required — Codex OAuth is purely an auth boundary."
+  },
+  "related_docs": [
+    "wiki/architecture-decisions-john.md (#2 — being updated to reflect this)",
+    "wiki/llm-strategy.md",
+    "wiki/codex-oauth-setup.md",
+    "install-plan.md (§1.1 — ChatGPT Pro $200 prereq removed)",
+    "hemisphere.md (cost section)",
+    "logs/decisions/CTO-DECISION-005.json (two-hemisphere context)"
+  ]
+}

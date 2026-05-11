@@ -378,24 +378,33 @@ Every entry includes a documented `search_trail` — no silent escalations. Full
 
 The right-tool-for-the-right-job principle wins because most worker calls don't need frontier reasoning — classification, extraction, summarisation, tool invocation, skill execution all work on budget-tier models. The orchestrator's per-token cost is small relative to total spend because the orchestrator runs on relatively few tokens compared to actual task execution.
 
-### Our actual cost model — Codex OAuth on both halves [verified]
+### Our actual cost model — Codex OAuth on John's existing Business seat [verified — CTO-DECISION-008]
 
-Both OpenClaw and Hermes verified to support `openai-codex` OAuth against a ChatGPT subscription (see Provider Strategy section below). Implications:
+Both OpenClaw and Hermes verified to support `openai-codex` OAuth against a ChatGPT subscription. Reality: John has an existing **ChatGPT Business standard seat at $30/seat** (single seat). Pro $200/mo cannot be added to the same email since John has no Personal workspace. Implications:
 
-- **Model cost: flat $200/mo ChatGPT Pro.** One subscription powers both hemispheres. No per-token billing on the inference side at all.
-- **Rate-limit cost: real but managed.** ChatGPT Pro $200 = 20× Plus limits (25× through 2026-05-31 promo). If we burn through them, we get throttled, not billed extra.
-- **Embeddings: separate, pennies.** Codex subscription does NOT include embeddings. We need a tiny `OPENAI_API_KEY` for `text-embedding-3` — costs ~pennies per month at our scale.
+- **Model cost: $30/month** — John's existing Business seat, which already includes Codex.
+- **Codex 5-hour quotas on Business [verified — OpenAI Codex rate card]:**
+  - GPT-5.4-mini: 1,200-7,000 local msgs / 5h
+  - GPT-5.3-Codex: 600-3,000 local + 200-1,200 cloud msgs / 5h
+  - GPT-5.4: 400-2,000 / 5h
+  - Code Reviews: 400-1,000 / 5h
+- **Expected quota pressure.** John explicitly expects we may hit limits, drawing parallel to prior OpenRouter quota issues. Instrument quota observation from day one. Treat first throttle as expected, not a surprise.
+- **Escape if Business quotas constrain operation:** ChatGPT Pro on a *separate email* (~$200/mo additional), re-point the Codex OAuth profiles. **No PAYG Codex seats** — John explicitly avoiding accidental-overspend risk.
+- **Embeddings: separate, pennies.** Codex subscription does NOT include embeddings. We need a tiny `OPENAI_API_KEY` for `text-embedding-3`.
 - **Inter-agent A2A traffic: not metered.** A2A is JSON-RPC over HTTP; the only model spend is when an agent calls its LLM. The protocol itself is free.
 
-### Reasonable forecast
+### Cost ceiling
 
-The design is **at or below the existing CTO single-framework forecast** of $12-45/mo from `wiki/v1-evaluation.md` R10 — because we're paying the $200/mo ChatGPT Pro anyway (already in the CTO budget memory) and using the same subscription for both halves instead of buying a second one.
+- **Day 1:** $30/month (existing Business seat) + pennies for embeddings.
+- **If quotas hold:** indefinite operation at $30/month.
+- **If quotas constrain and Pro is added on a separate email:** $30 + $200 = $230/month ceiling. Adding Pro is a deliberate decision, not an automatic billing event.
+- **Worst case is bounded.** No PAYG. No accidental overspend.
 
 ### Standing risks (real, not cost-shaped)
 
-- **Rate-limit exhaustion** — heavy GEPA passes + many skill executions on Hermes could burn through Codex quotas. Need a budget-aware throttle on Hermes.
-- **Subscription-tier limits "feel tighter than ChatGPT web"** [verified — known GitHub issue]. Plan for this.
+- **Rate-limit exhaustion** — heavy GEPA passes + many skill executions on Hermes could burn through Codex quotas during a 5-hour window. Need a budget-aware throttle on Hermes; instrument quota observation early.
 - **Codex OAuth can drift** — both halves maintain separate credential stores; one expired token kills its hemisphere. Need a health monitor on both.
+- **Single-seat single-account dependency** — if John's Business seat is suspended or downgraded, both hemispheres lose LLM access simultaneously. OpenRouter fallback config in both hemispheres mitigates this if pre-configured with a working key.
 
 ---
 
