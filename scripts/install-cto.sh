@@ -26,6 +26,16 @@ echo "=== CTO Two-Hemisphere Install — $(date -Is) ==="
 echo "Log: ${LOG_FILE}"
 echo ""
 
+# Load nvm BEFORE the prereq check — script runs under nohup / non-interactive
+# shell where .bashrc isn't sourced. Without this, `node` isn't on PATH at §1.
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  # shellcheck disable=SC1091
+  . "$NVM_DIR/nvm.sh" >/dev/null 2>&1 || true
+fi
+# Also pick up uv and local-bin paths in case prior steps installed them
+export PATH="$HOME/.local/bin:$PATH"
+
 fail() { echo "FAIL: $*" >&2; exit 1; }
 note() { echo "→ $*"; }
 section() { echo ""; echo "═══ $* ═══"; }
