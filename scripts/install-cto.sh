@@ -156,17 +156,21 @@ fi
 have hermes || fail "Hermes installer did not produce \`hermes\` on PATH"
 hermes --version
 
-note "Installing github-mcp-server (Go binary)"
+note "Installing github-mcp-server (Go binary, tarball-packaged)"
 if ! have github-mcp-server; then
+  # Releases are named: github-mcp-server_Linux_x86_64.tar.gz (not "linux-amd64")
   GH_MCP_URL=$(curl -fsSL https://api.github.com/repos/github/github-mcp-server/releases/latest \
     | grep '"browser_download_url"' \
-    | grep 'linux-amd64' \
+    | grep 'Linux_x86_64\.tar\.gz' \
     | head -1 \
-    | cut -d '"' -f 4)
-  [ -n "${GH_MCP_URL}" ] || fail "Could not find github-mcp-server linux-amd64 release"
-  curl -fsSL "${GH_MCP_URL}" -o /tmp/github-mcp-server
+    | cut -d '"' -f 4 || true)
+  [ -n "${GH_MCP_URL}" ] || fail "Could not find github-mcp-server Linux_x86_64.tar.gz release asset"
+  curl -fsSL "${GH_MCP_URL}" -o /tmp/gh-mcp.tar.gz
+  tar -xzf /tmp/gh-mcp.tar.gz -C /tmp github-mcp-server
   sudo install -m 0755 /tmp/github-mcp-server /usr/local/bin/github-mcp-server
+  rm -f /tmp/gh-mcp.tar.gz /tmp/github-mcp-server
 fi
+github-mcp-server --version 2>&1 | head -1 || true
 
 note "Installing hcloud CLI"
 if ! have hcloud; then
