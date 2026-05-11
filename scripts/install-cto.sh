@@ -120,7 +120,7 @@ section "Section 4 — Install OpenClaw, Hermes, supporting binaries"
 
 note "Installing OpenClaw (target latest — must be v2026.5.6+ for the device-code SSH bug fix, issue #74212)"
 if ! have openclaw; then
-  npm install -g openclaw@latest
+  sudo npm install -g openclaw@latest
 fi
 OC_VERSION=$(openclaw --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
 note "OpenClaw version: ${OC_VERSION}"
@@ -129,7 +129,7 @@ note "Installing Codex CLI (@openai/codex) — drives the device-code OAuth flow
 # Putting Codex CLI first means we do ONE device-code approval (codex login), populating ~/.codex/auth.json.
 # OpenClaw and Hermes both pick up from that file (Hermes natively imports it; OpenClaw's models auth can reuse).
 if ! have codex; then
-  npm install -g @openai/codex
+  sudo npm install -g @openai/codex
 fi
 codex --version
 
