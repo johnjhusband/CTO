@@ -269,7 +269,6 @@ cat > "${OPENCLAW_DIR}/openclaw.json" <<JSON
     "OPENAI_API_KEY": "${OPENAI_API_KEY:-}"
   },
   "gateway": { "bind": "loopback", "auth": { "mode": "token" }, "port": 18789 },
-  "skills": { "autoInstall": false },
   "plugins": { "entries": { "bonjour": { "enabled": false } } },
   "agents": {
     "defaults": {
@@ -440,11 +439,14 @@ JSON
 
 note "Repo push"
 cd "${CTO_ROOT}"
+# Configure git identity for the cto user if not already set
+git config user.name >/dev/null 2>&1 || git config user.name "CTO"
+git config user.email >/dev/null 2>&1 || git config user.email "johnjhusband@users.noreply.github.com"
 if [ -n "$(git status --porcelain)" ]; then
   git add -A
   git commit -m "Two-hemisphere install — DECISION-007 install state recorded"
 fi
-git push origin main || note "Push failed — verify deploy key has write access (see architecture-decisions-john.md #10)"
+git push origin master 2>&1 || note "Push failed — verify remote has token / deploy key with write access"
 
 # ─── Verification gates (Phase 1 + 2 from test-plan.md) ─────────────────────
 
