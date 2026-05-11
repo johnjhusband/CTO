@@ -155,6 +155,8 @@ curl -fsS http://127.0.0.1:<registry_port>/cards | grep -qE "openclaw|hermes"
 
 ## Phase 3 — Functional Check (run manually by John after install)
 
+> **2026-05-11 update — Phase 3 is currently UNRUNNABLE on v1.0 install.** Inter-hemisphere delegation (the thing tested by §3.1 below) is not wired: neither agent has an `a2a_delegate` tool or any reference to the other hemisphere. See `hemisphere.md` "CURRENT IMPLEMENTATION STATUS" section. The Phase 3 tests below describe the INTENDED behavior once the wiring is built; they will return false negatives if run today.
+
 The canonical first-real-prompt: a single prompt that exercises decomposition → delegation → execution → synthesis → return.
 
 ### 3.1 Canonical bidirectional delegation test
