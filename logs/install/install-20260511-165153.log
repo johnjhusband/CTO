@@ -1,0 +1,326 @@
+=== CTO Two-Hemisphere Install — 2026-05-11T16:51:53+00:00 ===
+Log: /opt/cto/logs/install/install-20260511-165153.log
+
+
+═══ Section 1 — Verify human-required prereqs ═══
+→ BRAVE_API_KEY not set — Brave search MCP will fail at runtime
+→ Env vars present
+→ VPS state OK
+
+═══ Section 3 — System prereqs ═══
+→ Updating apt
+→ Installing system packages
+Reading package lists...
+Building dependency tree...
+Reading state information...
+git is already the newest version (1:2.43.0-1ubuntu7.3).
+curl is already the newest version (8.5.0-2ubuntu10.9).
+build-essential is already the newest version (12.10ubuntu1).
+python3.12-venv is already the newest version (3.12.3-1ubuntu0.13).
+python3-pip is already the newest version (24.0+dfsg-1ubuntu1.3).
+ufw is already the newest version (0.36.2-6).
+fail2ban is already the newest version (1.0.2-3ubuntu0.1).
+sqlite3 is already the newest version (3.45.1-1ubuntu2.5).
+jq is already the newest version (1.7.1-3ubuntu0.24.04.2).
+0 upgraded, 0 newly installed, 0 to remove and 1 not upgraded.
+→ Installing uv (Hermes Python manager)
+→ A2A SDK install skipped — v1.0 minimal registry uses only Python stdlib
+→ OS tweaks (IPv6 off, systemd lingering on)
+
+═══ Section 4 — Install OpenClaw, Hermes, supporting binaries ═══
+→ Installing OpenClaw (target latest — must be v2026.5.6+ for the device-code SSH bug fix, issue #74212)
+→ OpenClaw version: 2026.5.7
+→ Installing Codex CLI (@openai/codex) — drives the device-code OAuth flow that OpenClaw and Hermes both consume
+codex-cli 0.130.0
+→ Installing engram (Gentleman-Programming/engram, Go binary, tarball-packaged)
+engram 1.15.10
+→ Installing Hermes Agent
+Hermes Agent v0.13.0 (2026.5.7)
+Project: /home/cto/.hermes/hermes-agent
+Python: 3.11.15
+OpenAI SDK: 2.36.0
+Update available: 2 commits behind — run 'hermes update'
+→ Installing github-mcp-server (Go binary, tarball-packaged)
+GitHub MCP Server
+→ Installing hcloud CLI
+hcloud 1.64.1
+→ Installing OpenClaw daemon (systemd user service)
+→ Installing Hermes daemon (systemd user service)
+
+═══ Section 5 — Configure OpenClaw + Hermes + A2A ═══
+→ Codex OAuth — primary device-code flow via Codex CLI (single approval)
+→ ~/.codex/auth.json already present — reusing existing Codex auth
+{
+  "auth_mode": "chatgpt",
+  "last_refresh": "2026-05-11T16:50:22.397237684Z",
+  "has_access_token": true
+}
+→ Codex OAuth — register profile with OpenClaw (reuses Codex CLI auth state)
+error: unknown option '--device-code'
+→ (OpenClaw auth login non-zero — verify with: openclaw models auth list)
+→ Codex OAuth — register profile with Hermes (auto-imports ~/.codex/auth.json)
+→ (Hermes 'model add' subcommand may have different syntax — verify manually with: hermes model)
+→ Writing OpenClaw openclaw.json
+→ Validating OpenClaw config
+▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+██░▄▄▄░██░▄▄░██░▄▄▄██░▀██░██░▄▄▀██░████░▄▄▀██░███░██
+██░███░██░▀▀░██░▄▄▄██░█░█░██░█████░████░▀▀░██░█░█░██
+██░▀▀▀░██░█████░▀▀▀██░██▄░██░▀▀▄██░▀▀░█░██░██▄▀▄▀▄██
+▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+                  🦞 OPENCLAW 🦞                    
+ 
+┌  OpenClaw doctor
+│
+◇  Config warnings ──────────────────────────────────────────────────╮
+│                                                                    │
+│  - mcp.servers.brave-search.env.BRAVE_API_KEY: Missing env var     │
+│    "BRAVE_API_KEY" - feature using this value will be unavailable  │
+│                                                                    │
+├────────────────────────────────────────────────────────────────────╯
+│
+◇  Doctor changes ──────────────────────────────────────────────────────╮
+│                                                                       │
+│  openai-codex/gpt-5.5 model configured, enabled automatically.        │
+│  openrouter/openrouter/auto model configured, enabled automatically.  │
+│                                                                       │
+├───────────────────────────────────────────────────────────────────────╯
+│
+◇  Doctor warnings ──────────────────────────────────────────────────────╮
+│                                                                        │
+│  - `openai-codex/*` model refs use the Codex OAuth route through       │
+│    OpenClaw PI.                                                        │
+│  - agents.defaults.model.primary: openai-codex/gpt-5.5 can become      │
+│    openai/gpt-5.5; current runtime is "pi".                            │
+│  - Run `openclaw doctor --fix`: it rewrites configured model refs and  │
+│    stale sessions; primary routes select `agentRuntime.id: "codex"`    │
+│    only when the Codex runtime is installed, enabled, and has usable   │
+│    OAuth.                                                              │
+│                                                                        │
+├────────────────────────────────────────────────────────────────────────╯
+│
+◇  Doctor ──────────────────────────────────────────────╮
+│                                                       │
+│  Run "openclaw doctor --fix" to apply these changes.  │
+│                                                       │
+├───────────────────────────────────────────────────────╯
+│
+◇  Gateway ──────────────────────────────────────────────────────────╮
+│                                                                    │
+│  gateway.mode is unset; gateway start will be blocked.             │
+│  Fix: run openclaw configure and set Gateway mode (local/remote).  │
+│  Or set directly: openclaw config set gateway.mode local           │
+│                                                                    │
+├────────────────────────────────────────────────────────────────────╯
+│
+◇  Gateway auth ──────────────────────────────────────────────────╮
+│                                                                 │
+│  Gateway auth is off or missing a token. Token auth is now the  │
+│  recommended default (including loopback).                      │
+│                                                                 │
+├─────────────────────────────────────────────────────────────────╯
+│
+◇  Command owner ─────────────────────────────────────────────────────────╮
+│                                                                         │
+│  No command owner is configured.                                        │
+│  A command owner is the human operator account allowed to run           │
+│  owner-only commands and approve dangerous actions, including           │
+│  /diagnostics, /export-trajectory, /config, and exec approvals.         │
+│  DM pairing only lets someone talk to the bot; it does not make that    │
+│  sender the owner for privileged commands.                              │
+│  Fix: set commands.ownerAllowFrom to your channel user id, for example  │
+│  openclaw config set commands.ownerAllowFrom '["telegram:123456789"]'   │
+│  Restart the gateway after changing this if it is already running.      │
+│                                                                         │
+├─────────────────────────────────────────────────────────────────────────╯
+│
+◇  Plugin registry ─────────────────────────────────────────╮
+│                                                           │
+│  Persisted plugin registry is missing or stale.           │
+│  Repair with openclaw doctor --fix to rebuild             │
+│  ~/.openclaw/plugins/installs.json from enabled plugins.  │
+│                                                           │
+├───────────────────────────────────────────────────────────╯
+│
+◇  State integrity ────────────────────────────────────────────────────────╮
+│                                                                          │
+│  - OAuth dir not present (~/.openclaw/credentials). Skipping create      │
+│    because no WhatsApp/pairing channel config is active.                 │
+│  - Main session agent:main:main appears to be a heartbeat-owned session  │
+│    (1 heartbeat-only user message(s)).                                   │
+│    Doctor can move it to                                                 │
+│    agent:main:heartbeat-recovered-2026-05-11t16-52-04.404z and let the   │
+│    next interactive launch create a fresh main session.                  │
+│                                                                          │
+├──────────────────────────────────────────────────────────────────────────╯
+│
+◇  Security ─────────────────────────────────╮
+│                                            │
+│  - No channel security warnings detected.  │
+│  - Run: openclaw security audit --deep     │
+│                                            │
+├────────────────────────────────────────────╯
+│
+◇  Skills status ────────────╮
+│                            │
+│  Eligible: 13              │
+│  Missing requirements: 42  │
+│  Blocked by allowlist: 0   │
+│                            │
+├────────────────────────────╯
+│
+◇  Plugins ──────╮
+│                │
+│  Loaded: 66    │
+│  Imported: 0   │
+│  Disabled: 26  │
+│  Errors: 0     │
+│                │
+├────────────────╯
+│
+◇  Skills ─────────────────────────────────────────────────────────────────╮
+│                                                                          │
+│  Some skills are allowed for this agent but are not usable in the        │
+│  current runtime environment.                                            │
+│  - 1password: bins: op                                                   │
+│    install option: Install 1Password CLI (brew)                          │
+│  - apple-notes: bins: memo; os: darwin                                   │
+│  - apple-reminders: bins: remindctl; os: darwin                          │
+│  - bear-notes: bins: grizzly; os: darwin                                 │
+│  - blogwatcher: bins: blogwatcher                                        │
+│    install option: Install blogwatcher (go)                              │
+│  - blucli: bins: blu                                                     │
+│    install option: Install blucli (go)                                   │
+│  - bluebubbles: config: channels.bluebubbles                             │
+│  - camsnap: bins: camsnap                                                │
+│    install option: Install camsnap (brew)                                │
+│  - clawhub: bins: clawhub                                                │
+│    install option: Install clawhub (npm)                                 │
+│  - coding-agent: config: skills.entries.coding-agent.enabled             │
+│    install option: Install @anthropic-ai/claude-code (npm)               │
+│  - discord: config: channels.discord.token                               │
+│  - eightctl: bins: eightctl                                              │
+│    install option: Install eightctl (go)                                 │
+│  - gemini: bins: gemini                                                  │
+│    install option: Install Gemini CLI (brew)                             │
+│  - gh-issues: bins: gh                                                   │
+│    install option: Install GitHub CLI (brew)                             │
+│  - gifgrep: bins: gifgrep                                                │
+│    install option: Install gifgrep (go)                                  │
+│  - github: bins: gh                                                      │
+│    install option: Install GitHub CLI (brew)                             │
+│  - gog: bins: gog                                                        │
+│    install option: Install gog (brew)                                    │
+│  - goplaces: bins: goplaces; env: GOOGLE_PLACES_API_KEY                  │
+│    install option: Install goplaces (brew)                               │
+│  - himalaya: bins: himalaya                                              │
+│    install option: Install Himalaya (brew)                               │
+│  - imsg: bins: imsg; os: darwin                                          │
+│  - mcporter: bins: mcporter                                              │
+│    install option: Install mcporter (npm)                                │
+│  - model-usage: bins: codexbar; os: darwin                               │
+│  - nano-pdf: bins: nano-pdf                                              │
+│    install option: Install nano-pdf (uv)                                 │
+│  - notion: env: NOTION_API_KEY                                           │
+│  - obsidian: bins: obsidian-cli                                          │
+│    install option: Install obsidian-cli (brew)                           │
+│  - openai-whisper: bins: whisper                                         │
+│    install option: Install OpenAI Whisper (brew)                         │
+│  - openhue: bins: openhue                                                │
+│    install option: Install OpenHue CLI (brew)                            │
+│  - oracle: bins: oracle                                                  │
+│    install option: Install @steipete/oracle (npm)                        │
+│  - ordercli: bins: ordercli                                              │
+│    install option: Install ordercli (go)                                 │
+│  - peekaboo: bins: peekaboo; os: darwin                                  │
+│  - sag: bins: sag; env: ELEVENLABS_API_KEY                               │
+│    install option: Install sag (brew)                                    │
+│  - sherpa-onnx-tts: env: SHERPA_ONNX_RUNTIME_DIR, SHERPA_ONNX_MODEL_DIR  │
+│    install option: Download sherpa-onnx runtime (Linux x64)              │
+│    install option: Download Piper en_US lessac (high)                    │
+│  - slack: config: channels.slack                                         │
+│  - songsee: bins: songsee                                                │
+│    install option: Install songsee (brew)                                │
+│  - sonoscli: bins: sonos                                                 │
+│    install option: Install sonoscli (go)                                 │
+│  - spotify-player: any bins: spogo, spotify_player                       │
+│    install option: Install spogo (brew)                                  │
+│  - summarize: bins: summarize                                            │
+│    install option: Install summarize (brew)                              │
+│  - things-mac: bins: things; os: darwin                                  │
+│  - trello: env: TRELLO_API_KEY, TRELLO_TOKEN                             │
+│    install option: Install jq (brew)                                     │
+│  - voice-call: config: plugins.entries.voice-call.enabled                │
+│  - wacli: bins: wacli                                                    │
+│    install option: Install wacli (go)                                    │
+│  - xurl: bins: xurl                                                      │
+│    install option: Install xurl (brew)                                   │
+│  Disable unused skills: openclaw doctor --fix                            │
+│  Inspect details: openclaw skills check --agent <id> or openclaw skills  │
+│  info <name> --agent <id>                                                │
+│                                                                          │
+├──────────────────────────────────────────────────────────────────────────╯
+│
+◇  Bootstrap file size ──────────────────────────────────────────────────╮
+│                                                                        │
+│  Workspace bootstrap files exceed limits and will be truncated:        │
+│  - SOUL.md: 13,945 raw / 11,999 injected (14% truncated; max/file)     │
+│  - AGENTS.md: 11,283 chars (94% of max/file 12,000)                    │
+│  Total bootstrap injected chars: 34,938 (58% of max/total 60,000).     │
+│  Total bootstrap raw chars (before truncation): 36,884.                │
+│                                                                        │
+│  - Tip: tune `agents.defaults.bootstrapMaxChars` for per-file limits.  │
+│                                                                        │
+├────────────────────────────────────────────────────────────────────────╯
+│
+◇  Gateway ──────────────╮
+│                        │
+│  Gateway not running.  │
+│                        │
+├────────────────────────╯
+│
+◇  Gateway connection ────────────────────────╮
+│                                             │
+│  Gateway target: ws://127.0.0.1:18789       │
+│  Source: local loopback                     │
+│  Config: /home/cto/.openclaw/openclaw.json  │
+│  Bind: loopback                             │
+│                                             │
+├─────────────────────────────────────────────╯
+│
+◇  Gateway ───────────────────────────────────────────────────────────────╮
+│                                                                         │
+│  Runtime: stopped (state activating, sub auto-restart, last exit 0,     │
+│  reason 1)                                                              │
+│  Service is loaded but not running (likely exited immediately).         │
+│  File logs: /tmp/openclaw-1000/openclaw-2026-05-11.log                  │
+│  Logs: journalctl --user -u openclaw-gateway.service -n 200 --no-pager  │
+│  Restart attempts: /home/cto/.openclaw/logs/gateway-restart.log         │
+│                                                                         │
+├─────────────────────────────────────────────────────────────────────────╯
+Run "openclaw doctor --fix" to apply changes.
+│
+└  Doctor complete.
+
+→ Writing Hermes config
+✓ Set model = openai-codex/gpt-5.5 in /home/cto/.hermes/config.yaml
+✓ Set gateway.port = 8642 in /home/cto/.hermes/config.yaml
+✓ Set gateway.bind = loopback in /home/cto/.hermes/config.yaml
+✓ Set api_server.enabled = True in /home/cto/.hermes/config.yaml
+✓ Set api_server.key = 2896b5d058a50c4bd358b220d48f111454b859170ef247b9ac6b3f1e803ae619 in /home/cto/.hermes/config.yaml
+✓ Set OPENAI_API_KEY in /home/cto/.hermes/.env
+→ Setting up A2A registry
+
+═══ Section 6 — Start, harden network, finalize ═══
+→ Starting daemons
+→ Configuring UFW (network defense in depth — gateways stay loopback)
+Default incoming policy changed to 'deny'
+(be sure to update your rules accordingly)
+Default outgoing policy changed to 'allow'
+(be sure to update your rules accordingly)
+Skipping adding existing rule
+Skipping adding existing rule (v6)
+Firewall is active and enabled on system startup
+Synchronizing state of fail2ban.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install enable fail2ban
+→ Writing decision log CTO-DECISION-007 (install state)
+→ Repo push

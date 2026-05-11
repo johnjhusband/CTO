@@ -1,0 +1,7 @@
+{
+  "name": "hermes",
+  "role": "right-hemisphere",
+  "description": "Worker: skill execution, GEPA learning loop, skill auto-creation",
+  "endpoint": "http://127.0.0.1:8642",
+  "capabilities": ["skill-execution", "research-synthesis", "long-horizon-work", "self-evolution"]
+}
