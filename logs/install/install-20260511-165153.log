@@ -324,3 +324,27 @@ Synchronizing state of fail2ban.service with SysV service script with /usr/lib/s
 Executing: /usr/lib/systemd/systemd-sysv-install enable fail2ban
 → Writing decision log CTO-DECISION-007 (install state)
 → Repo push
+[master 1de4a8e] Two-hemisphere install — DECISION-007 install state recorded
+ 12 files changed, 3754 insertions(+)
+ create mode 100644 a2a/registry/cards/hermes.json
+ create mode 100644 a2a/registry/cards/openclaw.json
+ create mode 100755 a2a/registry/server.py
+ create mode 100644 logs/decisions/CTO-DECISION-007.json
+ create mode 100644 logs/install/install-20260511-162330.log
+ create mode 100644 logs/install/install-20260511-162458.log
+ create mode 100644 logs/install/install-20260511-162554.log
+ create mode 100644 logs/install/install-20260511-162914.log
+ create mode 100644 logs/install/install-20260511-163221.log
+ create mode 100644 logs/install/install-20260511-164935.log
+ create mode 100644 logs/install/install-20260511-165153.log
+ create mode 100644 logs/install/install-active.log
+To https://github.com/johnjhusband/CTO.git
+   dc393b7..1de4a8e  master -> master
+
+═══ Verification — Phase 1 (static) + Phase 2 (services) ═══
+→ 1.1 Binaries on PATH
+→ 1.3 Config files exist
+→ 1.6 No Telegram artefacts
+→ 1.7 systemd units present
+→ 2.1 Daemons active
+FAIL: 2.1 openclaw-gateway not active
