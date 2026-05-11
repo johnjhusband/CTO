@@ -133,18 +133,25 @@ if ! have codex; then
 fi
 codex --version
 
-note "Installing engram (Gentleman-Programming/engram, Go binary)"
+note "Installing engram (Gentleman-Programming/engram, Go binary, tarball-packaged)"
+# Force reinstall if the existing /usr/local/bin/engram is the tarball-as-binary mistake from an earlier run
+if [ -f /usr/local/bin/engram ] && ! /usr/local/bin/engram --version >/dev/null 2>&1; then
+  sudo rm -f /usr/local/bin/engram
+fi
 if ! have engram; then
+  # Real release assets: engram_X.Y.Z_linux_amd64.tar.gz
   ENGRAM_URL=$(curl -fsSL "https://api.github.com/repos/Gentleman-Programming/engram/releases/latest" \
     | grep '"browser_download_url"' \
-    | grep -E 'linux.*amd64|linux.*x86_64' \
+    | grep -E 'linux_amd64\.tar\.gz' \
     | head -1 \
-    | cut -d '"' -f 4)
-  [ -n "${ENGRAM_URL}" ] || fail "Could not find engram linux/amd64 release asset"
-  curl -fsSL "${ENGRAM_URL}" -o /tmp/engram
+    | cut -d '"' -f 4 || true)
+  [ -n "${ENGRAM_URL}" ] || fail "Could not find engram linux_amd64.tar.gz release asset"
+  curl -fsSL "${ENGRAM_URL}" -o /tmp/engram.tar.gz
+  tar -xzf /tmp/engram.tar.gz -C /tmp engram
   sudo install -m 0755 /tmp/engram /usr/local/bin/engram
+  rm -f /tmp/engram.tar.gz /tmp/engram
 fi
-engram --version || engram version || true
+engram --version 2>/dev/null || engram version 2>/dev/null || true
 
 note "Installing Hermes Agent"
 if ! have hermes; then
@@ -183,7 +190,7 @@ hcloud version
 note "Installing OpenClaw daemon (systemd user service)"
 # Onboard only if not already onboarded
 if ! systemctl --user list-unit-files | grep -q openclaw-gateway; then
-  openclaw onboard --non-interactive \
+  openclaw onboard --non-interactive --accept-risk \
     --mode local \
     --auth-choice "openrouter-api-key" \
     --openrouter-api-key "${OPENROUTER_API_KEY:-placeholder}" \
