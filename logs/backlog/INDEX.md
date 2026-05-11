@@ -6,4 +6,4 @@ Summary table and operating rules live in the top-level [BACKLOG.md](../../BACKL
 
 | ID | Date | Type | Priority | Status |
 |---|---|---|---|---|
-| _none yet_ | | | | |
+| [BACKLOG-001](BACKLOG-001.json) | 2026-05-11 | missing-skill | P1 | escalated-to-john |

@@ -1,0 +1,24 @@
+{
+  "id": "BACKLOG-001",
+  "timestamp": "2026-05-11T20:00:00Z",
+  "type": "missing-skill",
+  "priority": "P1",
+  "status": "escalated-to-john",
+  "surfaced_by": "john",
+  "surfaced_from": "Conversation 2026-05-11 — communication-path step 5; deferred from CTO-DECISION-006 v1.1 scope",
+  "affects": "human-interface (A2A2H)",
+  "capability_needed": "Self-hosted PWA at cto.husband.llc — chat with OpenClaw/Hermes from phone, web-push notifications, A2A wire format",
+  "details": "John wants the Telegram experience (chat from phone, push notifications when CTO has output) without per-clone configuration friction. Discord and Telegram both require per-instance bot configuration which breaks on clone-test-replace. Custom self-hosted PWA solves this: one codebase, hosted on the CTO VPS at cto.husband.llc, A2A on the wire. John bookmarks once to Android home screen (PWA install), looks like a native app. Web Push API delivers async notifications natively. No per-clone setup — the new CTO instance just continues serving the same hostname. Per CTO-DECISION-006 'A2A human interface — implementation in a subsequent phase, not v1.0 install scope.' This is that subsequent phase.",
+  "search_trail": [
+    "Surveyed alternatives 2026-05-11: SSH/tunnel rejected by John (no SSH), Tailscale rejected (not elegant), Cloudflare Tunnel + Access rejected (not elegant), Discord webhook drops the bot-clone problem but inbound chat still needs a bot → same problem, Telegram dropped (CTO-DECISION-006), email rejected, Apple Push rejected (John on Android), ChatGPT Custom GPT can't push asynchronously.",
+    "Identified self-hosted PWA as the only path that delivers chat+push from phone with one codebase and no per-clone reconfiguration."
+  ],
+  "proposed_resolution": "Build PWA. Stack: simple HTML+CSS+JS frontend served by Caddy at cto.husband.llc (auto-TLS via Let's Encrypt). Backend = small Python/Node service that bridges browser ↔ A2A registry + hemisphere gateways. Service worker for Web Push notifications using VAPID keys. DNS: husband.llc is registered at Namecheap (nameservers dns1.registrar-servers.com / dns2.registrar-servers.com); subdomain A record cto.husband.llc → VPS IP needs to be created in Namecheap's dashboard.",
+  "blast_radius": "Building this adds Caddy as a new daemon, opens ports 80+443 publicly on the VPS, requires DNS record creation by John. v1.0 architecture (loopback-bound gateways) is unchanged — PWA backend is a new public service that talks to gateways over loopback.",
+  "rollback_plan": "Stop Caddy daemon, remove DNS A record, delete /opt/cto/webui/. Loopback-bound gateways are unaffected.",
+  "john_review_date": "2026-05-11",
+  "resolution_date": null,
+  "resolution_notes": null,
+  "related_decision_log": "CTO-DECISION-006",
+  "dns_finding_2026-05-11": "husband.llc registered + DNS hosted at Namecheap (FreeDNS). John can manage DNS via the Namecheap account dashboard. Creating cto.husband.llc → VPS_IP is a one-time A record addition there."
+}

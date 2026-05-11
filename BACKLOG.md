@@ -36,13 +36,13 @@
 
 | ID | Date | Type | Priority | Affects | Capability Needed | Status |
 |---|---|---|---|---|---|---|
-| _none yet — first entries arrive when CTO begins running_ | | | | | | |
+| [BACKLOG-001](logs/backlog/BACKLOG-001.json) | 2026-05-11 | missing-skill | P1 | human-interface | Self-hosted PWA at `cto.husband.llc` — A2A2H chat + web-push, no per-clone config | escalated-to-john |
 
 ## Escalated to John (Awaiting Decision)
 
 | ID | Escalated | Type | Capability | What John Needs to Decide |
 |---|---|---|---|---|
-| _none yet_ | | | | |
+| BACKLOG-001 | 2026-05-11 | missing-skill | Self-hosted PWA (A2A2H chat + push) | When to build (v1.1 scope per CTO-DECISION-006). DNS: husband.llc lives at Namecheap; John creates `cto.husband.llc` A record when ready. |
 
 ## Resolved / Abandoned
 
