@@ -47,12 +47,24 @@ It is the first employee in a planned AI workforce. Once CTO is stable and self-
 
 ## How It Works
 
-1. **Daily Research** — CTO autonomously scans GitHub, HN, arXiv, YouTube, changelogs, and the broader web for new AI technologies. OpenClaw plans the research scope; Hermes executes the multi-source synthesis.
+## Install
+
+One command from this repo, on your laptop (or an existing CTO instance for autonomous self-cloning):
+
+```bash
+bash scripts/install.sh
+```
+
+Required input: `~/.cto-secrets.env` populated (see `example.cto-secrets.env`). The script provisions a fresh Hetzner VPS, bootstraps it, copies the `.env`, clones the repo, runs `install-cto.sh`, verifies the install. Mid-run human action: approve one Codex device-code prompt on your phone. See `install-plan.md` and `test-plan.md` for the details.
+
+## How It Works
+
+1. **Daily Research** — CTO autonomously scans GitHub, HN, arXiv, YouTube, changelogs, and the broader web for new AI technologies. OpenClaw plans the research scope; Hermes executes the multi-source synthesis. *(Inter-hemisphere wiring not yet built — see `hemisphere.md` "CURRENT IMPLEMENTATION STATUS".)*
 2. **Evaluate** — Filters signal from noise via LLM relevance scoring, determines what's worth integrating.
 3. **Self-Improve (Hermes side, continuous)** — Hermes's GEPA loop reads execution traces and proposes patches to skills, prompts, tool descriptions, and tool implementation code via PRs against the CTO repo. Anything outside Phase 1-4 scope (kernel, memory ABC, gateway core, framework swap) is logged to `BACKLOG.md` for John's review.
-4. **Clone-Test-Replace (macro evolution)** — Provisions a fresh Hetzner VPS, applies the candidate change, runs full test suite on real infrastructure. If tests pass, the candidate becomes the new CTO. If they fail, it iterates or abandons with a documented reason. Hermes-proposed PRs feed this same gate.
+4. **Clone-Test-Replace (macro evolution)** — `scripts/install.sh` provisions a fresh Hetzner VPS, applies the candidate change, runs full test suite on real infrastructure. If tests pass, the candidate becomes the new CTO. If they fail, it iterates or abandons with a documented reason. Hermes-proposed PRs feed this same gate.
 5. **Archive** — Every replaced version is archived with Hetzner snapshots and git tags for instant rollback.
-6. **Report** — Every decision is logged. Daily report (delivered via the A2A-based human interface — see CTO-DECISION-006) includes a `BACKLOG.md` summary so John sees capability gaps within 24 hours.
+6. **Report** — Every decision is logged. Daily report (delivered via the A2A-based human interface — see CTO-DECISION-006; *implementation pending*) includes a `BACKLOG.md` summary so John sees capability gaps within 24 hours.
 
 ## Architecture
 

@@ -1,6 +1,15 @@
 # CTO Install Plan — Two-Hemisphere Build
 
-**L0:** Plan for the install script that builds CTO on Hetzner VPS **46.224.81.84** (cx43, openclaw v2026.5.3-1 already installed but not configured, per `claude_wake_state.json`). Two hemispheres on one VPS: OpenClaw (left, thinking, port 18789) + Hermes (right, doing, port 8642 default) + **A2A protocol** as both corpus callosum AND the communication layer to John (replacing Telegram per architecture-decisions-john.md #9). Both halves on Codex OAuth via one ChatGPT Pro. Six sections plus deconfliction analysis up front.
+> **2026-05-11 update:** Single-command install is now the canonical path.
+> Provision + bootstrap + install + verify is one script:
+> ```
+> bash scripts/install.sh
+> ```
+> Run from your laptop (or an existing CTO instance for autonomous clone-test-replace).
+> Required input: `~/.cto-secrets.env` populated with API tokens (see `example.cto-secrets.env`).
+> Zero manual steps outside the script. Memory: `feedback_install_must_be_reproducible_from_repo.md`.
+
+**L0:** Plan for the install. Two hemispheres on one Hetzner VPS: OpenClaw (left, thinking, port 18789) + Hermes (right, doing, port 8642) + A2A registry (port 9000) + **A2A protocol** as both corpus callosum AND eventual comms layer to John (replacing Telegram per CTO-DECISION-006). Both halves on Codex OAuth via one ChatGPT Pro/Business. The wrapper script `scripts/install.sh` provisions a fresh Hetzner VPS, bootstraps it (cto user, Node 22 via NodeSource, /opt/cto, SSH access, `.env` from your secrets, repo clone), then invokes `scripts/install-cto.sh` on the VPS as the cto user. The on-VPS script handles OpenClaw + Hermes install, Codex device-code OAuth, A2A registry setup, daemons, UFW, decision logging, verification gates.
 
 **L1:** This is a **one-time, human-directed bundled install**, not an autonomous upgrade — SOUL.md #15 ("one material change per cycle") applies to CTO's autonomous upgrade discipline, not the initial human-driven build. Sections: (0) Pre-install conflict analysis; (1) Human-required prereqs (none done yet per John as of 2026-05-11 — remind when ready); (2) Download packages and binaries; (3) Install system prereqs (runtimes, OS tweaks); (4) Install OpenClaw + Hermes + supporting binaries; (5) Configure both halves + publish A2A Agent Cards; (6) Post-config verification + decision log entry. **No Telegram anywhere** — replaced by A2A + human interface (interface implementation is a separate phase, not v1.0 install scope). Full autonomy preserved: no hardening of the autonomy/sandbox layer, per architecture-decisions-john.md #3 and #8.
 
@@ -55,21 +64,28 @@ Co-locating OpenClaw and Hermes on one VPS. Conflicts identified and resolved be
 
 ## Section 1 — Human-Required Prerequisites
 
-> **Status as of 2026-05-11:** John has indicated none of these are done yet. **Remind John when he's ready to run the install.**
+The bootstrap script handles every step that can be automated. The human-only prereqs are:
 
-These cannot be automated. John completes them before running the install script. The script fails fast if any required item is missing.
-
-### 1.1 Subscriptions and tokens
-1. **ChatGPT Business** (existing — John already pays $30/seat). Workspace admin toggles **must** be enabled at https://chatgpt.com/admin/settings → Settings and Permissions:
+### 1.1 One-time account setup (manual, can't be scripted)
+1. **ChatGPT Business subscription** — $30/seat, already in place. Workspace admin toggles at https://chatgpt.com/admin/settings → Settings and Permissions:
    - **"Allow members to use Codex Local"** = ON
    - **"Enable device code authentication for Codex CLI"** = ON
-   - Wait up to 10 minutes for propagation.
-   - [Both enabled by John 2026-05-11 — verified by him in workspace UI.]
-2. **GitHub Personal Access Token** with `repo` scope (private CTO repo). [pending]
-3. **Hetzner Cloud API token** at console.hetzner.cloud, Read & Write (for the upgrade-cycle MCP). [pending]
-4. **(Optional) OpenAI API key** for embeddings — Codex subscription does NOT cover embeddings. Pennies/month. [pending]
-5. **(Optional) OpenRouter API key with $5+ credits** as fallback if Codex OAuth is throttled. [pending — John's prior OpenRouter experience makes quota pressure on Business expected, but the fallback path is OpenRouter]
-6. **NOT NEEDED — ChatGPT Pro $200/mo:** Per CTO-DECISION-008, Business is the primary tier. Pro is the documented future escape (on a separate email) only if observed Business Codex quotas constrain CTO operation. Do not sign up for Pro today.
+   - Wait ~10 minutes for propagation. [Enabled by John 2026-05-11.]
+2. **GitHub Personal Access Token** with `repo` scope, OR `gh` CLI logged in — the install script uses `gh auth token` automatically if available.
+3. **Hetzner Cloud API token** at console.hetzner.cloud (Read & Write).
+4. **SSH key registered with Hetzner** (named `cto-agent-deploy` by default; matches `~/.ssh/cto-deploy` private key).
+5. **(Optional) OpenAI API key** for embeddings — pennies/month.
+6. **(Optional) OpenRouter API key with $5+ credits** as Codex fallback.
+7. **(Optional) Brave Search API key** for the brave-search MCP.
+
+### 1.2 Populate `~/.cto-secrets.env` on the host that runs `scripts/install.sh`
+Copy `example.cto-secrets.env` from the repo, fill the values, chmod 0600. That's the single input to the install script.
+
+### 1.3 Run the install (one command)
+```bash
+bash scripts/install.sh
+```
+The script then provisions the VPS, bootstraps it, copies the .env, clones the repo, runs `install-cto.sh`, runs verification gates, prints a summary. The only mid-run human interaction is approving the Codex device-code prompt on your phone (once, ~30 seconds).
 
 ### 1.2 VPS state (already true per wake state, verify before install)
 7. **VPS at 46.224.81.84** — cx43 (8 vCPU, 16 GB RAM, 150 GB disk), Ubuntu 24.04 [verified — wake state].
