@@ -268,7 +268,7 @@ cat > "${OPENCLAW_DIR}/openclaw.json" <<JSON
     "BRAVE_API_KEY": "${BRAVE_API_KEY:-}",
     "OPENAI_API_KEY": "${OPENAI_API_KEY:-}"
   },
-  "gateway": { "bind": "loopback", "auth": { "mode": "token" }, "port": 18789 },
+  "gateway": { "mode": "local", "bind": "loopback", "auth": { "mode": "token" }, "port": 18789 },
   "plugins": { "entries": { "bonjour": { "enabled": false } } },
   "agents": {
     "defaults": {
@@ -287,10 +287,10 @@ cat > "${OPENCLAW_DIR}/openclaw.json" <<JSON
       "engram":     { "command": "engram", "args": ["mcp-server"] },
       "vault":      { "command": "npx", "args": ["-y", "@bitbonsai/mcpvault@latest", "${CTO_ROOT}/wiki"] },
       "filesystem": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "${CTO_ROOT}"] },
-      "github":     { "command": "/usr/local/bin/github-mcp-server", "args": [], "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "\${GITHUB_TOKEN}" } },
-      "brave-search": { "command": "npx", "args": ["-y", "@brave/brave-search-mcp-server"], "env": { "BRAVE_API_KEY": "\${BRAVE_API_KEY}" } },
+      "github":     { "command": "/usr/local/bin/github-mcp-server", "args": [], "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" } },
+      "brave-search": { "command": "npx", "args": ["-y", "@brave/brave-search-mcp-server"], "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY:-}" } },
       "fetch":      { "command": "uvx", "args": ["mcp-server-fetch"] },
-      "hetzner":    { "command": "npx", "args": ["-y", "@lazyants/hetzner-mcp-server"], "env": { "HETZNER_API_TOKEN": "\${HETZNER_API_TOKEN}" } }
+      "hetzner":    { "command": "npx", "args": ["-y", "@lazyants/hetzner-mcp-server"], "env": { "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}" } }
     }
   }
 }
