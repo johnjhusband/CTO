@@ -1,7 +1,9 @@
 # HANDOFF.md — From Claude Code to OpenClaw CTO
 
+> **2026-05-11 Update:** This handoff was written for a *single-framework* CTO design (OpenClaw only). On 2026-05-11, John adopted a **two-hemisphere architecture**: OpenClaw remains the left hemisphere (thinking/orchestrator) and Hermes Agent was added as the right hemisphere (doing/worker), connected by A2A protocol. Both run on one ChatGPT Pro subscription via Codex OAuth. The framework selection rationale below (Hermes vs OpenClaw, Section "Why OpenClaw (not Hermes Agent)") still explains why OpenClaw is the correct *left hemisphere* — those reasons did not change. But the framework-substitution premise ("we picked one framework") was superseded by **CTO-DECISION-005**. Read `hemisphere.md`, `hermes.md`, `BACKLOG.md`, and `logs/decisions/CTO-DECISION-005.json` for the current architecture. The rest of HANDOFF.md — mistakes, John's working style, the upgrade cycle discipline — applies unchanged.
+
 **Written by:** Claude Code (Opus 4.6) during the initial build of CTO v1
-**Date:** 2026-04-26
+**Date:** 2026-04-26 (with 2026-05-11 amendment above)
 **Purpose:** Transfer not just WHAT was decided, but WHY — the full context behind every architectural choice, mistake made, and lesson learned during the research and design phase.
 **Verification:** All decisions, mistakes, and corrections in this document are first-hand accounts from the build session — verified because they happened to us. Technical claims about tools reference research that has been partially verified (see wiki/assumption-audit.md for full status).
 

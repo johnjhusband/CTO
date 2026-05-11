@@ -9,14 +9,23 @@ Run the full research methodology:
 4. For items scoring 7+: enrich with summary, comparison to current stack, material assessment [unverified — not implemented]
 5. Make autonomous decisions (adopt/reject/defer) per decision-evaluate skill [verified — skill exists]
 6. Log all decisions to logs/decisions/ [verified — template and directory exist]
-7. Send daily digest to Telegram [verified — bot token works, proactive messaging needs John to message bot first]
-8. Archive findings to knowledge base [verified — raw/ and wiki/ directories exist]
-9. Update wiki pages if findings change existing knowledge [unverified — not implemented]
+7. **Check the backlog — any capability gaps surfaced today (new BACKLOG-NNN entries)?** [design — see BACKLOG.md]
+8. Write the daily digest to `/opt/cto/logs/digest/digest-YYYY-MM-DD.md` AND publish via the A2A human interface [adopted CTO-DECISION-006; A2A human interface implementation pending v1.1]
+9. Archive findings to knowledge base [verified — raw/ and wiki/ directories exist]
+10. Update wiki pages if findings change existing knowledge [unverified — not implemented]
+
+### Required Daily Digest Sections (A2A human interface; interim file at /opt/cto/logs/digest/)
+1. **Headline:** what materially changed today (1-3 lines, or "nothing material today")
+2. **Research:** notable findings scoring 7+, decisions made
+3. **Backlog:** new entries opened in the last 24h (by type + priority), any P0/P1 still open, anything `escalated-to-john` (see BACKLOG.md)
+4. **Operations:** health-check status, any failures, any upgrades in progress
+5. **Asks of John:** anything blocked on John's review or approval — money, fork decisions, escalated backlog items
 
 ## Health Checks (Every 30 Minutes)
 <!-- None of these are implemented yet — they are the target design -->
 - LLM API reachable [unverified — check not implemented]
-- Telegram bot responsive [unverified — check not implemented]
+- A2A registry responsive [unverified — check not implemented]
+- Both hemisphere gateways (openclaw 18789, hermes 8642) alive [unverified — check not implemented]
 - Memory/wiki readable [unverified — check not implemented]
 - VPS disk space >10% free [unverified — check not implemented]
 - RAM <90% used [unverified — check not implemented]

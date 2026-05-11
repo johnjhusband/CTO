@@ -1,5 +1,7 @@
 # CTO v1 Framework Evaluation: OpenClaw vs Hermes Agent
-**Last updated:** 2026-04-26
+> **2026-05-11 Update:** This evaluation framed OpenClaw and Hermes as either/or. **CTO-DECISION-005 (2026-05-11) supersedes the either/or framing** by adopting both as a two-hemisphere brain — OpenClaw (left, thinking, orchestrator) and Hermes (right, doing, worker), connected via A2A protocol, sharing one ChatGPT Pro subscription via Codex OAuth. This page is retained as historical context for why OpenClaw was the right *first* framework. See `hemisphere.md`, `hermes.md`, and `logs/decisions/CTO-DECISION-005.json` for the current architecture.
+
+**Last updated:** 2026-04-26 (superseded by CTO-DECISION-005 on 2026-05-11 for the framework-substitution framing; the OpenClaw-as-left-hemisphere selection rationale below is still accurate.)
 **Verification:** Requirements-based evaluation using our criteria. Framework capabilities from research (corrected in audit). Scoring weights are our design.
 **Source:** Live web research + corrected requirements analysis
 

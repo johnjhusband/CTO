@@ -3,19 +3,23 @@
 
 ## Current State
 - **Version:** 0.1.0 [defined]
-- **Framework:** OpenClaw on Hetzner VPS (116.203.68.119) [installed and running]
-- **Status:** INSTALLED AND OPERATIONAL. Gateway running via systemd. Telegram connected. Claude Sonnet 4 via OpenRouter.
+- **Architecture:** **Two-hemisphere brain** on Hetzner VPS — OpenClaw (left, thinking) + Hermes Agent (right, doing) + A2A protocol (corpus callosum) [adopted 2026-05-11, see hemisphere.md and CTO-DECISION-005]
+- **VPS:** 116.203.68.119 [installed and running OpenClaw side]
+- **Status:** OpenClaw INSTALLED AND OPERATIONAL on VPS. Hermes installation pending. Gateway running via systemd. Telegram connected.
+- **LLM:** Both hemispheres on Codex OAuth via ChatGPT Pro $200/mo — single subscription, flat rate, no per-token billing. Embeddings require separate OPENAI_API_KEY (pennies). [decision CTO-DECISION-005]
 - **First response:** 2026-04-27 via Telegram. Installation verified working.
-- **Architecture:** Five-layer (Brain/Hands/Memory/Spine/Guardrails) [verified — community consensus from multiple sources]
+- **Architecture pattern:** Five-layer (Brain/Hands/Memory/Spine/Guardrails) mapped onto the two hemispheres [verified — community consensus]
 
 ## Key Decisions Made [all logged in logs/decisions/]
-- OpenClaw chosen over Hermes Agent — macro evolution > micro evolution [decision CTO-DECISION-001]
+- OpenClaw chosen as the first agent framework — macro evolution > micro evolution [decision CTO-DECISION-001, 2026-04-26]
 - VPS-based upgrade testing, not Docker — system-level changes can't be containerized [decision CTO-DECISION-002, Hetzner API verified]
-- Telegram for notifications, not WhatsApp — zero friction, no phone needed [decision CTO-DECISION-003, bot verified]
-- Memory architecture: Obsidian-compatible vault + SQLite (engram) + tiered loading [decision CTO-DECISION-004. memweave was replaced by engram — Go binary, zero deps, MCP-native, 17 tools]
+- Telegram for notifications — superseded 2026-05-11 (CTO-DECISION-006). A2A is the comms layer now; human interface built/exposed on top.
+- Memory architecture: Obsidian-compatible vault + SQLite (engram) + tiered loading [decision CTO-DECISION-004]
+- **Hermes adopted as right hemisphere alongside OpenClaw — two-hemisphere brain, A2A corpus callosum, Codex OAuth shared** [decision CTO-DECISION-005, 2026-05-11. Hermes's Phase 1-4 self-evolution (skills/prompts/tool descriptions/tool code) generates PRs that feed CTO's existing clone-test-replace upgrade cycle. Anything outside Phase 1-4 → BACKLOG.md]
 - Fully autonomous — John reviews after the fact, never blocks [explicit instruction from John]
 - Memory is the moat — models and frameworks are swappable, knowledge compounds [community consensus, verified in research]
 - HANDOFF.md required in every upgrade cycle [explicit requirement from John]
+- Capability gaps that would require forks or new MCPs/skills go in BACKLOG.md — no silent escalations [established 2026-05-11]
 
 ## Research Methodology [defined in SOUL.md and skills/research-methodology/SKILL.md]
 - Cast widest net — survey what community ACTUALLY does, not what I expect

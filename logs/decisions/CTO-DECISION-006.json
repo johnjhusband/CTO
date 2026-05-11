@@ -1,0 +1,54 @@
+{
+  "id": "CTO-DECISION-006",
+  "timestamp": "2026-05-11T23:30:00Z",
+  "version_before": "0.1.0",
+  "version_after": "0.2.0",
+  "technology": "Telegram removed; A2A protocol is the communication layer with a human interface built/exposed on top",
+  "source": "John's directive 2026-05-11 + architecture-decisions-john.md #9 (originally framed 'Investigating' on 2026-04-27, settled by John on 2026-05-11).",
+  "category": "communication",
+  "architecture_layer": "spine",
+  "action": "adopted",
+  "supersedes": ["CTO-DECISION-003 (Telegram Bot as primary comms)"],
+  "summary": "Telegram is removed from the CTO architecture. A2A protocol becomes the communication layer between hemispheres AND between CTO and John. A human-facing interface is built or exposed on top of A2A in a subsequent phase.",
+  "rationale": "Telegram has multiple operational limitations that conflict with CTO's design: (1) bot conflict when cloning — two CTO instances cannot share one bot, breaking the clone-test-replace upgrade cycle; (2) no programmatic bot creation via BotFather — human bottleneck on every new bot; (3) /approve elevated-exec cards do not work on mobile (OpenClaw bugs #23856, #51245, #48499); (4) proactive messaging blocked until user messages bot first — bootstrap friction; (5) third-party messaging service dependency contradicts the principle of full system control. A2A is the open standard already adopted as the hemisphere corpus callosum (CTO-DECISION-005). Building/exposing a human interface on top of A2A unifies the communication stack — one protocol for hemisphere-to-hemisphere AND CTO-to-John traffic.",
+  "scope": {
+    "removed": [
+      "Telegram channel block from openclaw.json",
+      "Telegram bot creation from human-required prerequisites",
+      "Telegram retry / fallback policy from AGENTS.md failure handling",
+      "Telegram daily digest pipeline from HEARTBEAT.md",
+      "Telegram-related env vars (TELEGRAM_BOT_TOKEN, TELEGRAM_USER_ID) from .env requirements",
+      "Telegram references in architecture diagrams and current-state documentation"
+    ],
+    "added": [
+      "A2A registry process publishing both hemispheres' Agent Cards (install-plan.md §5.4)",
+      "Decision-log entry as the primary install completion artifact (in lieu of Telegram message)",
+      "Install report written to /opt/cto/logs/install/*.log instead of sent via Telegram"
+    ],
+    "deferred": [
+      "Human-facing interface on top of A2A — implementation in a subsequent phase, not v1.0 install scope. Until built, John interacts with CTO via Claude Code Remote Control sessions and direct A2A calls."
+    ]
+  },
+  "evaluation": {
+    "what_it_makes_obsolete": "CTO-DECISION-003 (Telegram Bot as primary comms). The bot itself (@HusbandCTObot) can be revoked via @BotFather at John's convenience — it is no longer part of the CTO infrastructure.",
+    "cost_of_switching": "Cascade Telegram removal across active documentation. Add A2A registry process to install plan. Defer human-interface build to a separate phase.",
+    "cost_of_staying": "Continued bot-conflict-on-clone friction, mobile /approve breakage, third-party messaging dependency.",
+    "can_test_on_vps": true,
+    "material_change": true
+  },
+  "test_results": {
+    "tested": false,
+    "vps_provisioned": false,
+    "notes": "Validated during the install execution per test-plan.md §1.6 (no Telegram artefacts in either config) and §3.3 (no Telegram code paths fire under load)."
+  },
+  "rollback": {
+    "instructions": "If a human-interface build proves harder than expected, an interim revert to Telegram is possible — re-introduce the Telegram channel block in openclaw.json with John's bot token. But the protocol-layer decision (A2A as comms) stands; Telegram revert would be a temporary surface only."
+  },
+  "related_docs": [
+    "install-plan.md",
+    "test-plan.md",
+    "wiki/architecture-decisions-john.md (#9)",
+    "logs/decisions/CTO-DECISION-003.json (superseded)",
+    "logs/decisions/CTO-DECISION-005.json (two-hemisphere context)"
+  ]
+}

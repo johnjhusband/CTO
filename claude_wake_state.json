@@ -1,18 +1,62 @@
 {
   "project": "CTO v1",
-  "date": "2026-04-26",
-  "session_summary": "Architecture validation phase. All factual claims verified (33 correct, 16 wrong, 3 unverifiable — 33% error rate). Now running architecture SENTIMENT validation — 4 agents checking whether community agrees with our architectural choices, not just whether numbers are right.",
+  "date": "2026-05-10",
+  "session_summary": "Pivoted away from the Telegram channels plugin entirely. The plugin was gated on the GrowthBook flag tengu_harbor and the inbound channel feature never worked across two restart cycles. Live research surfaced Anthropic's official Claude Code Remote Control (shipped Feb 2026), which does exactly what John wanted — drive his local Claude Code session from the Claude mobile app or claude.ai/code — with one command and no plugin/flag dependency. Uninstalled all Telegram artifacts (plugin cache, channel dir, settings entries, killed bun processes). Two memory lessons captured: (1) research alternatives even when John has proposed an approach, (2) don't stop short of completing a directive with menu-style options.",
 
-  "critical_state": "4 architecture validation agents running. Results will determine if architecture needs revision before installation. DO NOT INSTALL until validation results are reviewed with John.",
+  "immediate_task": "John needs to exit this Claude Code session and relaunch with `claude --rc` (or `claude --remote-control`). The in-session slash command `/remote-control` is BROKEN on 2.1.x — confirmed via GitHub issues #29265, #30020, #33327, #46345 across versions 2.1.62/2.1.80/2.1.100 and John just confirmed 'unknown command' on 2.1.138. The CLI flag is reliable. After relaunch, the terminal prints a session URL and QR code; John scans with the Claude mobile app to pair. If he doesn't have the mobile app, `/mobile` inside the new session shows a download QR.",
 
-  "architecture_validation_process": "Documented in wiki/architecture-validation-process.md. 52 questions in wiki/architecture-validation-questions.md. Process: fresh inventory → categorize → hypothesize → validate → iterate → compare → only then build.",
+  "remote_control_state": {
+    "claude_code_version": "2.1.138",
+    "min_version_remote_control": "2.1.51",
+    "min_version_push_notifications": "2.1.110",
+    "subscription_requirement": "Claude Pro / Max / Team / Enterprise (API keys NOT supported)",
+    "user_subscription_status": "unverified — John has $200/mo ChatGPT Pro; Claude sub status not confirmed in this session",
+    "in_session_command_BROKEN": "/remote-control returns 'unknown command' on 2.1.x — do NOT recommend it",
+    "fresh_launch_command": "claude --rc (or claude --remote-control)",
+    "server_mode_command": "claude remote-control",
+    "docs": "https://code.claude.com/docs/en/remote-control",
+    "settings_change_made": "Removed DISABLE_TELEMETRY=1 from ~/.claude/settings.json env block — documented Remote Control eligibility blocker. DISABLE_BUG_COMMAND and DISABLE_ERROR_REPORTING preserved."
+  },
 
-  "key_insight_this_session": "Verifying facts (star counts, package names) is not the same as validating architecture (is this the right design?). 33% of factual claims were wrong. The architectural assumptions haven't been challenged yet.",
+  "telegram_uninstall": {
+    "removed_paths": [
+      "~/.claude/channels/telegram/",
+      "~/.claude/plugins/cache/claude-plugins-official/telegram/"
+    ],
+    "settings_cleared": [
+      "~/.claude/settings.json enabledPlugins (now {})",
+      "~/.claude/plugins/installed_plugins.json plugins (now {})"
+    ],
+    "processes_killed": ["bun run (3874145)", "bun server.ts (3874150)"],
+    "marketplace_catalog_remaining": "external_plugins/telegram/ files still under ~/.claude/plugins/marketplaces/claude-plugins-official/ — that's the available-plugins catalog, not an install. Left alone.",
+    "manual_step_outside_local_machine": "Bot @HusbandCTObot still exists on Telegram. If John wants it fully gone, revoke its token via @BotFather."
+  },
 
-  "agents_running": [
-    "Fresh community inventory — unbiased sentiment about autonomous AI April 2026",
-    "OpenClaw validation — criticisms, problems, what people switch to",
-    "Memory architecture validation — is Obsidian+SQLite+tiered loading what production uses?",
-    "Component validation — MCP, OpenRouter, Telegram, VPS testing, SearXNG, autonomy, self-improvement"
+  "vps_state": {
+    "ip": "46.224.81.84",
+    "id": 129164796,
+    "type": "cx43",
+    "user": "cto (non-root, nvm+node22, openclaw v2026.5.3-1)",
+    "repo": "/opt/cto (cloned, .env copied)",
+    "deploy_key": "read/write, added to GitHub",
+    "openclaw": "installed, NOT configured, NOT running",
+    "codex_auth": "NOT done (device code expired in prior attempt)"
+  },
+
+  "pending_tasks": [
+    "CTO-30: Configure git read/write deploy key (partial — deploy key set on VPS, push not yet verified)",
+    "CTO-31: Create ChatGPT Pro subscription (John manual step, blocks Codex OAuth)",
+    "CTO-33: Test CTO runs first research cycle through secure A2A channel",
+    "CTO-35: Research and configure OpenClaw Codex OAuth on headless VPS",
+    "CTO-36: Update HANDOFF.md and other CTO docs to remove old Telegram-for-CTO-outbound plan (CTO outbound moved to A2A; this is separate from Claude Code's inbound control channel which is now Remote Control)",
+    "CTO-40: Rebuild install script with complete new stack",
+    "CTO-41: Spin up fresh Hetzner VPS and test clean install"
+  ],
+
+  "session_lessons": [
+    "GrowthBook tengu_harbor channel feature was still failing even with the cache showing tengu_harbor=true — likely a separate gating check we never identified. Moot now since we abandoned the channels approach.",
+    "Anthropic shipped Claude Code Remote Control in Feb 2026 — it's the supported path for driving a local session from a phone. No plugin/flag dependency.",
+    "Before implementing any user-proposed infrastructure or tooling decision, do a 1-2 search research pass for officially-supported alternatives (memory: feedback_research_user_proposed_paths.md).",
+    "When John gives a directive, execute it fully including obvious adjacent cleanup — no option menus, no 'should I also' asks (memory: feedback_dont_stop_short.md)."
   ]
 }

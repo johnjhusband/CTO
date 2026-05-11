@@ -1,0 +1,58 @@
+{
+  "id": "CTO-DECISION-005",
+  "timestamp": "2026-05-11T22:00:00Z",
+  "version_before": "0.1.0",
+  "technology": "Two-hemisphere brain (OpenClaw + Hermes Agent + A2A protocol)",
+  "source": "Live web research 2026-05-11 (primary sources: github.com/NousResearch/hermes-agent, hermes-agent.nousresearch.com docs, docs.openclaw.ai, a2a-protocol.org, Anthropic engineering blog, Meta HyperAgents paper, MAST taxonomy). Synthesized in hemisphere.md and hermes.md.",
+  "category": "architecture",
+  "architecture_layer": "spine + brain (cross-cutting)",
+  "action": "adopted",
+  "summary": "Adopt Hermes Agent as the right hemisphere alongside OpenClaw (left hemisphere). Two-hemisphere brain design with A2A protocol as corpus callosum. Both halves share one ChatGPT Pro $200/mo subscription via Codex OAuth.",
+  "supersedes_scope_of": "CTO-DECISION-001 (the framework-substitution intent — that decision picked OpenClaw on a single-framework basis; this decision adds Hermes alongside rather than replacing). OpenClaw remains the left hemisphere.",
+  "community_evidence": {
+    "hermes_metrics_may_2026": "v0.13.0 'Tenacity Release' shipped 2026-05-07. ~144K GitHub stars. ~22.4K forks. MIT license. 224B daily OpenRouter tokens (overtook OpenClaw's 186B on 2026-05-10 per MarkTechPost) though OpenClaw still leads cumulative (9.17T vs 6.35T).",
+    "openclaw_metrics_may_2026": "~370K GitHub stars. 44K+ ClawHub skills. 50+ messaging platforms. Still dominant in cumulative usage.",
+    "a2a_status": "Linux Foundation governed, 150+ orgs in production (Google, Microsoft, AWS, Salesforce, SAP, ServiceNow, Workday, IBM), 22K+ stars on a2aproject/A2A, 5 production SDK languages (Python, JS, Java, Go, .NET).",
+    "two_brain_pattern_validation": "Hemispheric Disparity Theory (Frontiers in Psychology 2026) backs the left/right specialisation. Dual-Brain System Architecture is an established AI design class. Working analogues: SOFAI (System 1/2 + metacognitive), Talker-Reasoner (DeepMind), Anthropic orchestrator-subagent. Practical prior art: AaronWong1999/hermesclaw (Hermes+OpenClaw coexistence on one WeChat account), freecodecamp.org/news/openclaw-a2a-plugin-architecture-guide (OpenClaw as A2A client pattern).",
+    "maturity": "Hermes production but 2.5 months old. OpenClaw production and mature. A2A production-ready. Each component verifiable on primary sources."
+  },
+  "evaluation": {
+    "what_it_makes_obsolete": "The single-framework decision (CTO-DECISION-001) for the framework-substitution case. Hermes-only or OpenClaw-only deployments for a CTO whose mission needs both breadth (ecosystem, messaging, routing) and depth (compounding self-improvement).",
+    "cost_of_switching": "Hermes install on the existing VPS (~60s per quickstart). Configuration of Codex OAuth on Hermes (device-code flow, can import ~/.codex/auth.json from OpenClaw side). A2A registry + Agent Cards for both halves. Shared layer for budget/audit/circuit-breaker. New hemisphere.md, hermes.md, BACKLOG.md docs (created 2026-05-11).",
+    "cost_of_staying": "Continue with OpenClaw-only and forgo Hermes's compounding self-improvement (GEPA, skill auto-creation, Phase 1-4 PR generation). Recent OpenRouter token-volume data suggests community is shifting toward Hermes for the self-improvement use case — staying single-framework risks falling behind on micro evolution while not gaining anything on macro.",
+    "can_test_on_vps": true,
+    "material_change": true
+  },
+  "rationale": "The 2026-04-26 framework decision argued macro evolution outweighs micro evolution, and OpenClaw won on macro because of community ecosystem breadth. That reasoning still holds. The two-hemisphere design preserves macro as the primary mission (CTO clone-test-replace cycle on a fresh Hetzner VPS, unchanged) while giving micro evolution a dedicated engine (Hermes GEPA loop generating PRs against the CTO repo). The two no longer compete for cycles. Cost is approximately neutral: orchestrator-worker specialisation is documented to reduce per-token cost 40-60%, and with both halves on a single ChatGPT Pro subscription via Codex OAuth, model spend is flat-rate. The configuration overhead (Hermes install, A2A registry, shared budget/audit layer) is the real cost. Architecture-level changes (kernel, memory ABC, gateway core, framework swap) remain CTO macro-evolution territory — NOT delegated to Hermes self-evolution. Hermes Phase 1-4 scope (skills, prompts, tool descriptions, tool implementation code) feeds the existing clone-test-replace gate via PRs. Anything beyond Phase 1-4 → BACKLOG.md for John's review.",
+  "scope_boundaries": {
+    "in_scope_for_hermes_self_evolution": ["skill files", "system prompts", "tool descriptions", "tool implementation code (tools/*.py)"],
+    "out_of_scope_for_hermes_self_evolution": ["agent kernel", "memory ABC", "gateway core", "framework substitution", "LLM provider swap", "communication stack replacement"],
+    "out_of_scope_disposition": "BACKLOG.md entry with type=fork-trigger or upstream-pr-needed. John reviews."
+  },
+  "test_results": {
+    "tested": false,
+    "vps_provisioned": false,
+    "passed": null,
+    "total_tests": null,
+    "failed_tests": null,
+    "iterations": null,
+    "notes": "Two-hemisphere design adopted on documentation basis. Next step: install Hermes on VPS (116.203.68.119), configure Codex OAuth via device-code flow (or import from ~/.codex/auth.json), publish Agent Cards for both halves to A2A registry, build shared layer (budget meter, audit log, circuit breaker), validate end-to-end with a simple cross-hemisphere delegation. Each of these is a candidate for the clone-test-replace upgrade cycle on a fresh Hetzner VPS, one material change per cycle per SOUL.md #15."
+  },
+  "rollback": {
+    "snapshot_id": "",
+    "git_tag": "pre-CTO-DECISION-005",
+    "instructions": "Hermes is purely additive — OpenClaw continues unchanged as the left hemisphere. Rollback = uninstall Hermes service, remove Hermes Agent Card from A2A registry, restore OpenClaw to standalone configuration. No data loss expected since Hermes skill files and execution traces live in ~/.hermes/ separate from OpenClaw state."
+  },
+  "version_after": "0.2.0",
+  "re_evaluate_date": "2026-08-11",
+  "related_docs": [
+    "hemisphere.md",
+    "hermes.md",
+    "BACKLOG.md",
+    "wiki/architecture.md",
+    "wiki/architecture-decisions-john.md (decision #11)",
+    "wiki/protocol-layer.md",
+    "wiki/llm-strategy.md",
+    "wiki/codex-oauth-setup.md"
+  ]
+}

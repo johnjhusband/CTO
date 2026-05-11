@@ -1,9 +1,9 @@
 # LLM Strategy
-**L0:** OpenRouter Auto model picks best model per-request. $10/month key limit. Heartbeat costs add up (48 calls/day). `model.thinking` is NOT a valid config key — use `thinkingDefault` only.
-**L1:** CTO uses OpenRouter for multi-model routing — single API key, 200+ models. GPT-5.4 nano ($0.10/$0.40/M) for routine research scoring, GPT-5.4 mini ($0.75/$4.50/M) for evaluation, o4-mini ($1.10/$4.40/M) for complex decisions. Estimated $5-30/month. ChatGPT Pro ($200/mo) works with OpenClaw via Codex OAuth — flat rate, no per-token billing [verified]. CTO can evaluate and switch its own LLM backend as part of macro evolution. Prompt caching (90% discount) and batch processing (50% discount) for cost optimization.
-**Last updated:** 2026-04-26
-**Verification:** OpenRouter verified (API works, prepaid billing, model format). Pricing claims from OpenRouter website. Cost estimates are projections.
-**Source:** Live web research (April 2026) — all data verified via web search
+**L0:** **Both hemispheres on ChatGPT Pro $200/mo via Codex OAuth — single subscription, flat rate, no per-token billing.** Embeddings need separate OPENAI_API_KEY (pennies). OpenRouter retained as fallback. `model.thinking` is NOT a valid config key — use `thinkingDefault` only.
+**L1:** As of CTO-DECISION-005 (2026-05-11), both OpenClaw (left hemisphere) and Hermes (right hemisphere) authenticate via the `openai-codex` provider against the same ChatGPT Pro $200/mo subscription. Verified at primary sources: docs.openclaw.ai/providers/openai (OpenClaw side, `openclaw models auth login --provider openai-codex --device-code` for headless VPS) and hermes-agent.nousresearch.com/docs/integrations/providers (Hermes side, device-code flow with `~/.hermes/auth.json` credential store, can import existing `~/.codex/auth.json` if present). Specialisation reduces per-token cost (orchestrator-worker 40-60% cheaper, tiered intelligence 87.4% cheaper, hierarchical 97.7% accuracy at 61% cost) — and with both hemispheres on a flat-rate subscription, per-token billing doesn't apply on the model side at all. Rate limits real but managed: Pro $200 = 20× Plus (25× promo through 2026-05-31). OpenRouter remains available as fallback if Codex OAuth is throttled or unavailable. CTO can evaluate and switch its own LLM backend as part of macro evolution.
+**Last updated:** 2026-05-11
+**Verification:** OpenRouter verified (API works, prepaid billing, model format). Codex OAuth verified at primary sources for both halves on 2026-05-11. Pricing claims from primary docs. Cost estimates are projections.
+**Source:** Live web research 2026-05-11. See `hemisphere.md` Provider Strategy section and `wiki/codex-oauth-setup.md` for the full setup playbook.
 
 ## Key Facts
 - CTO is **not locked to any single provider**

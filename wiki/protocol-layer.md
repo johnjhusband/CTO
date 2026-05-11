@@ -50,7 +50,8 @@
 
 ## Impact on CTO Architecture
 - CTO should expose capabilities as MCP servers and consume tools via MCP clients
-- A2A is how CTO communicates with future AI employees (CFO, CEO, CMO)
+- **A2A is the corpus callosum of the two-hemisphere CTO (CTO-DECISION-005, 2026-05-11)** — OpenClaw (left, thinking) and Hermes (right, doing) discover each other via Agent Cards and delegate bidirectionally. See [hemisphere.md](../hemisphere.md).
+- A2A is also how CTO will communicate with future AI employees (CFO, CEO, CMO) — same protocol, same Agent Card pattern.
 - AGENTS.md should be in the CTO repo root
 - Custom inter-agent protocols are now a dead end
 

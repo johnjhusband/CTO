@@ -104,7 +104,7 @@ A Docker container cannot test any of these faithfully. Only a full VPS provides
 - New CTO takes over all duties
 
 ### 11. Report
-- User notified via Telegram Bot / Gmail fallback
+- User notified via A2A human interface (CTO-DECISION-006); interim digest written to `/opt/cto/logs/digest/`
 - Report includes: what changed, why, test results, rollback instructions
 
 ## Rollback Procedure

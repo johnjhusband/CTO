@@ -4,7 +4,7 @@
 ## Failure Modes
 
 ### Mode 1: Degraded (Yellow)
-**Trigger:** Non-critical component fails (e.g., one research source unavailable, Telegram delivery delayed)
+**Trigger:** Non-critical component fails (e.g., one research source unavailable, A2A human interface delivery delayed)
 **Response:** Continue operating with reduced capability. Log the degradation. Include in next daily report.
 **Escalation:** If degraded for >24 hours, escalate to Mode 2.
 
@@ -28,7 +28,8 @@
 |-------|-----------|-------------------|
 | LLM API reachable | Every 30 minutes | Switch to fallback provider |
 | Memory/wiki readable | Every hour | Alert, do not write until resolved |
-| Telegram bot responsive | Every hour | Switch to Gmail SMTP |
+| A2A registry responsive | Every hour | Restart registry; write digest to local log if persistent |
+| Both hemisphere gateways alive | Every 30 minutes | Restart failed daemon; alert if persistent |
 | VPS disk space >10% free | Every 6 hours | Alert, clean logs/archives |
 | VPS RAM <90% used | Every 30 minutes | Alert, restart if >95% |
 | Daily research cycle completed | Daily at 08:00 UTC | Alert if 06:00 cycle didn't finish |
@@ -40,7 +41,7 @@
 |-----------|-------------|---------|----------|
 | LLM API call | 3 | Exponential (1s, 4s, 16s) | Switch provider |
 | Web scraping | 2 | 5s fixed | Skip source, note in report |
-| Telegram send | 3 | 2s fixed | Gmail SMTP |
+| A2A human interface publish | 3 | 2s fixed | Local digest file only (no third-party fallback per CTO-DECISION-006) |
 | Hetzner API | 3 | Exponential | Alert, pause upgrade cycle |
 | YouTube access | 2 | 10s fixed | Skip, note in report |
 
