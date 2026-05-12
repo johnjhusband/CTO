@@ -10,26 +10,40 @@
 
 ---
 
-## CURRENT IMPLEMENTATION STATUS (v1.0 install on cto-v3, verified 2026-05-11)
+## IMPLEMENTATION STATE (v1.1 build, in progress 2026-05-12)
 
-**The design described in this doc is NOT fully wired in v1.0.** What's actually installed vs what the design requires:
+The v1.0 install left a gap: A2A registry + Agent Cards were published but neither agent consumed them. v1.1 closes that gap. Current state of what's now in scope:
 
-| Design element | v1.0 install | Status |
-|---|---|---|
-| OpenClaw daemon running | gateway on 127.0.0.1:18789, token auth, 7 MCP servers | ✅ installed |
-| Hermes daemon running | gateway on 127.0.0.1:8642, api_server with key auth, 24 skills | ✅ installed |
-| A2A registry process | 40-line Python HTTP server on 127.0.0.1:9000 serving Agent Cards | ✅ installed |
-| OpenClaw Agent Card published | `/opt/cto/a2a/registry/cards/openclaw.json` | ✅ published |
-| Hermes Agent Card published | `/opt/cto/a2a/registry/cards/hermes.json` | ✅ published |
-| **OpenClaw consumes A2A — has `a2a_delegate` tool / MCP** | none — `grep -ic "hermes\|a2a\|8642" openclaw.json` returns 0 | ❌ **NOT WIRED** |
-| **Hermes consumes A2A — knows about OpenClaw** | none — `grep -ic "openclaw\|a2a\|18789" hermes/config.yaml` returns 0 | ❌ **NOT WIRED** |
-| **Inter-hemisphere delegation prompts/skills** | none | ❌ **NOT WIRED** |
-| Shared layer (budget meter, audit log, circuit breaker) | only `/opt/cto/a2a/registry/audit.log` exists (passive log of HTTP requests to registry, not cross-hemisphere calls) | ⚠ partial |
-| Human-facing interface on top of A2A | not built (per CTO-DECISION-006, deferred) | ❌ deferred |
+| Element | v1.1 status |
+|---|---|
+| OpenClaw + Hermes daemons | ✅ installed by `scripts/install-cto.sh` |
+| A2A registry process | ✅ installed (Python HTTP server, port 9000) |
+| `a2a_delegate` MCP server on OpenClaw | 🟡 in progress (Wave 2) |
+| Hermes A2A endpoint sidecar (`/a2a` on 8642) | 🟡 in progress (Wave 2) |
+| Bearer-token auth between halves (`HERMES_A2A_TOKEN`) | 🟡 in progress (Wave 2) |
+| System-prompt extensions per hemisphere | ✅ written (`OPENCLAW_ROLE.md`, `HERMES_ROLE.md`) |
+| Heartbeat watcher (Hermes restarts OpenClaw on crash) | 🟡 in progress (Wave 3) |
+| Health watcher (outcome-based, Approach C) | 🟡 in progress (Wave 3) |
+| Anomaly watcher (baseline-relative, Approach A — context only, no auto-action) | 🟡 in progress (Wave 3) |
+| Autonomous-repair runner | 🟡 in progress (Wave 3) |
+| Shared memory (engram via MCP, both hemispheres) | 🟡 in progress (Wave 2 wiring) |
+| PWA at `cto.husband.llc` (BACKLOG-001 build) | 🟡 in progress (Wave 4) |
 
-**What this means operationally:** Both halves are running side-by-side on cto-v3 but they don't communicate with each other. The Agent Cards exist for discovery but nothing reads them. There are no instructions telling either agent to obey or delegate to the other. The two-hemisphere brain is currently two independent agents sharing infrastructure.
+## CHAT MODEL (PWA observability + @-mention routing)
 
-**What it would take to close this gap:** an MCP server or skill on each hemisphere that (a) reads Agent Cards from the registry, (b) exposes an `a2a_delegate` tool to the agent's prompt, (c) routes calls over HTTP to the other hemisphere's endpoint, (d) returns structured results. Not a fork — just code/config we haven't written. Logged as a planned v1.1 work item, not a BACKLOG entry.
+The PWA chat is a **three-party conversation** — John, OpenClaw, Hermes — with full observability of inter-hemisphere traffic:
+
+- Default messages from John route to **OpenClaw**.
+- John can address Hermes directly via `@Hermes <message>` (PWA backend parses the @-mention, routes to Hermes's A2A endpoint with `sender: "john"`).
+- John can address OpenClaw explicitly via `@OpenClaw <message>` (same as default but explicit).
+- Every A2A delegation (OpenClaw → Hermes) and its response (Hermes → OpenClaw) is **logged to chat** so John sees the internal conversation. Sender is rendered visibly (color-coded, icon).
+- Hermes never speaks unprompted unless: (a) responding to a delegation, (b) responding to a direct @-mention, (c) raising an escalation (heartbeat / health / repair failure), or (d) a daily-digest-trigger event.
+
+## SHARED MEMORY (engram via MCP)
+
+Both hemispheres consume the same engram instance at `/opt/cto/.engram/` via MCP. Shared corpus: research findings, decisions, John's stated preferences, cross-session context. Hermes-only memory (auto-created skills): stays in `~/.hermes/skills/`. OpenClaw-only state (session history): stays in `~/.openclaw/`.
+
+Engram does FTS5 keyword search + LLM-as-semantic-judge. Vector search via `sqlite-vec` extension is deferred — adopt only if observed recall ceiling demands it. (Per the "simplest thing that works" principle.)
 
 ---
 
