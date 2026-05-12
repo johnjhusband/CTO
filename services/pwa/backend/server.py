@@ -45,8 +45,10 @@ from http.server import HTTPServer, BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Optional
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-from services.chat.db import append, tail, log_a2a_request, log_a2a_response  # noqa: E402
+# Path is /opt/cto/services/pwa/backend/server.py — add /opt/cto/services so
+# we can import the `chat` package alongside the sidecars (matching their style).
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from chat.db import append, tail, log_a2a_request, log_a2a_response  # noqa: E402
 
 # ─── Config ─────────────────────────────────────────────────────────────────
 
