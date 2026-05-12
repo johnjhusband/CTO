@@ -89,7 +89,19 @@ sudo apt-get install -y \
   ufw \
   fail2ban \
   sqlite3 \
-  jq
+  jq \
+  openssl \
+  debian-keyring debian-archive-keyring apt-transport-https
+
+# Caddy via official repo (reverse proxy + auto-TLS for the PWA at cto.husband.llc)
+if ! have caddy; then
+  note "Installing Caddy (reverse proxy + Let's Encrypt)"
+  curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | sudo gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+  curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | sudo tee /etc/apt/sources.list.d/caddy-stable.list >/dev/null
+  sudo apt-get update -qq
+  sudo apt-get install -y caddy
+fi
+caddy version | head -1
 
 note "Installing uv (Hermes Python manager)"
 if ! have uv; then
@@ -256,6 +268,33 @@ if ! hermes model list 2>/dev/null | grep -q openai-codex; then
     note "(Hermes 'model add' subcommand may have different syntax — verify manually with: hermes model)"
 fi
 
+note "Generating service tokens (HERMES_A2A_TOKEN, PWA_AUTH_TOKEN) if missing"
+# These tokens authenticate inter-hemisphere A2A calls and the PWA.
+# Generated once per install; persisted in /opt/cto/.env so subsequent
+# runs reuse the same values (idempotent).
+ENV_FILE_VPS="${CTO_ROOT}/.env"
+if ! grep -q "^HERMES_A2A_TOKEN=" "${ENV_FILE_VPS}"; then
+  echo "HERMES_A2A_TOKEN=$(openssl rand -hex 32)" >> "${ENV_FILE_VPS}"
+fi
+if ! grep -q "^PWA_AUTH_TOKEN=" "${ENV_FILE_VPS}"; then
+  echo "PWA_AUTH_TOKEN=$(openssl rand -hex 32)" >> "${ENV_FILE_VPS}"
+fi
+chmod 0600 "${ENV_FILE_VPS}"
+# Re-source so the new values are visible to the rest of this script
+set -a; . "${ENV_FILE_VPS}"; set +a
+
+note "Generating VAPID keypair for Web Push (if not present)"
+VAPID_DIR="${CTO_ROOT}/.vapid"
+mkdir -p "${VAPID_DIR}"
+if [ ! -s "${VAPID_DIR}/private.pem" ]; then
+  openssl ecparam -name prime256v1 -genkey -noout -out "${VAPID_DIR}/private.pem"
+  openssl ec -in "${VAPID_DIR}/private.pem" -pubout -out "${VAPID_DIR}/public.pem" 2>/dev/null
+  # Browsers expect the uncompressed point as base64url (no padding)
+  openssl ec -in "${VAPID_DIR}/private.pem" -pubout -outform DER 2>/dev/null \
+    | tail -c 65 | base64 | tr -d '=' | tr '/+' '_-' > "${VAPID_DIR}/public.b64url"
+  chmod 0600 "${VAPID_DIR}/private.pem"
+fi
+
 note "Writing OpenClaw openclaw.json"
 OPENCLAW_DIR="${HOME}/.openclaw"
 mkdir -p "${OPENCLAW_DIR}"
@@ -284,7 +323,16 @@ cat > "${OPENCLAW_DIR}/openclaw.json" <<JSON
   },
   "mcp": {
     "servers": {
-      "engram":     { "command": "engram", "args": ["mcp-server"] },
+      "a2a-delegate": {
+        "command": "python3",
+        "args": ["${CTO_ROOT}/services/a2a_delegate/server.py"],
+        "env": {
+          "HERMES_A2A_TOKEN": "${HERMES_A2A_TOKEN}",
+          "HERMES_A2A_URL": "http://127.0.0.1:8643/a2a/",
+          "CHAT_DB": "${CTO_ROOT}/chat.db"
+        }
+      },
+      "engram":     { "command": "engram", "args": ["mcp-server", "--db", "${CTO_ROOT}/.engram/cto.db"] },
       "vault":      { "command": "npx", "args": ["-y", "@bitbonsai/mcpvault@latest", "${CTO_ROOT}/wiki"] },
       "filesystem": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "${CTO_ROOT}"] },
       "github":     { "command": "/usr/local/bin/github-mcp-server", "args": [], "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" } },
@@ -306,6 +354,13 @@ hermes config set api_server.enabled true
 hermes config set api_server.key "${HERMES_API_SERVER_KEY}"
 [ -n "${OPENAI_API_KEY:-}" ] && hermes config set OPENAI_API_KEY "${OPENAI_API_KEY}"
 chmod 0600 "${HOME}/.hermes/.env" 2>/dev/null || true
+
+# Hermes shared-memory: configure engram as an MCP server Hermes can consume
+# (same DB OpenClaw uses, so cross-hemisphere knowledge is one corpus).
+# Hermes accepts MCP configs in its config.yaml under mcp.servers.
+hermes config set mcp.servers.engram.command engram 2>/dev/null || true
+hermes config set mcp.servers.engram.args "['mcp-server', '--db', '${CTO_ROOT}/.engram/cto.db']" 2>/dev/null || true
+mkdir -p "${CTO_ROOT}/.engram"
 
 note "Setting up A2A registry"
 A2A_DIR="${CTO_ROOT}/a2a/registry"
@@ -394,13 +449,122 @@ WantedBy=default.target
 UNIT
 systemctl --user daemon-reload
 
+note "Installing systemd user units for sidecar / PWA / watchers"
+SD_DIR="${HOME}/.config/systemd/user"
+mkdir -p "${SD_DIR}"
+
+# Common env file for all our services (sources /opt/cto/.env)
+cat > "${SD_DIR}/cto-hermes-a2a-sidecar.service" <<UNIT
+[Unit]
+Description=CTO Hermes A2A sidecar (translates A2A → Hermes API)
+After=network.target
+
+[Service]
+EnvironmentFile=${CTO_ROOT}/.env
+Environment=HERMES_A2A_PORT=8643
+Environment=HERMES_API_URL=http://127.0.0.1:8642/v1/chat/completions
+ExecStart=/usr/bin/python3 ${CTO_ROOT}/services/hermes_a2a_sidecar/server.py
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target
+UNIT
+
+cat > "${SD_DIR}/cto-pwa-backend.service" <<UNIT
+[Unit]
+Description=CTO PWA backend (chat bridge to OpenClaw + Hermes)
+After=network.target cto-hermes-a2a-sidecar.service
+Wants=cto-hermes-a2a-sidecar.service
+
+[Service]
+EnvironmentFile=${CTO_ROOT}/.env
+Environment=PWA_PORT=8088
+Environment=PWA_BIND=127.0.0.1
+Environment=PWA_FRONTEND=${CTO_ROOT}/services/pwa/frontend
+Environment=HERMES_A2A_URL=http://127.0.0.1:8643/a2a/
+Environment=OPENCLAW_CHAT_URL=http://127.0.0.1:18789/v1/chat/completions
+Environment=VAPID_PUBLIC_KEY_FILE=${CTO_ROOT}/.vapid/public.b64url
+Environment=VAPID_PRIVATE_KEY_FILE=${CTO_ROOT}/.vapid/private.pem
+ExecStart=/usr/bin/python3 ${CTO_ROOT}/services/pwa/backend/server.py
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target
+UNIT
+
+# Watchers as systemd timers (Hermes-side autonomic NS)
+for watcher in heartbeat health anomaly; do
+  cat > "${SD_DIR}/cto-watcher-${watcher}.service" <<UNIT
+[Unit]
+Description=CTO ${watcher} watcher (Hermes autonomic NS)
+After=network.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=${CTO_ROOT}/.env
+ExecStart=/usr/bin/python3 ${CTO_ROOT}/services/watchers/${watcher}.py
+UNIT
+done
+
+# Timers: heartbeat 30s, health 60s, anomaly 60s
+cat > "${SD_DIR}/cto-watcher-heartbeat.timer" <<UNIT
+[Unit]
+Description=CTO heartbeat watcher every 30s
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=30s
+AccuracySec=2s
+[Install]
+WantedBy=timers.target
+UNIT
+
+cat > "${SD_DIR}/cto-watcher-health.timer" <<UNIT
+[Unit]
+Description=CTO health watcher every 60s
+[Timer]
+OnBootSec=45s
+OnUnitActiveSec=60s
+AccuracySec=2s
+[Install]
+WantedBy=timers.target
+UNIT
+
+cat > "${SD_DIR}/cto-watcher-anomaly.timer" <<UNIT
+[Unit]
+Description=CTO anomaly watcher every 60s
+[Timer]
+OnBootSec=60s
+OnUnitActiveSec=60s
+AccuracySec=5s
+[Install]
+WantedBy=timers.target
+UNIT
+
+systemctl --user daemon-reload
+systemctl --user enable cto-hermes-a2a-sidecar cto-pwa-backend \
+  cto-watcher-heartbeat.timer cto-watcher-health.timer cto-watcher-anomaly.timer
+
 # ─── Section 6: Post-Configuration ─────────────────────────────────────────
 
 section "Section 6 — Start, harden network, finalize"
 
 note "Starting daemons"
-systemctl --user enable --now openclaw-gateway hermes-gateway cto-a2a-registry
+systemctl --user enable --now openclaw-gateway hermes-gateway cto-a2a-registry \
+  cto-hermes-a2a-sidecar cto-pwa-backend \
+  cto-watcher-heartbeat.timer cto-watcher-health.timer cto-watcher-anomaly.timer
 sleep 3
+
+note "Installing system Caddyfile (cto.husband.llc → 127.0.0.1:8088)"
+sudo install -m 0644 -o root -g root "${CTO_ROOT}/services/pwa/caddy/Caddyfile" /etc/caddy/Caddyfile
+sudo mkdir -p /var/log/caddy
+sudo systemctl enable --now caddy
+sudo systemctl reload caddy || sudo systemctl restart caddy
+
+note "Opening Caddy ports (80, 443) — gateways stay loopback per architecture-decisions-john.md #3"
+sudo ufw allow 80/tcp comment "Caddy HTTP (ACME)" 2>&1 | tail -1
+sudo ufw allow 443/tcp comment "Caddy HTTPS (PWA)" 2>&1 | tail -1
 
 note "Configuring UFW (network defense in depth — gateways stay loopback)"
 sudo ufw --force default deny incoming
@@ -454,7 +618,7 @@ section "Verification — Phase 1 (static) + Phase 2 (services)"
 
 # Phase 1 — Static
 note "1.1 Binaries on PATH"
-for bin in openclaw hermes engram github-mcp-server hcloud uv; do
+for bin in openclaw hermes engram github-mcp-server hcloud uv caddy; do
   have "$bin" || fail "1.1 $bin not on PATH"
 done
 
@@ -466,22 +630,27 @@ note "1.3 Config files exist"
 note "1.6 No Telegram artefacts"
 ! grep -iq telegram "${OPENCLAW_DIR}/openclaw.json" || fail "1.6 Telegram in openclaw.json"
 
-note "1.7 systemd units present"
-[ "$(systemctl --user list-unit-files | grep -cE 'openclaw-gateway|hermes-gateway|cto-a2a-registry')" -ge 3 ] || fail "1.7 missing service units"
+note "1.7 systemd units present (8 expected: 3 daemons + 2 sidecars/PWA + 3 timers)"
+[ "$(systemctl --user list-unit-files | grep -cE 'openclaw-gateway|hermes-gateway|cto-a2a-registry|cto-hermes-a2a-sidecar|cto-pwa-backend|cto-watcher-(heartbeat|health|anomaly)\.timer')" -ge 8 ] || fail "1.7 missing service units"
 
 # Phase 2 — Services
 note "2.1 Daemons active"
-for svc in openclaw-gateway hermes-gateway cto-a2a-registry; do
+for svc in openclaw-gateway hermes-gateway cto-a2a-registry cto-hermes-a2a-sidecar cto-pwa-backend; do
   systemctl --user is-active "$svc" >/dev/null || fail "2.1 $svc not active"
 done
 
-note "2.2 Ports bound to loopback"
-ss -tlnp 2>/dev/null | grep -q "127.0.0.1:18789" || fail "2.2 OpenClaw 18789 not on loopback"
-ss -tlnp 2>/dev/null | grep -q "127.0.0.1:8642"  || fail "2.2 Hermes 8642 not on loopback"
+note "2.2 Ports bound to loopback (gateways + sidecars on 127.0.0.1; Caddy public on 80/443)"
+for port in 18789 8642 9000 8643 8088; do
+  ss -tlnp 2>/dev/null | grep -q "127.0.0.1:${port}" || fail "2.2 port ${port} not on loopback"
+done
+# Caddy may be on 0.0.0.0 or :: — accept either
+ss -tlnp 2>/dev/null | grep -qE "(:|:::|0\.0\.0\.0:)443" || note "(2.2 WARN: 443 not yet bound — Caddy may still be obtaining cert)"
 
-note "2.3 Health endpoints"
+note "2.3 Health endpoints (all 5)"
 curl -fsS http://127.0.0.1:8642/health | grep -q '"status"' || fail "2.3 Hermes /health failed"
 curl -fsS http://127.0.0.1:9000/health | grep -q '"status"' || fail "2.3 A2A registry /health failed"
+curl -fsS http://127.0.0.1:8643/health | grep -q '"status"' || fail "2.3 Hermes A2A sidecar /health failed"
+curl -fsS http://127.0.0.1:8088/api/health | grep -q '"status"' || fail "2.3 PWA backend /api/health failed"
 
 note "2.5 A2A registry serves both Cards"
 curl -fsS http://127.0.0.1:9000/cards | grep -q openclaw || fail "2.5 openclaw Card missing from registry"
@@ -495,13 +664,24 @@ cat <<SUMMARY
 
 Two-hemisphere CTO install: SUCCESS
 
-  OpenClaw (left, thinking):  127.0.0.1:18789  ($(openclaw --version 2>/dev/null | head -1))
-  Hermes   (right, doing):    127.0.0.1:8642   ($(hermes --version 2>/dev/null | head -1))
-  A2A registry:               127.0.0.1:9000
+  OpenClaw  (left, thinking):  127.0.0.1:18789   ($(openclaw --version 2>/dev/null | head -1))
+  Hermes    (right, doing):    127.0.0.1:8642    ($(hermes --version 2>/dev/null | head -1))
+  A2A reg.  (corpus callosum): 127.0.0.1:9000
+  A2A sidecar (Hermes-side):   127.0.0.1:8643
+  PWA backend:                 127.0.0.1:8088 (Caddy → cto.husband.llc)
+  Watchers:                    heartbeat 30s, health 60s, anomaly 60s
+  Shared memory:               engram at ${CTO_ROOT}/.engram/cto.db
 
-  Auth: Codex OAuth (ChatGPT Pro) on both halves
+  Auth: Codex OAuth (ChatGPT Pro/Business) on both hemispheres
+  PWA URL: https://cto.husband.llc/?token=${PWA_AUTH_TOKEN}  ← copy once to your phone
   Logs: ${LOG_FILE}
   Decision: ${DECISION_FILE}
+
+DNS required (one-time, in your Namecheap dashboard):
+  cto.husband.llc.  IN  A  <this VPS public IP>
+
+After DNS propagates (~minutes), visit the PWA URL once from your phone — it
+will save the token to localStorage and install as a home-screen app.
 
 Next: run Phase 3 functional tests manually per test-plan.md §3.
 SUMMARY

@@ -10,24 +10,28 @@
 
 ---
 
-## IMPLEMENTATION STATE (v1.1 build, in progress 2026-05-12)
-
-The v1.0 install left a gap: A2A registry + Agent Cards were published but neither agent consumed them. v1.1 closes that gap. Current state of what's now in scope:
+## IMPLEMENTATION STATE (v1.1 build — code complete 2026-05-12, deploy pending)
 
 | Element | v1.1 status |
 |---|---|
 | OpenClaw + Hermes daemons | ✅ installed by `scripts/install-cto.sh` |
 | A2A registry process | ✅ installed (Python HTTP server, port 9000) |
-| `a2a_delegate` MCP server on OpenClaw | 🟡 in progress (Wave 2) |
-| Hermes A2A endpoint sidecar (`/a2a` on 8642) | 🟡 in progress (Wave 2) |
-| Bearer-token auth between halves (`HERMES_A2A_TOKEN`) | 🟡 in progress (Wave 2) |
-| System-prompt extensions per hemisphere | ✅ written (`OPENCLAW_ROLE.md`, `HERMES_ROLE.md`) |
-| Heartbeat watcher (Hermes restarts OpenClaw on crash) | 🟡 in progress (Wave 3) |
-| Health watcher (outcome-based, Approach C) | 🟡 in progress (Wave 3) |
-| Anomaly watcher (baseline-relative, Approach A — context only, no auto-action) | 🟡 in progress (Wave 3) |
-| Autonomous-repair runner | 🟡 in progress (Wave 3) |
-| Shared memory (engram via MCP, both hemispheres) | 🟡 in progress (Wave 2 wiring) |
-| PWA at `cto.husband.llc` (BACKLOG-001 build) | 🟡 in progress (Wave 4) |
+| `a2a_delegate` MCP server on OpenClaw | ✅ code: `services/a2a_delegate/server.py`; registered in openclaw.json |
+| Hermes A2A endpoint sidecar (port 8643) | ✅ code: `services/hermes_a2a_sidecar/server.py`; systemd: `cto-hermes-a2a-sidecar.service` |
+| Bearer-token auth between halves (`HERMES_A2A_TOKEN`) | ✅ generated at install (`openssl rand -hex 32`), persisted to `/opt/cto/.env` |
+| System-prompt extensions per hemisphere | ✅ `OPENCLAW_ROLE.md`, `HERMES_ROLE.md` (auto-loaded by each hemisphere) |
+| Heartbeat watcher (Hermes restarts OpenClaw on crash) | ✅ `services/watchers/heartbeat.py`; systemd timer 30s |
+| Health watcher (outcome-based, Approach C) | ✅ `services/watchers/health.py`; systemd timer 60s |
+| Anomaly watcher (baseline-relative, Approach A — context only) | ✅ `services/watchers/anomaly.py`; systemd timer 60s |
+| Autonomous-repair runner | ✅ `services/watchers/autonomous_repair.py`; invoked by health watcher |
+| Shared memory (engram via MCP, both hemispheres) | ✅ engram registered in both openclaw.json and ~/.hermes/config.yaml; shared DB at `/opt/cto/.engram/cto.db` |
+| PWA backend (FastAPI-equivalent stdlib) | ✅ `services/pwa/backend/server.py`; systemd: `cto-pwa-backend.service` |
+| PWA frontend (HTML/CSS/JS, service worker, manifest) | ✅ `services/pwa/frontend/*` |
+| Caddy reverse-proxy + Let's Encrypt | ✅ Caddyfile at `services/pwa/caddy/Caddyfile`; install-cto.sh installs to `/etc/caddy/` |
+| VAPID keypair for Web Push | ✅ generated at install via `openssl ecparam`; public key served at `/api/push/vapid_public_key` |
+| Chat persistence (single SQLite for all messages including A2A) | ✅ `services/chat/db.py`; all hemisphere traffic + user messages logged |
+| @-mention routing in PWA | ✅ `@hermes <msg>` → Hermes sidecar; `@openclaw <msg>` or default → OpenClaw gateway |
+| **Deploy on fresh VPS** | 🟡 **PENDING** — run `scripts/install.sh` to provision and install |
 
 ## CHAT MODEL (PWA observability + @-mention routing)
 

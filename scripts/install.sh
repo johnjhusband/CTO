@@ -238,6 +238,8 @@ section "7 — Populate /opt/cto/.env on VPS"
   echo "HETZNER_API_TOKEN=${HETZNER_API_TOKEN}"
   echo "GITHUB_TOKEN=${GITHUB_TOKEN}"
   echo "HERMES_API_SERVER_KEY=${HERMES_API_SERVER_KEY}"
+  # These will be filled in by install-cto.sh on the VPS if absent.
+  # We don't pre-generate them on the laptop so they live on the VPS only.
   [ -n "${OPENAI_API_KEY:-}" ]     && echo "OPENAI_API_KEY=${OPENAI_API_KEY}"
   [ -n "${OPENROUTER_API_KEY:-}" ] && echo "OPENROUTER_API_KEY=${OPENROUTER_API_KEY}"
   [ -n "${BRAVE_API_KEY:-}" ]      && echo "BRAVE_API_KEY=${BRAVE_API_KEY}"
