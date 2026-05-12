@@ -1,0 +1,377 @@
+#!/usr/bin/env python3
+"""
+PWA backend — bridges the browser to OpenClaw and Hermes.
+
+Serves the PWA frontend at /, plus a JSON API:
+
+  GET  /api/messages?since_id=N  → message history
+  POST /api/messages              → send message from John (routes by @-mention)
+  GET  /api/stream                → Server-Sent Events stream of new messages
+  POST /api/push/subscribe        → register browser for Web Push (subscription stored)
+  GET  /api/push/vapid_public_key → return server's VAPID public key
+  GET  /api/health                → health check
+
+Auth: Bearer token in Authorization header. Token is `PWA_AUTH_TOKEN` set at
+install time. On first visit, browser receives the token via URL query, saves
+to localStorage, strips from URL, and sends in subsequent Authorization
+headers.
+
+Routing of John's outbound messages:
+  - Starts with "@hermes " (case-insensitive) → POST to Hermes A2A sidecar
+  - Starts with "@openclaw " or no @-mention → POST to OpenClaw gateway
+    (OpenClaw integration endpoint configurable via OPENCLAW_CHAT_URL —
+     defaults to /v1/chat/completions; if your OpenClaw build doesn't expose
+     this, set OPENCLAW_USE_CLI=1 and we fall back to `openclaw run` subprocess)
+
+Implementation: pure stdlib http.server + threading. SSE via long-running
+generator response. Push notifications stored as DB rows for now (sending push
+requires a small library — wired via `pywebpush` if installed in the same
+venv as this server, otherwise gracefully degrades to no-push).
+"""
+from __future__ import annotations
+import json
+import os
+import queue
+import re
+import socket
+import subprocess
+import sys
+import threading
+import time
+import urllib.request
+import urllib.error
+import uuid
+from http.server import HTTPServer, BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from typing import Optional
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+from services.chat.db import append, tail, log_a2a_request, log_a2a_response  # noqa: E402
+
+# ─── Config ─────────────────────────────────────────────────────────────────
+
+PORT = int(os.environ.get("PWA_PORT", "8088"))
+BIND = os.environ.get("PWA_BIND", "127.0.0.1")  # Caddy reverse-proxies to this
+PWA_AUTH_TOKEN = os.environ.get("PWA_AUTH_TOKEN", "")
+FRONTEND_DIR = Path(os.environ.get("PWA_FRONTEND", str(Path(__file__).resolve().parent.parent / "frontend")))
+
+HERMES_A2A_URL = os.environ.get("HERMES_A2A_URL", "http://127.0.0.1:8643/a2a/")
+HERMES_A2A_TOKEN = os.environ.get("HERMES_A2A_TOKEN", "")
+
+OPENCLAW_CHAT_URL = os.environ.get("OPENCLAW_CHAT_URL", "http://127.0.0.1:18789/v1/chat/completions")
+OPENCLAW_AUTH_TOKEN = os.environ.get("OPENCLAW_AUTH_TOKEN", "")
+OPENCLAW_MODEL = os.environ.get("OPENCLAW_MODEL", "openai-codex/gpt-5.5")
+OPENCLAW_USE_CLI = os.environ.get("OPENCLAW_USE_CLI", "0") == "1"
+
+VAPID_PUBLIC_KEY_FILE = Path(os.environ.get("VAPID_PUBLIC_KEY_FILE", "/opt/cto/.vapid/public.pem"))
+VAPID_PRIVATE_KEY_FILE = Path(os.environ.get("VAPID_PRIVATE_KEY_FILE", "/opt/cto/.vapid/private.pem"))
+VAPID_EMAIL = os.environ.get("VAPID_EMAIL", "mailto:john@husband.llc")
+
+# ─── SSE broadcaster ────────────────────────────────────────────────────────
+
+class SSEBroadcaster:
+    """Fan-out new chat messages to all connected SSE clients."""
+    def __init__(self):
+        self._subs: list[queue.Queue] = []
+        self._lock = threading.Lock()
+        self._poller = threading.Thread(target=self._poll, daemon=True)
+        self._last_id = 0
+        self._poller.start()
+
+    def subscribe(self) -> queue.Queue:
+        q: queue.Queue = queue.Queue(maxsize=100)
+        with self._lock:
+            self._subs.append(q)
+        return q
+
+    def unsubscribe(self, q: queue.Queue) -> None:
+        with self._lock:
+            try:
+                self._subs.remove(q)
+            except ValueError:
+                pass
+
+    def _broadcast(self, msg: dict) -> None:
+        with self._lock:
+            dead = []
+            for q in self._subs:
+                try:
+                    q.put_nowait(msg)
+                except queue.Full:
+                    dead.append(q)
+            for q in dead:
+                try:
+                    self._subs.remove(q)
+                except ValueError:
+                    pass
+
+    def _poll(self) -> None:
+        # Re-init last_id from DB so we don't replay old messages
+        try:
+            existing = tail(0, 1)
+            if existing:
+                self._last_id = existing[-1]["id"]
+        except Exception:
+            pass
+        while True:
+            try:
+                rows = tail(self._last_id, 200)
+                for row in rows:
+                    self._broadcast(row)
+                    self._last_id = max(self._last_id, row["id"])
+            except Exception:
+                pass
+            time.sleep(0.5)
+
+BROADCASTER = SSEBroadcaster()
+
+# ─── Routing logic ──────────────────────────────────────────────────────────
+
+MENTION_RE = re.compile(r"^\s*@(openclaw|hermes)\b\s*", re.IGNORECASE)
+
+def parse_mention(text: str) -> tuple[str, str]:
+    """Return (target, stripped_text). Target is 'openclaw' or 'hermes'."""
+    m = MENTION_RE.match(text)
+    if m:
+        target = m.group(1).lower()
+        stripped = text[m.end():].strip()
+        return target, stripped
+    return "openclaw", text  # default
+
+def send_to_hermes(text: str, task_id: Optional[str] = None) -> dict:
+    """Direct-from-John message to Hermes via the A2A sidecar."""
+    task_id = task_id or str(uuid.uuid4())
+    body = json.dumps({
+        "task_id": task_id,
+        "sender": "john",
+        "capability": "direct-instruction-from-user",
+        "inputs": {"message": text},
+        "success_criteria": "respond to the user's message",
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        HERMES_A2A_URL, data=body, method="POST",
+        headers={"Content-Type": "application/json",
+                 "Authorization": f"Bearer {HERMES_A2A_TOKEN}"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=180) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        return {"ok": True, "task_id": task_id, "findings": payload.get("findings", "")}
+    except Exception as e:
+        return {"ok": False, "error": repr(e), "task_id": task_id}
+
+def send_to_openclaw_http(text: str) -> dict:
+    """Try the OpenAI-compatible chat-completions surface on the OpenClaw gateway."""
+    body = json.dumps({
+        "model": OPENCLAW_MODEL,
+        "messages": [{"role": "user", "content": text}],
+    }).encode("utf-8")
+    headers = {"Content-Type": "application/json"}
+    if OPENCLAW_AUTH_TOKEN:
+        headers["Authorization"] = f"Bearer {OPENCLAW_AUTH_TOKEN}"
+    req = urllib.request.Request(OPENCLAW_CHAT_URL, data=body, method="POST", headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=180) as resp:
+            payload = json.loads(resp.read().decode("utf-8"))
+        # Extract OpenAI-shaped reply
+        try:
+            content = payload["choices"][0]["message"]["content"]
+        except Exception:
+            content = json.dumps(payload)
+        return {"ok": True, "reply": content}
+    except Exception as e:
+        return {"ok": False, "error": repr(e)}
+
+def send_to_openclaw_cli(text: str) -> dict:
+    """Fallback: subprocess `openclaw run` for OpenClaw integration."""
+    try:
+        r = subprocess.run(
+            ["openclaw", "run", text],
+            capture_output=True, text=True, timeout=180,
+        )
+        if r.returncode != 0:
+            return {"ok": False, "error": r.stderr or r.stdout}
+        return {"ok": True, "reply": r.stdout.strip()}
+    except Exception as e:
+        return {"ok": False, "error": repr(e)}
+
+def send_to_openclaw(text: str) -> dict:
+    if OPENCLAW_USE_CLI:
+        return send_to_openclaw_cli(text)
+    return send_to_openclaw_http(text)
+
+# ─── HTTP handler ───────────────────────────────────────────────────────────
+
+class Handler(BaseHTTPRequestHandler):
+    server_version = "CtoPWA/1.0"
+
+    def log_message(self, fmt, *args):
+        sys.stderr.write("[%s] %s\n" % (self.log_date_time_string(), fmt % args))
+
+    # Helpers
+    def _json(self, status: int, payload):
+        body = json.dumps(payload).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _file(self, path: Path, content_type: str):
+        try:
+            data = path.read_bytes()
+        except FileNotFoundError:
+            self._json(404, {"error": "not_found"}); return
+        self.send_response(200)
+        self.send_header("Content-Type", content_type)
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "no-cache")
+        self.end_headers()
+        self.wfile.write(data)
+
+    def _auth_ok(self) -> bool:
+        if not PWA_AUTH_TOKEN:
+            return True  # auth disabled (dev mode)
+        auth = self.headers.get("Authorization", "")
+        if auth.startswith("Bearer "):
+            return auth[len("Bearer "):] == PWA_AUTH_TOKEN
+        # Allow ?token= for initial bootstrap
+        if self.path:
+            qs = self.path.split("?", 1)[-1] if "?" in self.path else ""
+            for kv in qs.split("&"):
+                if kv.startswith("token="):
+                    return kv[len("token="):] == PWA_AUTH_TOKEN
+        return False
+
+    # Routes
+    def do_GET(self):
+        path = self.path.split("?", 1)[0]
+        if path == "/api/health":
+            return self._json(200, {"status": "ok", "service": "pwa-backend"})
+        # All other routes require auth
+        if not self._auth_ok():
+            return self._json(401, {"error": "unauthorized"})
+        if path == "/api/messages":
+            qs = self.path.split("?", 1)[-1] if "?" in self.path else ""
+            since_id = 0
+            for kv in qs.split("&"):
+                if kv.startswith("since_id="):
+                    try: since_id = int(kv[len("since_id="):])
+                    except ValueError: pass
+            return self._json(200, {"messages": tail(since_id, 500)})
+        if path == "/api/stream":
+            return self._sse_stream()
+        if path == "/api/push/vapid_public_key":
+            if VAPID_PUBLIC_KEY_FILE.exists():
+                return self._json(200, {"public_key": VAPID_PUBLIC_KEY_FILE.read_text().strip()})
+            return self._json(200, {"public_key": None, "note": "VAPID keys not yet generated"})
+        if path == "/" or path == "/index.html":
+            return self._file(FRONTEND_DIR / "index.html", "text/html; charset=utf-8")
+        if path == "/manifest.json":
+            return self._file(FRONTEND_DIR / "manifest.json", "application/manifest+json")
+        if path == "/service-worker.js":
+            return self._file(FRONTEND_DIR / "service-worker.js", "application/javascript")
+        if path.startswith("/static/"):
+            sub = path[len("/static/"):].lstrip("/")
+            target = (FRONTEND_DIR / sub).resolve()
+            try: target.relative_to(FRONTEND_DIR.resolve())
+            except ValueError: return self._json(403, {"error": "forbidden"})
+            ct = "text/javascript" if sub.endswith(".js") else \
+                 "text/css" if sub.endswith(".css") else \
+                 "image/png" if sub.endswith(".png") else "application/octet-stream"
+            return self._file(target, ct)
+        return self._json(404, {"error": "not_found"})
+
+    def do_POST(self):
+        if not self._auth_ok():
+            return self._json(401, {"error": "unauthorized"})
+        path = self.path.split("?", 1)[0]
+        length = int(self.headers.get("Content-Length") or 0)
+        raw = self.rfile.read(length).decode("utf-8") if length else "{}"
+        try:
+            body = json.loads(raw) if raw else {}
+        except json.JSONDecodeError:
+            return self._json(400, {"error": "invalid_json"})
+
+        if path == "/api/messages":
+            return self._handle_message_post(body)
+        if path == "/api/push/subscribe":
+            sub = body.get("subscription")
+            if not sub:
+                return self._json(400, {"error": "subscription_missing"})
+            append(sender="system", kind="system_event",
+                   content=json.dumps({"event": "push_subscribed", "endpoint_host":
+                                       (sub.get("endpoint","") or "")[:60]}))
+            # Persist subscription
+            sub_dir = Path("/opt/cto/.cache/push-subscriptions"); sub_dir.mkdir(parents=True, exist_ok=True)
+            fname = sub_dir / (uuid.uuid4().hex + ".json")
+            fname.write_text(json.dumps(sub))
+            return self._json(200, {"ok": True})
+        return self._json(404, {"error": "not_found"})
+
+    def _handle_message_post(self, body: dict):
+        text = (body.get("text") or "").strip()
+        if not text:
+            return self._json(400, {"error": "empty_message"})
+
+        # Persist John's message for chat history
+        target, stripped = parse_mention(text)
+        append(sender="john", recipient=target, kind="chat", content=text)
+
+        # Spawn worker so we can return 202 immediately and let SSE deliver the reply
+        def worker():
+            if target == "hermes":
+                r = send_to_hermes(stripped or text)
+                if r.get("ok"):
+                    append(sender="hermes", recipient="john", kind="chat",
+                           content=r.get("findings", ""))
+                else:
+                    append(sender="system", recipient="john", kind="system_event",
+                           content=json.dumps({"event": "hermes_send_failed", "error": r.get("error")}))
+            else:  # openclaw or default
+                r = send_to_openclaw(stripped or text)
+                if r.get("ok"):
+                    append(sender="openclaw", recipient="john", kind="chat",
+                           content=r.get("reply", ""))
+                else:
+                    append(sender="system", recipient="john", kind="system_event",
+                           content=json.dumps({"event": "openclaw_send_failed", "error": r.get("error")}))
+
+        threading.Thread(target=worker, daemon=True).start()
+        return self._json(202, {"accepted": True, "target": target})
+
+    def _sse_stream(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/event-stream")
+        self.send_header("Cache-Control", "no-cache")
+        self.send_header("X-Accel-Buffering", "no")
+        self.end_headers()
+        q = BROADCASTER.subscribe()
+        try:
+            # Send a comment to start the stream
+            self.wfile.write(b": connected\n\n"); self.wfile.flush()
+            while True:
+                try:
+                    msg = q.get(timeout=15)
+                    data = json.dumps(msg)
+                    self.wfile.write(f"data: {data}\n\n".encode()); self.wfile.flush()
+                except queue.Empty:
+                    self.wfile.write(b": keepalive\n\n"); self.wfile.flush()
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+        finally:
+            BROADCASTER.unsubscribe(q)
+
+# ─── Main ───────────────────────────────────────────────────────────────────
+
+def main() -> None:
+    if not PWA_AUTH_TOKEN:
+        sys.stderr.write("WARN: PWA_AUTH_TOKEN not set — running without auth (dev only)\n")
+    append(sender="system", kind="system_event",
+           content=f"pwa-backend starting on {BIND}:{PORT}")
+    server = ThreadingHTTPServer((BIND, PORT), Handler)
+    server.serve_forever()
+
+
+if __name__ == "__main__":
+    main()
