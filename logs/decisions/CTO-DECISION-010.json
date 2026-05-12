@@ -1,0 +1,68 @@
+{
+  "id": "CTO-DECISION-010",
+  "timestamp": "2026-05-12T17:55:00+00:00",
+  "technology": "Gmail read-only access via @grabow/safe-gmail-mcp",
+  "action": "adopted",
+  "summary": "Both hemispheres mount @grabow/safe-gmail-mcp (security-hardened fork of @gongrzhe/server-gmail-autoauth-mcp). Google OAuth scope restricted to gmail.readonly at the Cloud project level. Primary use case: autonomously read 2FA verification codes during DNS/service login automation.",
+  "rationale": [
+    "John's directive: 'I think I need CTO to be able to read my gmail account... for now read only so that cto can do the two factor. entire inbox is fine. They both can read it. You pick the auth path.'",
+    "Defense in depth: MCP server has no send/delete tools exposed AND Google OAuth scope rejects any non-read API call.",
+    "@grabow/safe-gmail-mcp chosen over alternatives because: (a) security-hardened (path-traversal patch, MCP SDK upgrade) where the original @gongrzhe is unmaintained since Aug 2025; (b) on npm (single npm i -g); (c) Node.js — matches the stack already installed on CTO VPS; (d) MIT-style permissive license; (e) credentials persisted to ~/.gmail-mcp/ — same scp-from-source-host pattern as ~/.codex/auth.json.",
+    "Google's official Gmail MCP server (gmailmcp.googleapis.com) considered but rejected: still in Workspace Developer Preview, not GA. Beta auth flows can change. Will revisit when GA."
+  ],
+  "auth": {
+    "type": "OAuth 2.0 Desktop App",
+    "scope": "https://www.googleapis.com/auth/gmail.readonly",
+    "consent_screen": "External user type, john@husband.llc as test user",
+    "credential_storage": "~/.gmail-mcp/credentials.json (refresh token, mode 600)",
+    "client_secret_storage": "~/.gmail-mcp/gcp-oauth.keys.json (client ID + secret, mode 600)"
+  },
+  "alternatives_considered": [
+    {
+      "option": "Google's official Gmail MCP server (remote, hosted)",
+      "rejected_because": "Workspace Developer Preview only, not GA. Beta auth flows can change without notice."
+    },
+    {
+      "option": "LowisWano/gmail-mcp (read-only-by-design)",
+      "rejected_because": "Not published to npm. Maintenance/quality status uncertain. No CVE patches visible."
+    },
+    {
+      "option": "@gongrzhe/server-gmail-autoauth-mcp (original)",
+      "rejected_because": "Unmaintained since August 2025. Path-traversal CVE on attachment download. @grabow fork carries the same auto-auth feature with patches."
+    },
+    {
+      "option": "ArtyMcLabin/Gmail-MCP-Server (active fork)",
+      "rejected_because": "Not published to npm — would require git install + npm link. Slightly higher install complexity for no incremental security benefit over @grabow/safe-gmail-mcp."
+    },
+    {
+      "option": "IMAP with app password",
+      "rejected_because": "Long-lived shared secret. No fine-grained scope. Worse than OAuth in every dimension except simplicity, and OAuth setup is one-time."
+    }
+  ],
+  "components": {
+    "package": "@grabow/safe-gmail-mcp@1.0.6",
+    "install": "npm install -g @grabow/safe-gmail-mcp",
+    "auth_command": "safe-gmail-mcp auth",
+    "mcp_command_for_hemispheres": "npx -y @grabow/safe-gmail-mcp",
+    "credentials_dir": "~/.gmail-mcp/",
+    "scripts_helper_dir": "scripts/gmail-mcp/"
+  },
+  "human_prereqs_one_time": [
+    "Create Google Cloud project (https://console.cloud.google.com/projectcreate)",
+    "Enable Gmail API on that project",
+    "Configure OAuth consent screen: External user type, gmail.readonly scope, john@husband.llc as test user",
+    "Create OAuth 2.0 Desktop App client ID; download client_secret.json",
+    "Run one-time consent flow via the MCP's auth command — browser opens, John clicks Allow, refresh token saved"
+  ],
+  "credential_carry": "scripts/install.sh scp's ~/.gmail-mcp/ from source host to new VPS during provisioning — same pattern as ~/.codex/auth.json. Future clones inherit the OAuth refresh token without re-running consent flow.",
+  "hemisphere_config": {
+    "openclaw": "Add 'gmail' MCP entry to OpenClaw's MCP config pointing to npx -y @grabow/safe-gmail-mcp",
+    "hermes": "Add 'gmail' MCP entry to Hermes's MCP config pointing to npx -y @grabow/safe-gmail-mcp",
+    "rationale": "John: 'They both can read it.' Both hemispheres get equal access."
+  },
+  "rollback": {
+    "instructions": "Revoke the OAuth client at https://console.cloud.google.com/apis/credentials. Delete ~/.gmail-mcp/ on every host. Remove gmail MCP entry from both hemisphere configs. Re-running the install script without these will skip the Gmail integration."
+  },
+  "related_decision_log": "CTO-DECISION-009 (Namecheap automation — drove the need for autonomous 2FA reading)",
+  "related_backlog": null
+}

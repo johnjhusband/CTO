@@ -191,6 +191,14 @@ if ! have github-mcp-server; then
 fi
 github-mcp-server --version 2>&1 | head -1 || true
 
+note "Installing @grabow/safe-gmail-mcp (read-only Gmail MCP, CTO-DECISION-010)"
+# Pre-installing avoids first-call npx download latency and surfaces install
+# failures at provision time rather than runtime.
+if ! have safe-gmail-mcp; then
+  sudo npm install -g @grabow/safe-gmail-mcp
+fi
+safe-gmail-mcp --version 2>&1 | head -1 || true
+
 note "Installing hcloud CLI"
 if ! have hcloud; then
   curl -fsSLO https://github.com/hetznercloud/cli/releases/latest/download/hcloud-linux-amd64.tar.gz
@@ -338,7 +346,8 @@ cat > "${OPENCLAW_DIR}/openclaw.json" <<JSON
       "github":     { "command": "/usr/local/bin/github-mcp-server", "args": [], "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" } },
       "brave-search": { "command": "npx", "args": ["-y", "@brave/brave-search-mcp-server"], "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY:-}" } },
       "fetch":      { "command": "uvx", "args": ["mcp-server-fetch"] },
-      "hetzner":    { "command": "npx", "args": ["-y", "@lazyants/hetzner-mcp-server"], "env": { "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}" } }
+      "hetzner":    { "command": "npx", "args": ["-y", "@lazyants/hetzner-mcp-server"], "env": { "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}" } },
+      "gmail":      { "command": "npx", "args": ["-y", "@grabow/safe-gmail-mcp"] }
     }
   }
 }
@@ -361,6 +370,13 @@ chmod 0600 "${HOME}/.hermes/.env" 2>/dev/null || true
 hermes config set mcp.servers.engram.command engram 2>/dev/null || true
 hermes config set mcp.servers.engram.args "['mcp-server', '--db', '${CTO_ROOT}/.engram/cto.db']" 2>/dev/null || true
 mkdir -p "${CTO_ROOT}/.engram"
+
+# Hermes: also wire the Gmail MCP so both hemispheres can read 2FA codes
+# (CTO-DECISION-010). OAuth scope is enforced at the Google Cloud project,
+# not here — this server is read-only by design but the scope is the
+# real boundary.
+hermes config set mcp.servers.gmail.command npx 2>/dev/null || true
+hermes config set mcp.servers.gmail.args "['-y', '@grabow/safe-gmail-mcp']" 2>/dev/null || true
 
 note "Setting up A2A registry"
 A2A_DIR="${CTO_ROOT}/a2a/registry"

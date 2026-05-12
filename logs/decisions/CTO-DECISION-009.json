@@ -1,0 +1,40 @@
+{
+  "id": "CTO-DECISION-009",
+  "timestamp": "2026-05-12T17:30:00+00:00",
+  "technology": "Namecheap API automation via Playwright",
+  "action": "adopted",
+  "summary": "Headless Playwright flow at scripts/namecheap-playwright/ enables the Namecheap API on the account and captures credentials for autonomous DNS management.",
+  "rationale": [
+    "DNS for cto.husband.llc lives at Namecheap. Autonomous self-cloning requires CTO to programmatically read/write DNS records.",
+    "Namecheap has no first-party CLI. Their REST API requires the account-level API toggle to be enabled, which is gated by an account-password-confirmation modal in their web UI.",
+    "Playwright drives the toggle + modal flow once; session state is persisted to .session.json so re-runs skip login + email-based 2FA. Important for the autonomous-clone path where DNS automation must run unattended.",
+    "Alternative considered: Hetzner Floating IP. Cleaner for the cutover problem itself (single API call atomic transfer, no DNS change) but does not eliminate the need for Namecheap API for other DNS operations (subdomains, future domains, other infra). Both are non-exclusive."
+  ],
+  "components": {
+    "script": "scripts/namecheap-playwright/enable-api.js",
+    "session_state": "scripts/namecheap-playwright/.session.json (mode 600, gitignored)",
+    "credential_output": "scripts/namecheap-playwright/namecheap-api.local.env (mode 600, gitignored by *.env)",
+    "ephemeral_code_file": "scripts/namecheap-playwright/code.txt (gitignored, deleted after each use)",
+    "screenshots": "scripts/namecheap-playwright/shots/ (gitignored, used for debugging)"
+  },
+  "flow": [
+    "1. If .session.json exists, navigate directly to API page; skip login if session still valid",
+    "2. Otherwise POST login form (creds from NAMECHEAP_USER/NAMECHEAP_PASS env vars)",
+    "3. Email-based 2FA: wait for code in code.txt (operator pastes from email), fill, submit",
+    "4. Persist session BEFORE attempting credential capture so downstream failures don't cost another 2FA round-trip",
+    "5. Toggle API ON; modal-scoped password re-entry; click Confirm",
+    "6. Poll page for API Key; fall back to login username when 'API Username' label absent",
+    "7. Write namecheap-api.local.env and re-persist session"
+  ],
+  "credential_carry": "For autonomous self-cloning, scripts/install.sh will scp .session.json and namecheap-api.local.env from the source host (laptop or existing CTO) to the new VPS — same pattern as ~/.codex/auth.json carry.",
+  "human_prereqs_one_time": [
+    "Namecheap account exists with API eligibility met ($50 balance, 20+ domains, OR $50+ spent in last 2 years)",
+    "First-time run requires operator to paste 2FA verification code from email into code.txt; subsequent runs use .session.json"
+  ],
+  "ip_whitelist": "Namecheap requires API caller's IP to be whitelisted in the API settings. Initial whitelist entry created during enablement. Subsequent IPs (each new CTO VPS) must be added via API or UI before that host can make DNS calls.",
+  "rollback": {
+    "instructions": "Disable API on Namecheap account: log in to https://ap.www.namecheap.com/settings/tools/apiaccess/ and toggle off. Remove scripts/namecheap-playwright/.session.json + namecheap-api.local.env from any host. New API key issued if re-enabled."
+  },
+  "related_decision_log": null,
+  "related_backlog": null
+}

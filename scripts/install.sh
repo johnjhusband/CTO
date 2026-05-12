@@ -270,6 +270,33 @@ else
   note "Source host has no ~/.codex/auth.json — VPS will run device-code flow once"
 fi
 
+# ─── Section 7.6 — Reuse Gmail OAuth refresh token from source host ────────
+
+section "7.6 — Reuse Gmail OAuth refresh token from source host if present"
+
+# Per CTO-DECISION-010, both hemispheres use @grabow/safe-gmail-mcp with the
+# refresh token stored at ~/.gmail-mcp/credentials.json. Re-running the OAuth
+# consent flow per clone breaks autonomy (browser click required). So: if the
+# source host already has ~/.gmail-mcp/, scp the whole directory.
+
+LOCAL_GMAIL_DIR="${HOME}/.gmail-mcp"
+if [ -d "${LOCAL_GMAIL_DIR}" ] && [ -s "${LOCAL_GMAIL_DIR}/credentials.json" ]; then
+  note "Source host has Gmail OAuth credentials — copying to new VPS"
+  ssh "${SSH_OPTS[@]}" "cto@${VPS_IP}" 'mkdir -p ~/.gmail-mcp && chmod 700 ~/.gmail-mcp'
+  scp -q -i "${SSH_KEY}" -o StrictHostKeyChecking=accept-new \
+    "${LOCAL_GMAIL_DIR}/credentials.json" \
+    "cto@${VPS_IP}:/home/cto/.gmail-mcp/credentials.json"
+  if [ -s "${LOCAL_GMAIL_DIR}/gcp-oauth.keys.json" ]; then
+    scp -q -i "${SSH_KEY}" -o StrictHostKeyChecking=accept-new \
+      "${LOCAL_GMAIL_DIR}/gcp-oauth.keys.json" \
+      "cto@${VPS_IP}:/home/cto/.gmail-mcp/gcp-oauth.keys.json"
+  fi
+  ssh "${SSH_OPTS[@]}" "cto@${VPS_IP}" 'chmod 600 ~/.gmail-mcp/*.json'
+  note "Gmail credentials copied"
+else
+  note "Source host has no ~/.gmail-mcp/credentials.json — run scripts/gmail-mcp/auth.sh on source host first"
+fi
+
 # ─── Section 8: Clone repo on VPS ───────────────────────────────────────────
 
 section "8 — Clone CTO repo on VPS"
@@ -319,6 +346,16 @@ scp -q -i "${SSH_KEY}" -o StrictHostKeyChecking=accept-new \
   && chmod 600 "${LOCAL_CODEX_AUTH}" \
   && note "Cached auth.json at ${LOCAL_CODEX_AUTH} — next install will skip device-code" \
   || note "(could not pull auth.json back; future installs will require device-code)"
+
+# Same pattern for Gmail OAuth credentials — pull them back to the source host
+# so future clones inherit the refresh token.
+mkdir -p "${LOCAL_GMAIL_DIR}"
+scp -q -i "${SSH_KEY}" -o StrictHostKeyChecking=accept-new \
+  "cto@${VPS_IP}:/home/cto/.gmail-mcp/credentials.json" \
+  "${LOCAL_GMAIL_DIR}/credentials.json" 2>/dev/null \
+  && chmod 600 "${LOCAL_GMAIL_DIR}/credentials.json" \
+  && note "Cached gmail credentials.json at ${LOCAL_GMAIL_DIR}" \
+  || note "(no gmail credentials.json on VPS to pull back)"
 
 # ─── Section 10: Final verification ─────────────────────────────────────────
 

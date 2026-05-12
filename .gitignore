@@ -25,3 +25,8 @@ memory/????-??-??.md
 scripts/namecheap-playwright/.session.json
 scripts/namecheap-playwright/code.txt
 scripts/namecheap-playwright/shots/
+
+# Gmail MCP — OAuth client secret + downloaded refresh-token files never commit
+scripts/gmail-mcp/client_secret.json
+scripts/gmail-mcp/credentials.json
+scripts/gmail-mcp/gcp-oauth.keys.json

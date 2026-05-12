@@ -37,12 +37,14 @@
 | ID | Date | Type | Priority | Affects | Capability Needed | Status |
 |---|---|---|---|---|---|---|
 | [BACKLOG-001](logs/backlog/BACKLOG-001.json) | 2026-05-11 | missing-skill | P1 | human-interface | Self-hosted PWA at `cto.husband.llc` — A2A2H chat + web-push, no per-clone config | escalated-to-john |
+| [BACKLOG-002](logs/backlog/BACKLOG-002.json) | 2026-05-12 | missing-skill | P1 | autonomous self-clone | Clone-over cutover strategy: DNS round-robin vs Hetzner floating IP | escalated-to-john |
 
 ## Escalated to John (Awaiting Decision)
 
 | ID | Escalated | Type | Capability | What John Needs to Decide |
 |---|---|---|---|---|
 | BACKLOG-001 | 2026-05-11 | missing-skill | Self-hosted PWA (A2A2H chat + push) | When to build (v1.1 scope per CTO-DECISION-006). DNS: husband.llc lives at Namecheap; John creates `cto.husband.llc` A record when ready. |
+| BACKLOG-002 | 2026-05-12 | missing-skill | Clone-over cutover strategy | Pick: (a) DNS round-robin with two permanent IPs + parent→child state replication (chat.db, VAPID, .codex, .env, cert sharing) OR (b) Hetzner floating IP (~€0.50/mo) — one API call atomic transfer, DNS never changes, zero split-brain. Recommendation: floating IP. |
 
 ## Resolved / Abandoned
 
