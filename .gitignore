@@ -20,3 +20,8 @@ __pycache__/
 raw/
 memory/????-??-??.md
 .memweave/
+
+# Playwright helpers — session state, screenshots, ephemeral 2FA codes
+scripts/namecheap-playwright/.session.json
+scripts/namecheap-playwright/code.txt
+scripts/namecheap-playwright/shots/
