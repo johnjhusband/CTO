@@ -371,12 +371,25 @@ note "Validating OpenClaw config"
 openclaw doctor || fail "openclaw doctor reported errors — see ${LOG_FILE}"
 
 note "Writing Hermes config"
-hermes config set model openai-codex/gpt-5.5
+# Hermes model — defaulting to openrouter/free for v1.x because Codex OAuth
+# (CTO-DECISION-008) isn't yet wired into Hermes's auth resolver; tracked as
+# CTO-DECISION-012. openrouter/free auto-routes to a working free model.
+hermes config set model "${HERMES_MODEL:-openrouter/free}"
+hermes config set max_output_tokens 2000
 hermes config set gateway.port 8642
 hermes config set gateway.bind loopback
 hermes config set api_server.enabled true
 hermes config set api_server.key "${HERMES_API_SERVER_KEY}"
 [ -n "${OPENAI_API_KEY:-}" ] && hermes config set OPENAI_API_KEY "${OPENAI_API_KEY}"
+
+# Hermes only reads ~/.hermes/.env (not /opt/cto/.env). Mirror provider keys
+# so Hermes can authenticate to OpenRouter for chat. CTO-DECISION-012.
+for KEY in OPENROUTER_API_KEY OPENAI_API_KEY; do
+  VAL=$(grep "^${KEY}=" "${CTO_ROOT}/.env" 2>/dev/null | head -1)
+  if [ -n "${VAL}" ] && ! grep -q "^${KEY}=" "${HOME}/.hermes/.env" 2>/dev/null; then
+    echo "${VAL}" >> "${HOME}/.hermes/.env"
+  fi
+done
 chmod 0600 "${HOME}/.hermes/.env" 2>/dev/null || true
 
 # Hermes shared-memory: configure engram as an MCP server Hermes can consume

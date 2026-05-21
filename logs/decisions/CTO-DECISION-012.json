@@ -1,0 +1,41 @@
+{
+  "id": "CTO-DECISION-012",
+  "timestamp": "2026-05-21T03:30:00+00:00",
+  "technology": "PWA chat backend: default route to Hermes via openrouter/free",
+  "action": "adopted (interim)",
+  "summary": "Until OpenClaw's HTTP chat endpoint + Codex OAuth integration are wired, the PWA backend routes all non-@-mentioned messages to Hermes. Hermes uses openrouter/free as its model (auto-routes to a working free OpenRouter model). End-to-end chat round-trip now functional via https://cto.husband.llc/ with the PWA_AUTH_TOKEN.",
+  "rationale": [
+    "Investigation found OpenClaw's HTTP gateway does NOT expose POST /v1/chat/completions or any chat-style endpoint (the gateway runs 6 plugins: browser, device-pair, file-transfer, memory-core, phone-control, talk-voice — none of which is chat). PWA backend's OPENCLAW_CHAT_URL is unreachable.",
+    "OpenClaw's per-agent auth profile (~/.openclaw/agents/main/agent/auth-profiles.json) needs an openai-codex entry the install script never wrote. CTO-DECISION-008 (ChatGPT Business via Codex OAuth) is still the architectural target but the wiring is non-trivial — codex CLI's auth.json on disk doesn't auto-flow into OpenClaw's per-agent auth store.",
+    "Hermes by contrast routes through OpenRouter natively. Once OPENROUTER_API_KEY landed in ~/.hermes/.env (it had only been in /opt/cto/.env which Hermes doesn't read), Hermes successfully completed a chat round-trip.",
+    "openrouter/free auto-routes to a working free model — confirmed end-to-end with 'reply with single word: alive' → 'alive'.",
+    "Routing default to Hermes is INTERIM. When OpenClaw chat path + Codex OAuth integration land, default reverts to OpenClaw per the two-hemisphere design (OpenClaw left = thinking/decider, Hermes right = doing/executor)."
+  ],
+  "live_state_on_cto_v1": {
+    "pwa_backend": "default routing target: hermes",
+    "pwa_backend_public_paths": "static assets, manifest.json, service-worker.js, /, /index.html, /api/health bypass auth wall (so PWA shell can bootstrap before JS attaches the Bearer token)",
+    "hermes_model": "openrouter/free",
+    "hermes_max_output_tokens": 2000,
+    "hermes_env_mirror": "OPENROUTER_API_KEY and OPENAI_API_KEY mirrored from /opt/cto/.env into ~/.hermes/.env",
+    "openclaw_chat": "NOT WORKING — no HTTP chat endpoint, codex auth profile missing"
+  },
+  "remaining_work": [
+    "Wire openai-codex auth profile into OpenClaw's per-agent auth store (~/.openclaw/agents/main/agent/auth-profiles.json) — schema needs source-spelunking or `openclaw onboard --auth-choice oauth` repro",
+    "Find or build an OpenClaw chat HTTP endpoint that the PWA backend can POST to — or switch PWA backend to subprocess `openclaw chat` style",
+    "Generate /static/icon-192.png so the PWA manifest reference doesn't 404 (cosmetic; doesn't block install-to-home-screen)",
+    "Test SSE stream behaviour from a real browser; current curl tests showed early termination but may be client-side timeout",
+    "Add OpenRouter credit monitoring + alerting (free tier rate-limits — chat will silently fail under load)"
+  ],
+  "verified_2026_05_21": [
+    "POST /api/messages (text=\"reply with the single word: alive\", no @mention) → routed to hermes → returned chat content 'alive'",
+    "POST /api/messages (text=\"@hermes one word: pong\") → routed to hermes → returned chat content 'pong'",
+    "All static assets serve 200 (style.css, app.js, manifest.json, service-worker.js)",
+    "/api/health returns 200 without auth",
+    "/api/messages without auth returns 401"
+  ],
+  "rollback": {
+    "instructions": "Edit services/pwa/backend/server.py: change parse_mention default from 'hermes' back to 'openclaw'. systemctl --user restart cto-pwa-backend. Remove OPENROUTER_API_KEY from ~/.hermes/.env. hermes config set model openai-codex/gpt-5.5."
+  },
+  "related_decision_log": "CTO-DECISION-008 (ChatGPT Business via Codex OAuth — long-term target; this entry is the interim deviation)",
+  "related_backlog": null
+}

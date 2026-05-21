@@ -138,7 +138,7 @@ def parse_mention(text: str) -> tuple[str, str]:
         target = m.group(1).lower()
         stripped = text[m.end():].strip()
         return target, stripped
-    return "openclaw", text  # default
+    return "hermes", text  # default (CTO-DECISION-012: OpenClaw chat path not yet wired; route default to Hermes)
 
 def send_to_hermes(text: str, task_id: Optional[str] = None) -> dict:
     """Direct-from-John message to Hermes via the A2A sidecar."""
@@ -245,13 +245,22 @@ class Handler(BaseHTTPRequestHandler):
                     return kv[len("token="):] == PWA_AUTH_TOKEN
         return False
 
+    # Paths served WITHOUT auth — the PWA shell must bootstrap before the JS
+    # can attach the Bearer token. Static assets contain no secrets.
+    _PUBLIC_GET_EXACT = ("/", "/index.html", "/manifest.json", "/service-worker.js", "/api/health")
+    _PUBLIC_GET_PREFIX = ("/static/",)
+
+    def _is_public_get(self, path: str) -> bool:
+        if path in self._PUBLIC_GET_EXACT: return True
+        return any(path.startswith(p) for p in self._PUBLIC_GET_PREFIX)
+
     # Routes
     def do_GET(self):
         path = self.path.split("?", 1)[0]
         if path == "/api/health":
             return self._json(200, {"status": "ok", "service": "pwa-backend"})
-        # All other routes require auth
-        if not self._auth_ok():
+        # Public paths skip auth; API paths still require it
+        if not self._is_public_get(path) and not self._auth_ok():
             return self._json(401, {"error": "unauthorized"})
         if path == "/api/messages":
             qs = self.path.split("?", 1)[-1] if "?" in self.path else ""
