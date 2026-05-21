@@ -20,7 +20,7 @@
     "openclaw_chat": "NOT WORKING — no HTTP chat endpoint, codex auth profile missing"
   },
   "remaining_work": [
-    "Wire openai-codex auth profile into OpenClaw's per-agent auth store (~/.openclaw/agents/main/agent/auth-profiles.json) — schema needs source-spelunking or `openclaw onboard --auth-choice oauth` repro",
+    "OpenClaw codex auth: 2026-05-21 attempt — added profile `openai-codex:default` with full token bundle from ~/.codex/auth.json AND `openai-codex:codex-cli` external bootstrap stub. OpenClaw still rejects with 'No API key found for provider openai-codex'. Source inspection reveals OpenClaw recognizes codex CLI as a RUNTIME (config: `agents.defaults.agentRuntime.id = codex-cli`) where it shells out to `codex` CLI per turn rather than using embedded LLM client. Switching runtime is an architectural change. Alternative: reproduce the interactive `openclaw onboard` ChatGPT-OAuth flow non-interactively (schema undocumented). Either path is hours-level investigation. Pushed to next session.",
     "Find or build an OpenClaw chat HTTP endpoint that the PWA backend can POST to — or switch PWA backend to subprocess `openclaw chat` style",
     "Generate /static/icon-192.png so the PWA manifest reference doesn't 404 (cosmetic; doesn't block install-to-home-screen)",
     "Test SSE stream behaviour from a real browser; current curl tests showed early termination but may be client-side timeout",
