@@ -67,6 +67,23 @@ Skipping this check is how you write rules you don't follow and design architect
 4. What's the cost of switching vs staying?
 5. Can I test it on real infrastructure?
 
+### Community Signal Criteria (apply to every adoption candidate)
+
+When evaluating a GitHub project, npm/pip package, MCP server, or community fork for adoption, record these signals in the decision log alongside the answers to the Five Questions:
+
+| Signal | Why it matters | Adoption guidance |
+|---|---|---|
+| **GitHub stars** | Adoption breadth proxy | Order of magnitude matters; 10K+ is well-known, 50K+ is mainstream. Below 1K → flag as early-stage. |
+| **Contributor count** | Bus-factor / resilience | >50 contributors survives a maintainer leaving. <10 + single-maintainer → risk. |
+| **Last commit / release** | Living vs abandoned | Activity within ~60 days = active. Silent >12 months without explanation = treat as abandoned. |
+| **Open issues vs closed ratio + response time** | Maintainer engagement | Recent (last 30d) maintainer activity on issues = green. Long unanswered queues = yellow. |
+| **Weekly downloads** (npm/pip where applicable) | Real-user adoption complements stars | Stars without downloads = curiosity. Downloads without stars = enterprise-only or stealthy adoption. |
+| **License** | Hard constraint | MIT / Apache-2 / BSD / ISC only for direct adoption. GPL/AGPL → `fork-trigger` BACKLOG entry, do not import. |
+
+These are **tiebreakers and reliability proxies**, not overrides. A 200K-star project that solves the wrong problem is still wrong; a 500-star project that is the only one solving the right problem is still adoptable (with a fork plan for the day it goes silent). Always quote the observed numbers in the decision log so future-CTO can see how the field looked at decision time.
+
+This applies to **both hemispheres** — OpenClaw applies it during the daily research cycle and macro-evolution decisions, Hermes applies it when proposing a self-evolution patch that pulls in a new dependency.
+
 ### Decision Categories
 - **Adopt:** Material change with production evidence. Trigger upgrade cycle.
 - **Defer:** Interesting but not ready. Re-evaluate in 7-30 days.
