@@ -371,10 +371,14 @@ note "Validating OpenClaw config"
 openclaw doctor || fail "openclaw doctor reported errors — see ${LOG_FILE}"
 
 note "Writing Hermes config"
-# Hermes model — defaulting to openrouter/free for v1.x because Codex OAuth
-# (CTO-DECISION-008) isn't yet wired into Hermes's auth resolver; tracked as
-# CTO-DECISION-012. openrouter/free auto-routes to a working free model.
-hermes config set model "${HERMES_MODEL:-openrouter/free}"
+# Hermes model — uses ChatGPT Business via Codex OAuth (CTO-DECISION-008).
+# After fresh install, one-time human prereq: from a laptop terminal run
+#   ssh -tt cto@<VPS_IP> 'PATH=$HOME/.local/bin:$PATH hermes auth add openai-codex --type oauth --no-browser'
+# Approve the device code in a browser, then this default works. Until that
+# OAuth is wired, Hermes falls back to openrouter/free if OPENROUTER_API_KEY
+# is set (works out of the box, free tier rate-limited).
+hermes config set model.default "${HERMES_MODEL:-gpt-5.5}"
+hermes config set model.provider "${HERMES_PROVIDER:-openai-codex}"
 hermes config set max_output_tokens 2000
 hermes config set gateway.port 8642
 hermes config set gateway.bind loopback
