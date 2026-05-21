@@ -361,7 +361,8 @@ cat > "${OPENCLAW_DIR}/openclaw.json" <<JSON
       "brave-search": { "command": "npx", "args": ["-y", "@brave/brave-search-mcp-server"], "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY:-}" } },
       "fetch":      { "command": "uvx", "args": ["mcp-server-fetch"] },
       "hetzner":    { "command": "npx", "args": ["-y", "@lazyants/hetzner-mcp-server"], "env": { "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}" } },
-      "gmail":      { "command": "npx", "args": ["-y", "@grabow/safe-gmail-mcp"] }
+      "gmail":      { "command": "npx", "args": ["-y", "@grabow/safe-gmail-mcp"] },
+      "lightpanda": { "command": "/usr/local/bin/lightpanda", "args": ["mcp"] }
     }
   }
 }
@@ -391,6 +392,12 @@ mkdir -p "${CTO_ROOT}/.engram"
 # real boundary.
 hermes config set mcp.servers.gmail.command npx 2>/dev/null || true
 hermes config set mcp.servers.gmail.args "['-y', '@grabow/safe-gmail-mcp']" 2>/dev/null || true
+
+# Hermes: wire Lightpanda MCP for browser automation (CTO-DECISION-011).
+# Exposes navigate / click / type / query / fetch tools to Hermes directly
+# via MCP — no CDP boilerplate. Both hemispheres get the same access.
+hermes config set mcp.servers.lightpanda.command /usr/local/bin/lightpanda 2>/dev/null || true
+hermes config set mcp.servers.lightpanda.args "['mcp']" 2>/dev/null || true
 
 note "Setting up A2A registry"
 A2A_DIR="${CTO_ROOT}/a2a/registry"
