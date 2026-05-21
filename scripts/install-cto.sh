@@ -191,6 +191,20 @@ if ! have github-mcp-server; then
 fi
 github-mcp-server --version 2>&1 | head -1 || true
 
+note "Installing Lightpanda browser (AI-first headless, CTO-DECISION-011)"
+# Lightpanda is a CDP-compatible headless browser engine built from scratch in
+# Zig, designed for AI agents. Drop-in for Playwright via connectOverCDP.
+# 11x faster execution, 9x less memory than headless Chrome. License AGPL-3.0
+# — running as-is without modification doesn't activate the copyleft trigger,
+# and the CTO repo is already public; exception documented in CTO-DECISION-011.
+if ! have lightpanda; then
+  curl -fSL -o /tmp/lightpanda \
+    "https://github.com/lightpanda-io/browser/releases/download/nightly/lightpanda-x86_64-linux"
+  sudo install -m 0755 /tmp/lightpanda /usr/local/bin/lightpanda
+  rm -f /tmp/lightpanda
+fi
+lightpanda version 2>&1 | head -1 || true
+
 note "Installing @grabow/safe-gmail-mcp (read-only Gmail MCP, CTO-DECISION-010)"
 # Pre-installing avoids first-call npx download latency and surfaces install
 # failures at provision time rather than runtime.

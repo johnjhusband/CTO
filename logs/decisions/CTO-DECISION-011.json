@@ -1,0 +1,54 @@
+{
+  "id": "CTO-DECISION-011",
+  "timestamp": "2026-05-20T22:15:00+00:00",
+  "technology": "Lightpanda — AI-native headless browser",
+  "action": "adopted",
+  "summary": "Lightpanda installed on both laptop (~/.local/bin/lightpanda) and the cto-v1 VPS (/usr/local/bin/lightpanda) as a CDP-compatible Playwright backend. Drop-in replacement for headless Chromium via connectOverCDP. 11x faster execution and 9x lower memory than headless Chrome on scraping workloads. Ships an MCP server (`lightpanda mcp`) that exposes navigate/click/type/query to LLMs directly, plus a one-shot page-fetch mode for clean JS-rendered HTML.",
+  "rationale": [
+    "John's directive 2026-05-20: 'let's go with it. update the documentation, install it on this computer. So that you can use it and install it on the virtual private server.'",
+    "Architectural fit: CDP-compatible, so any existing Playwright script switches with one line (chromium.connectOverCDP('ws://127.0.0.1:9222')). No code rewrite to adopt.",
+    "Capability uplift: native MCP server + structured page-fetch mode are net-new tools Chromium doesn't expose. Both hemispheres can consume them via MCP.",
+    "Performance: 11x faster, 9x less memory — relevant for the autonomous browser-automation workloads (DNS management, 2FA reading, scraping) that the hemispheres run unattended."
+  ],
+  "license_exception": {
+    "license": "AGPL-3.0",
+    "rule_violated": "AGENTS.md community-signal criteria — 'MIT/Apache-2/BSD/ISC only for direct adoption; GPL/AGPL → fork-trigger BACKLOG entry, do not import.' Rule added 2026-05-20 commit 11c03a3.",
+    "exception_basis": [
+      "Running as-is without source modification — AGPL's copyleft trigger requires modification, not mere use.",
+      "CTO repo is already public on GitHub (github.com/johnjhusband/CTO) under MIT — source disclosure is not a new burden imposed by AGPL.",
+      "We do not redistribute Lightpanda binaries; we install from upstream releases.",
+      "If we ever fork Lightpanda to patch a bug, that fork must be published — accepted as the cost of the exception."
+    ],
+    "decision": "Override the rule for this specific adoption. The rule remains correct as a default; this is a documented exception, not a precedent for blanket GPL/AGPL adoption."
+  },
+  "components": {
+    "binary_release": "https://github.com/lightpanda-io/browser/releases/download/nightly/lightpanda-x86_64-linux",
+    "installed_version": "1.0.0-nightly.6323+037db695",
+    "laptop_path": "~/.local/bin/lightpanda",
+    "vps_path": "/usr/local/bin/lightpanda",
+    "cdp_serve_command": "lightpanda serve --host 127.0.0.1 --port 9222",
+    "mcp_command": "lightpanda mcp",
+    "playwright_connection": "await chromium.connectOverCDP('ws://127.0.0.1:9222')"
+  },
+  "maturity_caveat": "Beta. 'Stability and coverage improving, many websites work, you may still encounter errors or crashes.' For mission-critical flows (Namecheap stateful login with email-based 2FA, OAuth consent flows), keep Chromium as the default; adopt Lightpanda incrementally for less-fragile workloads first.",
+  "community_signals_observed": {
+    "github_repo": "github.com/lightpanda-io/browser",
+    "license": "AGPL-3.0",
+    "release_status": "nightly only — no stable tag yet",
+    "language": "Zig",
+    "active_dev": "yes",
+    "note": "Standard signals (stars, contributors, weekly downloads) not yet captured. Add when re-evaluating the AGPL exception."
+  },
+  "integration_state_2026-05-20": {
+    "laptop": "installed, smoke-tested (binds 127.0.0.1:9222)",
+    "vps_cto-v1": "installed, smoke-tested (binds 127.0.0.1:9222)",
+    "install-cto.sh": "updated — future provisions install Lightpanda before the Gmail MCP step",
+    "namecheap_playwright": "untouched — stays on Chromium for the working stateful login flow. Lightpanda available as an alternate backend via connectOverCDP when scripts opt in.",
+    "hemisphere_mcp_configs": "not yet wired — Lightpanda MCP is available on disk but no MCP entry added to OpenClaw/Hermes configs; defer until first concrete browser-automation use case in a hemisphere flow"
+  },
+  "rollback": {
+    "instructions": "On any host: `sudo rm /usr/local/bin/lightpanda` (or `rm ~/.local/bin/lightpanda` on laptop). Remove the install block from scripts/install-cto.sh. No data dependencies to clean up — Lightpanda holds no persistent state."
+  },
+  "related_decision_log": null,
+  "related_backlog": null
+}
