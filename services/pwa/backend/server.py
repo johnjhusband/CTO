@@ -29,6 +29,7 @@ requires a small library — wired via `pywebpush` if installed in the same
 venv as this server, otherwise gracefully degrades to no-push).
 """
 from __future__ import annotations
+import ast
 import json
 import os
 import queue
@@ -43,7 +44,7 @@ import urllib.error
 import uuid
 from http.server import HTTPServer, BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 # Path is /opt/cto/services/pwa/backend/server.py — add /opt/cto/services so
 # we can import the `chat` package alongside the sidecars (matching their style).
@@ -64,6 +65,13 @@ OPENCLAW_CHAT_URL = os.environ.get("OPENCLAW_CHAT_URL", "http://127.0.0.1:18789/
 OPENCLAW_AUTH_TOKEN = os.environ.get("OPENCLAW_AUTH_TOKEN", "")
 OPENCLAW_MODEL = os.environ.get("OPENCLAW_MODEL", "openai-codex/gpt-5.5")
 OPENCLAW_USE_CLI = os.environ.get("OPENCLAW_USE_CLI", "0") == "1"
+
+HUMAN_CHAT_STYLE = (
+    "Audience: John Husband in the PWA chat. Reply in plain conversational English. "
+    "Do not return JSON, YAML, markdown tables, schema blocks, or agent findings. "
+    "Avoid bullet lists unless John explicitly asks for a list. If you used tools or "
+    "delegated work, summarize the result naturally."
+)
 
 VAPID_PUBLIC_KEY_FILE = Path(os.environ.get("VAPID_PUBLIC_KEY_FILE", "/opt/cto/.vapid/public.pem"))
 VAPID_PRIVATE_KEY_FILE = Path(os.environ.get("VAPID_PRIVATE_KEY_FILE", "/opt/cto/.vapid/private.pem"))
@@ -131,6 +139,93 @@ BROADCASTER = SSEBroadcaster()
 
 MENTION_RE = re.compile(r"^\s*@(openclaw|hermes)\b\s*", re.IGNORECASE)
 
+_HUMAN_FIELD_PRIORITY = (
+    "reply", "answer", "message", "response", "simplified_response", "final",
+    "summary", "findings", "content", "text",
+)
+
+
+def _strip_json_fence(text: str) -> str:
+    """Return fenced JSON content without markdown fences when present."""
+    stripped = text.strip()
+    fence = re.fullmatch(r"```(?:json|JSON)?\s*(.*?)\s*```", stripped, re.DOTALL)
+    if fence:
+        return fence.group(1).strip()
+    return stripped
+
+
+def _select_human_value(value: Any) -> Any:
+    """Recursively choose the most human-facing value from model JSON output."""
+    if isinstance(value, dict):
+        for key in _HUMAN_FIELD_PRIORITY:
+            if key in value and value[key] not in (None, "", [], {}):
+                return _select_human_value(value[key])
+        # Common OpenAI-ish shape, if a raw provider response leaks through.
+        choices = value.get("choices")
+        if isinstance(choices, list) and choices:
+            return _select_human_value(choices[0])
+        if len(value) == 1:
+            return _select_human_value(next(iter(value.values())))
+        return value
+    if isinstance(value, list):
+        if len(value) == 1:
+            return _select_human_value(value[0])
+        return [_select_human_value(item) for item in value]
+    return value
+
+
+def _render_human_value(value: Any) -> str:
+    """Render an unwrapped JSON value as concise chat text."""
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, (int, float, bool)) or value is None:
+        return "" if value is None else str(value)
+    if isinstance(value, list):
+        parts = [_render_human_value(item) for item in value]
+        parts = [part for part in parts if part]
+        if not parts:
+            return ""
+        if all("\n" not in part and len(part) < 160 for part in parts):
+            return " ".join(parts)
+        return "\n".join(parts)
+    if isinstance(value, dict):
+        rendered_parts: list[str] = []
+        for key in _HUMAN_FIELD_PRIORITY:
+            if key in value:
+                part = _render_human_value(_select_human_value(value[key]))
+                if part:
+                    rendered_parts.append(part)
+        if rendered_parts:
+            return " ".join(dict.fromkeys(rendered_parts))
+        simple_items = []
+        for key, item in value.items():
+            if isinstance(item, (str, int, float, bool)) and str(item).strip():
+                simple_items.append(f"{key}: {item}")
+        if simple_items and len(simple_items) <= 3:
+            return "; ".join(simple_items)
+        return json.dumps(value, ensure_ascii=False)
+    return str(value).strip()
+
+
+def _humanize_chat_content(text: str) -> str:
+    """Safety net for kind='chat': unwrap obvious JSON/dict replies for John."""
+    stripped = (text or "").strip()
+    if not stripped:
+        return ""
+    candidate = _strip_json_fence(stripped)
+    try:
+        parsed = json.loads(candidate)
+    except json.JSONDecodeError:
+        try:
+            parsed = ast.literal_eval(candidate)
+        except (ValueError, SyntaxError):
+            return stripped
+        if not isinstance(parsed, (dict, list, str, int, float, bool, type(None))):
+            return stripped
+    selected = _select_human_value(parsed)
+    rendered = _render_human_value(selected).strip()
+    return rendered or stripped
+
 def parse_mention(text: str) -> tuple[str, str]:
     """Return (target, stripped_text). Target is 'openclaw' or 'hermes'."""
     m = MENTION_RE.match(text)
@@ -147,8 +242,8 @@ def send_to_hermes(text: str, task_id: Optional[str] = None) -> dict:
         "task_id": task_id,
         "sender": "john",
         "capability": "direct-instruction-from-user",
-        "inputs": {"message": text},
-        "success_criteria": "respond to the user's message",
+        "inputs": {"message": text, "audience": "human", "response_style": HUMAN_CHAT_STYLE},
+        "success_criteria": "respond to John in plain conversational English, not JSON or structured findings",
     }).encode("utf-8")
     req = urllib.request.Request(
         HERMES_A2A_URL, data=body, method="POST",
@@ -166,7 +261,10 @@ def send_to_openclaw_http(text: str) -> dict:
     """Try the OpenAI-compatible chat-completions surface on the OpenClaw gateway."""
     body = json.dumps({
         "model": OPENCLAW_MODEL,
-        "messages": [{"role": "user", "content": text}],
+        "messages": [
+            {"role": "system", "content": HUMAN_CHAT_STYLE},
+            {"role": "user", "content": text},
+        ],
     }).encode("utf-8")
     headers = {"Content-Type": "application/json"}
     if OPENCLAW_AUTH_TOKEN:
@@ -216,13 +314,14 @@ def _extract_openclaw_reply(payload: dict) -> str:
 def send_to_openclaw_cli(text: str) -> dict:
     """Invoke OpenClaw as a subprocess and extract its JSON reply text."""
     session_id = f"pwa-{uuid.uuid4().hex}"
+    human_message = f"{HUMAN_CHAT_STYLE}\n\nJohn says: {text}"
     cmd = [
         "openclaw", "agent",
         "--local",
         "--agent", "main",
         "--model", OPENCLAW_MODEL,
         "--session-id", session_id,
-        "--message", text,
+        "--message", human_message,
         "--thinking", "off",
         "--json",
         "--timeout", "180",
@@ -393,7 +492,7 @@ class Handler(BaseHTTPRequestHandler):
                 r = send_to_hermes(stripped or text)
                 if r.get("ok"):
                     append(sender="hermes", recipient="john", kind="chat",
-                           content=r.get("findings", ""))
+                           content=_humanize_chat_content(r.get("findings", "")))
                 else:
                     append(sender="system", recipient="john", kind="system_event",
                            content=json.dumps({"event": "hermes_send_failed", "error": r.get("error")}))
@@ -401,7 +500,7 @@ class Handler(BaseHTTPRequestHandler):
                 r = send_to_openclaw(stripped or text)
                 if r.get("ok"):
                     append(sender="openclaw", recipient="john", kind="chat",
-                           content=r.get("reply", ""))
+                           content=_humanize_chat_content(r.get("reply", "")))
                 else:
                     append(sender="system", recipient="john", kind="system_event",
                            content=json.dumps({"event": "openclaw_send_failed", "error": r.get("error")}))

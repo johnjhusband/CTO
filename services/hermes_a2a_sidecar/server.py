@@ -45,6 +45,39 @@ HERMES_TIMEOUT_S = int(os.environ.get("HERMES_TIMEOUT_S", "180"))
 
 def _build_hermes_messages(capability: str, inputs: dict, success_criteria: str, sender: str) -> list[dict]:
     """Compose the chat-completion-shaped messages Hermes will receive."""
+    audience = (inputs.get("audience") if isinstance(inputs, dict) else None) or (
+        "human" if sender == "john" else "agent"
+    )
+    if audience == "human" or sender == "john":
+        response_style = inputs.get("response_style") if isinstance(inputs, dict) else ""
+        message = inputs.get("message", "") if isinstance(inputs, dict) else ""
+        context = {
+            key: value for key, value in inputs.items()
+            if key not in {"message", "audience", "response_style"}
+        } if isinstance(inputs, dict) else {}
+        system_prompt = (
+            "You are Hermes, the right hemisphere of CTO, speaking directly to "
+            "John in the PWA chat. Respond in plain conversational English. Do "
+            "not return JSON, YAML, markdown schema blocks, or agent findings. "
+            "Do not use an A2A structured-data contract for this reply. Keep it "
+            "concise, natural, and useful."
+        )
+        if response_style:
+            system_prompt = f"{system_prompt}\n\n{response_style}"
+        user_parts = []
+        if message:
+            user_parts.append(f"John says: {message}")
+        if context:
+            user_parts.append(f"Context: {json.dumps(context, ensure_ascii=False)}")
+        if capability:
+            user_parts.append(f"Capability: {capability}")
+        if success_criteria:
+            user_parts.append(f"Success criteria: {success_criteria}")
+        return [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": "\n\n".join(user_parts) or "Please respond to John."},
+        ]
+
     user_payload = {
         "delegation_from": sender,
         "capability": capability,
