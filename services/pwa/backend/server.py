@@ -18,10 +18,10 @@ headers.
 
 Routing of John's outbound messages:
   - Starts with "@hermes " (case-insensitive) → POST to Hermes A2A sidecar
-  - Starts with "@openclaw " or no @-mention → POST to OpenClaw gateway
-    (OpenClaw integration endpoint configurable via OPENCLAW_CHAT_URL —
-     defaults to /v1/chat/completions; if your OpenClaw build doesn't expose
-     this, set OPENCLAW_USE_CLI=1 and we fall back to `openclaw run` subprocess)
+  - Starts with "@openclaw " → try OpenClaw gateway, then fall back to
+    `openclaw agent --local --message ... --thinking off --json` subprocess
+    because current OpenClaw gateway builds do not expose OpenAI chat completions.
+  - No @-mention defaults to Hermes.
 
 Implementation: pure stdlib http.server + threading. SSE via long-running
 generator response. Push notifications stored as DB rows for now (sending push
@@ -138,7 +138,7 @@ def parse_mention(text: str) -> tuple[str, str]:
         target = m.group(1).lower()
         stripped = text[m.end():].strip()
         return target, stripped
-    return "hermes", text  # default (CTO-DECISION-012: OpenClaw chat path not yet wired; route default to Hermes)
+    return "hermes", text  # default (CTO-DECISION: OpenClaw chat path not yet wired)
 
 def send_to_hermes(text: str, task_id: Optional[str] = None) -> dict:
     """Direct-from-John message to Hermes via the A2A sidecar."""
@@ -184,23 +184,81 @@ def send_to_openclaw_http(text: str) -> dict:
     except Exception as e:
         return {"ok": False, "error": repr(e)}
 
+def _extract_json_object(raw: str) -> Optional[dict]:
+    """OpenClaw may print logs around --json output; parse the first JSON object."""
+    decoder = json.JSONDecoder()
+    starts = [i for i, ch in enumerate(raw) if ch == "{"]
+    for idx in starts:
+        try:
+            candidate, _end = decoder.raw_decode(raw[idx:])
+            if isinstance(candidate, dict):
+                return candidate
+        except json.JSONDecodeError:
+            continue
+    return None
+
+
+def _extract_openclaw_reply(payload: dict) -> str:
+    """Return the assistant-visible text from OpenClaw's agent --json payload."""
+    meta = payload.get("meta") if isinstance(payload.get("meta"), dict) else {}
+    for key in ("finalAssistantVisibleText", "finalAssistantRawText"):
+        value = meta.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    payloads = payload.get("payloads")
+    if isinstance(payloads, list):
+        for item in payloads:
+            if isinstance(item, dict) and isinstance(item.get("text"), str) and item["text"].strip():
+                return item["text"].strip()
+    return json.dumps(payload)
+
+
 def send_to_openclaw_cli(text: str) -> dict:
-    """Fallback: subprocess `openclaw run` for OpenClaw integration."""
+    """Invoke OpenClaw as a subprocess and extract its JSON reply text."""
+    session_id = f"pwa-{uuid.uuid4().hex}"
+    cmd = [
+        "openclaw", "agent",
+        "--local",
+        "--agent", "main",
+        "--model", OPENCLAW_MODEL,
+        "--session-id", session_id,
+        "--message", text,
+        "--thinking", "off",
+        "--json",
+        "--timeout", "180",
+    ]
     try:
         r = subprocess.run(
-            ["openclaw", "run", text],
-            capture_output=True, text=True, timeout=180,
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=210,
+            cwd="/opt/cto",
+            env={**os.environ, "HOME": os.environ.get("HOME", "/home/cto")},
         )
+        combined = (r.stdout or "") + ("\n" + r.stderr if r.stderr else "")
         if r.returncode != 0:
-            return {"ok": False, "error": r.stderr or r.stdout}
-        return {"ok": True, "reply": r.stdout.strip()}
+            return {"ok": False, "error": combined.strip() or f"openclaw exited {r.returncode}"}
+        payload = _extract_json_object(combined)
+        if not payload:
+            return {"ok": False, "error": f"openclaw returned no parseable JSON: {combined[-1000:]}"}
+        return {"ok": True, "reply": _extract_openclaw_reply(payload), "session_id": session_id}
     except Exception as e:
         return {"ok": False, "error": repr(e)}
+
 
 def send_to_openclaw(text: str) -> dict:
     if OPENCLAW_USE_CLI:
         return send_to_openclaw_cli(text)
-    return send_to_openclaw_http(text)
+    http_result = send_to_openclaw_http(text)
+    if http_result.get("ok"):
+        return http_result
+    # OpenClaw's gateway does not expose /v1/chat/completions in current builds.
+    # Preserve the HTTP path if it ever appears, but fall back to the verified CLI bridge.
+    cli_result = send_to_openclaw_cli(text)
+    if not cli_result.get("ok"):
+        cli_result["http_error"] = http_result.get("error")
+    return cli_result
 
 # ─── HTTP handler ───────────────────────────────────────────────────────────
 
@@ -245,6 +303,7 @@ class Handler(BaseHTTPRequestHandler):
                     return kv[len("token="):] == PWA_AUTH_TOKEN
         return False
 
+    # Routes
     # Paths served WITHOUT auth — the PWA shell must bootstrap before the JS
     # can attach the Bearer token. Static assets contain no secrets.
     _PUBLIC_GET_EXACT = ("/", "/index.html", "/manifest.json", "/service-worker.js", "/api/health")
@@ -254,7 +313,6 @@ class Handler(BaseHTTPRequestHandler):
         if path in self._PUBLIC_GET_EXACT: return True
         return any(path.startswith(p) for p in self._PUBLIC_GET_PREFIX)
 
-    # Routes
     def do_GET(self):
         path = self.path.split("?", 1)[0]
         if path == "/api/health":
