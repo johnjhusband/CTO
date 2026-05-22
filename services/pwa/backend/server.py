@@ -18,9 +18,9 @@ headers.
 
 Routing of John's outbound messages:
   - Starts with "@hermes " (case-insensitive) → POST to Hermes A2A sidecar
-  - Starts with "@openclaw " → try OpenClaw gateway, then fall back to
-    `openclaw agent --local --message ... --thinking off --json` subprocess
-    because current OpenClaw gateway builds do not expose OpenAI chat completions.
+  - Starts with "@openclaw " → try OpenClaw gateway chat completions, then use
+    `openclaw capability model run --gateway --json` for a fast conversational
+    reply. The old embedded `openclaw agent --local` path remains last-resort only.
   - No @-mention defaults to Hermes.
 
 Implementation: pure stdlib http.server + threading. SSE via long-running
@@ -271,7 +271,7 @@ def send_to_openclaw_http(text: str) -> dict:
         headers["Authorization"] = f"Bearer {OPENCLAW_AUTH_TOKEN}"
     req = urllib.request.Request(OPENCLAW_CHAT_URL, data=body, method="POST", headers=headers)
     try:
-        with urllib.request.urlopen(req, timeout=180) as resp:
+        with urllib.request.urlopen(req, timeout=5) as resp:
             payload = json.loads(resp.read().decode("utf-8"))
         # Extract OpenAI-shaped reply
         try:
@@ -311,8 +311,55 @@ def _extract_openclaw_reply(payload: dict) -> str:
     return json.dumps(payload)
 
 
+def send_to_openclaw_model_run(text: str) -> dict:
+    """Use the running OpenClaw gateway's lightweight model capability.
+
+    This avoids cold-starting the embedded agent/tool bundle for every PWA chat
+    message, while still using OpenClaw's configured provider auth and gateway.
+    """
+    human_message = f"{HUMAN_CHAT_STYLE}\n\nJohn says: {text}"
+    cmd = [
+        "openclaw", "capability", "model", "run",
+        "--gateway",
+        "--model", OPENCLAW_MODEL,
+        "--prompt", human_message,
+        "--json",
+    ]
+    try:
+        r = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=45,
+            cwd="/opt/cto",
+            env={**os.environ, "HOME": os.environ.get("HOME", "/home/cto")},
+        )
+        combined = (r.stdout or "") + ("\n" + r.stderr if r.stderr else "")
+        if r.returncode != 0:
+            return {"ok": False, "error": combined.strip() or f"openclaw model.run exited {r.returncode}"}
+        payload = _extract_json_object(combined)
+        if not payload:
+            return {"ok": False, "error": f"openclaw model.run returned no parseable JSON: {combined[-1000:]}"}
+        outputs = payload.get("outputs")
+        if isinstance(outputs, list):
+            parts = []
+            for item in outputs:
+                if isinstance(item, dict) and isinstance(item.get("text"), str) and item["text"].strip():
+                    parts.append(item["text"].strip())
+                elif isinstance(item, str) and item.strip():
+                    parts.append(item.strip())
+            if parts:
+                return {"ok": True, "reply": "\n".join(parts), "transport": payload.get("transport", "gateway")}
+        text_value = payload.get("text") or payload.get("reply") or payload.get("content")
+        if isinstance(text_value, str) and text_value.strip():
+            return {"ok": True, "reply": text_value.strip(), "transport": payload.get("transport", "gateway")}
+        return {"ok": False, "error": f"openclaw model.run returned no text: {json.dumps(payload)[-1000:]}"}
+    except Exception as e:
+        return {"ok": False, "error": repr(e)}
+
+
 def send_to_openclaw_cli(text: str) -> dict:
-    """Invoke OpenClaw as a subprocess and extract its JSON reply text."""
+    """Last-resort embedded-agent fallback; slower because it cold-starts tools."""
     session_id = f"pwa-{uuid.uuid4().hex}"
     human_message = f"{HUMAN_CHAT_STYLE}\n\nJohn says: {text}"
     cmd = [
@@ -352,11 +399,14 @@ def send_to_openclaw(text: str) -> dict:
     http_result = send_to_openclaw_http(text)
     if http_result.get("ok"):
         return http_result
-    # OpenClaw's gateway does not expose /v1/chat/completions in current builds.
-    # Preserve the HTTP path if it ever appears, but fall back to the verified CLI bridge.
+    model_result = send_to_openclaw_model_run(text)
+    if model_result.get("ok"):
+        return model_result
+    # Last resort for complex cases if the lightweight gateway model path fails.
     cli_result = send_to_openclaw_cli(text)
     if not cli_result.get("ok"):
         cli_result["http_error"] = http_result.get("error")
+        cli_result["model_run_error"] = model_result.get("error")
     return cli_result
 
 # ─── HTTP handler ───────────────────────────────────────────────────────────
