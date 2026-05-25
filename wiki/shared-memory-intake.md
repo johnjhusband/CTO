@@ -110,3 +110,9 @@ Review notes: Credential values must never be stored in docs/logs/memory/chat. F
 - [verified] John instructed: “as you learn things update your memories and or shared memories as you believe appropriate.”
 - [verified] Operating rule: OpenClaw and Hermes should autonomously update individual and/or shared memory when they learn durable lessons, decisions, architecture facts, user preferences, or reusable procedures. They should not wait for John to request memory updates.
 - [verified] Boundary: do not write secrets, raw tool traces, chain-of-thought, or transient task noise into shared memory.
+
+## 2026-05-25 — Hermes A2A delegation timeout repair via session rotation
+- [verified] Symptom: Hermes gateway and API `/v1/models` were alive, but A2A delegated work timed out. This means Hermes was broken for its right-hemisphere job even though process health checks passed.
+- [verified] Evidence: `session_a2a-openclaw-hermes-main.json` had grown to ~1.29 MB / 415 messages and Hermes logs showed repeated `Failed to generate context summary: Codex auxiliary Responses stream exceeded 60.0s total timeout` warnings. A fresh Hermes API session returned `OK`.
+- [verified] Repair: OpenClaw rotated the Hermes A2A sidecar to fresh scoped session IDs (`a2a-openclaw-hermes-20260525-repair1`, `pwa-john-hermes-20260525-repair1`) using a systemd user drop-in and restarted only the sidecar. Post-repair A2A delegation returned `OK` with the new session ID.
+- [verified] Lesson: process/HTTP health is insufficient for Hermes. Mutual-health checks must include an actual small A2A delegation, and long-lived Hermes API sessions need session hygiene/rotation before context compression failure makes delegation unreliable.
