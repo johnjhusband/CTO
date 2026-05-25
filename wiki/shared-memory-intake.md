@@ -76,3 +76,13 @@ Review notes: Do not set `GATEWAY_ALLOW_ALL_USERS=true`; the remaining allowlist
 ## 2026-05-25 — PWA content-aware routing shipped
 - [verified] OpenClaw patched `/opt/cto/services/pwa/backend/server.py` so explicit `@openclaw` and `@hermes` mentions still override routing, no-mention Hermes-addressed messages route to Hermes, greetings and both-hemisphere prompts route to both, repair/debug/orchestration prompts default to OpenClaw, and ambiguous prompts default to OpenClaw as orchestrator.
 - [verified] The PWA backend restarted cleanly, parser smoke tests passed, `/api/health` returned OK, and a no-mention message containing “Hermes” routed to Hermes and returned `OK`.
+
+## 2026-05-25 — John autonomy correction: always continue to next step
+- [verified] John instructed both OpenClaw and Hermes: “At the completion of every task you must ask yourself what's next and start on that next step.”
+- [verified] Operating rule: after completing any task, each hemisphere must identify the next useful step and begin it autonomously unless the next step spends money, destroys data, creates external risk, or requires a non-retrievable decision from John.
+- [verified] OpenClaw updated `/opt/cto/USER.md` and `/opt/cto/MEMORY.md`; Hermes should store the same rule in its individual memory.
+
+## 2026-05-25 — PWA conversation architecture before cloning
+- [verified] John identified a prior clone-test failure mode: both agents talking in the same chat caused coordination problems.
+- [verified] OpenClaw wrote `/opt/cto/wiki/pwa-conversation-architecture.md` defining PWA as a controlled human-facing control room, not an uncontrolled group chat. OpenClaw owns orchestration/final-mile strategy; Hermes implements after scoped handoff; `@both` must be coordinated and sequenced rather than naive parallel chatter.
+- [verified] Clone candidates must use distinct identity/session/chat/A2A namespaces and must not post directly into the production PWA chat before promotion.
