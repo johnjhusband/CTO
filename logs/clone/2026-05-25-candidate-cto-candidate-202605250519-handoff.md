@@ -64,3 +64,7 @@ Status: running for John morning testing
 
 ## Rollback / destroy path
 If John rejects this candidate, destroy only the candidate VPS id 132825157 after preserving any desired logs. Do not touch the production/original CTO VPS.
+
+## 2026-05-25 15:43 UTC — John correction: candidate should have been destroyed and retried
+
+John corrected OpenClaw: the candidate had not passed because the install was not clean one-shot. OpenClaw had wrongly held it for review as “testable.” Correct behavior is to preserve evidence, delete failed/non-passing candidates, and immediately retry with the next layer of fixes built in under the already-authorized clone loop constraints. Candidate server id 132825157 deletion requested via Hetzner action 632210602941803.

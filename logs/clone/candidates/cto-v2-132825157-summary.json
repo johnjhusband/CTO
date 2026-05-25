@@ -1,0 +1,11 @@
+{
+  "name": "cto-candidate-202605250519",
+  "id": 132825157,
+  "ip": "46.225.228.40",
+  "status": "failed_destroying",
+  "failure_phase": "parity_clone_repeatability",
+  "reason": "Candidate reached testable state but did not prove clean one-shot clone; installer required targeted repairs during run. Per John correction on 2026-05-25 15:43 UTC, this should have been treated as failed/non-passing and destroyed after preserving evidence, then retried with fixes built in.",
+  "evidence_log": "logs/clone/2026-05-25-candidate-cto-candidate-202605250519-handoff.md",
+  "delete_action": 632210602941803,
+  "deleted_at_request_utc": "2026-05-25T15:43:33Z"
+}
