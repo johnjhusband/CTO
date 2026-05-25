@@ -50,6 +50,7 @@
 | [BACKLOG-012](logs/backlog/BACKLOG-012.json) | 2026-05-25 | security | P2 | patch management / dependency hygiene | Patch OpenClaw and add dependency/security scanning gates | open |
 | [BACKLOG-013](logs/backlog/BACKLOG-013.json) | 2026-05-25 | security | P0 | A2A2H PWA / authentication and access control | Close PWA chat access-control bug so knowing the chat URL is not sufficient | open |
 | [BACKLOG-014](logs/backlog/BACKLOG-014.json) | 2026-05-25 | upstream-pr-needed | P1 | A2A2H PWA / notifications and background delivery | Reliable background notifications so John can context-switch without missing replies | open |
+| [BACKLOG-015](logs/backlog/BACKLOG-015.json) | 2026-05-25 | missing-mcp | P1 | reporting / A2A2H human interface | Outbound email status updates to John at john@husband.llc | open |
 
 ## Escalated to John (Awaiting Decision)
 

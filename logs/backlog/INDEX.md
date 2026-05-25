@@ -20,3 +20,4 @@ Summary table and operating rules live in the top-level [BACKLOG.md](../../BACKL
 | [BACKLOG-012](BACKLOG-012.json) | 2026-05-25 | security | P2 | open |
 | [BACKLOG-013](BACKLOG-013.json) | 2026-05-25 | security | P0 | open |
 | [BACKLOG-014](BACKLOG-014.json) | 2026-05-25 | upstream-pr-needed | P1 | open |
+| [BACKLOG-015](BACKLOG-015.json) | 2026-05-25 | missing-mcp | P1 | open |
