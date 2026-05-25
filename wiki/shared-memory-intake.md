@@ -86,3 +86,8 @@ Review notes: Do not set `GATEWAY_ALLOW_ALL_USERS=true`; the remaining allowlist
 - [verified] John identified a prior clone-test failure mode: both agents talking in the same chat caused coordination problems.
 - [verified] OpenClaw wrote `/opt/cto/wiki/pwa-conversation-architecture.md` defining PWA as a controlled human-facing control room, not an uncontrolled group chat. OpenClaw owns orchestration/final-mile strategy; Hermes implements after scoped handoff; `@both` must be coordinated and sequenced rather than naive parallel chatter.
 - [verified] Clone candidates must use distinct identity/session/chat/A2A namespaces and must not post directly into the production PWA chat before promotion.
+
+## 2026-05-25 — John correction: hemispheres must monitor and repair each other
+- [verified] John instructed OpenClaw and Hermes: “you need to watch each other as well. If one hemisphere is unhealthy for any reason it's the healthy hemisphere's job to fix the unhealthy one. You are a team operate as one.”
+- [verified] Operating rule: each hemisphere must monitor the other and autonomously diagnose/repair the unhealthy hemisphere unless the repair spends money, destroys data, creates external risk, or needs a non-retrievable decision from John.
+- [verified] OpenClaw updated `/opt/cto/MEMORY.md`, `/opt/cto/AGENTS.md`, and this shared memory lane. Hermes should store the same rule in its individual memory.

@@ -293,16 +293,33 @@ if ! hermes model list 2>/dev/null | grep -q openai-codex; then
     note "(Hermes 'model add' subcommand may have different syntax — verify manually with: hermes model)"
 fi
 
-note "Generating service tokens (HERMES_A2A_TOKEN, PWA_AUTH_TOKEN) if missing"
+note "Generating service tokens and instance namespace defaults if missing"
 # These tokens authenticate inter-hemisphere A2A calls and the PWA.
 # Generated once per install; persisted in /opt/cto/.env so subsequent
-# runs reuse the same values (idempotent).
+# runs reuse the same values (idempotent). Candidate clones must override the
+# namespace/session variables below so they never post into the production PWA
+# chat DB or reuse production agent sessions before promotion.
 ENV_FILE_VPS="${CTO_ROOT}/.env"
 if ! grep -q "^HERMES_A2A_TOKEN=" "${ENV_FILE_VPS}"; then
   echo "HERMES_A2A_TOKEN=$(openssl rand -hex 32)" >> "${ENV_FILE_VPS}"
 fi
 if ! grep -q "^PWA_AUTH_TOKEN=" "${ENV_FILE_VPS}"; then
   echo "PWA_AUTH_TOKEN=$(openssl rand -hex 32)" >> "${ENV_FILE_VPS}"
+fi
+if ! grep -q "^CTO_INSTANCE_ID=" "${ENV_FILE_VPS}"; then
+  echo "CTO_INSTANCE_ID=production" >> "${ENV_FILE_VPS}"
+fi
+if ! grep -q "^CHAT_DB=" "${ENV_FILE_VPS}"; then
+  echo "CHAT_DB=${CTO_ROOT}/chat.db" >> "${ENV_FILE_VPS}"
+fi
+if ! grep -q "^OPENCLAW_SESSION_ID=" "${ENV_FILE_VPS}"; then
+  echo "OPENCLAW_SESSION_ID=production-pwa-john-openclaw" >> "${ENV_FILE_VPS}"
+fi
+if ! grep -q "^HERMES_HUMAN_SESSION_ID=" "${ENV_FILE_VPS}"; then
+  echo "HERMES_HUMAN_SESSION_ID=production-pwa-john-hermes" >> "${ENV_FILE_VPS}"
+fi
+if ! grep -q "^HERMES_AGENT_SESSION_ID=" "${ENV_FILE_VPS}"; then
+  echo "HERMES_AGENT_SESSION_ID=production-a2a-openclaw-hermes" >> "${ENV_FILE_VPS}"
 fi
 chmod 0600 "${ENV_FILE_VPS}"
 # Re-source so the new values are visible to the rest of this script
@@ -637,6 +654,10 @@ After=network.target
 EnvironmentFile=${CTO_ROOT}/.env
 Environment=HERMES_A2A_PORT=8643
 Environment=HERMES_API_URL=http://127.0.0.1:8642/v1/chat/completions
+Environment=CHAT_DB=${CHAT_DB}
+Environment=CTO_INSTANCE_ID=${CTO_INSTANCE_ID}
+Environment=HERMES_HUMAN_SESSION_ID=${HERMES_HUMAN_SESSION_ID}
+Environment=HERMES_AGENT_SESSION_ID=${HERMES_AGENT_SESSION_ID}
 ExecStart=/usr/bin/python3 ${CTO_ROOT}/services/hermes_a2a_sidecar/server.py
 Restart=on-failure
 RestartSec=3
@@ -656,6 +677,9 @@ EnvironmentFile=${CTO_ROOT}/.env
 Environment=PWA_PORT=8088
 Environment=PWA_BIND=127.0.0.1
 Environment=PWA_FRONTEND=${CTO_ROOT}/services/pwa/frontend
+Environment=CHAT_DB=${CHAT_DB}
+Environment=CTO_INSTANCE_ID=${CTO_INSTANCE_ID}
+Environment=OPENCLAW_SESSION_ID=${OPENCLAW_SESSION_ID}
 Environment=HERMES_A2A_URL=http://127.0.0.1:8643/a2a/
 Environment=OPENCLAW_CHAT_URL=http://127.0.0.1:18789/v1/chat/completions
 Environment=VAPID_PUBLIC_KEY_FILE=${CTO_ROOT}/.vapid/public.b64url
