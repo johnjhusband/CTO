@@ -394,8 +394,9 @@ openclaw doctor || fail "openclaw doctor reported errors — see ${LOG_FILE}"
 note "Writing Hermes config"
 # Hermes model — Codex OAuth via cto@husband.llc Pro (CTO-DECISION-013, 2026-05-24).
 # Codex CLI device-code flow above populated ~/.codex/auth.json; Hermes consumes
-# it directly. Summarization fallback is openai-codex/gpt-5-mini (CTO-DECISION-014,
-# 2026-05-24) — was openrouter/free, removed entirely with all other OR refs.
+# it directly. The fallback and auxiliary session-search/compression model are
+# also gpt-5.5 because gpt-5-mini is rejected under ChatGPT-account Codex
+# (CTO-DECISION-015, 2026-05-24). OpenRouter was removed entirely.
 hermes config set model.default "${HERMES_MODEL:-gpt-5.5}"
 hermes config set model.provider "${HERMES_PROVIDER:-openai-codex}"
 # fallback_model must be a dict (provider+model), not a string — Hermes warns at

@@ -238,6 +238,15 @@ section "7 — Populate /opt/cto/.env on VPS"
   echo "HETZNER_API_TOKEN=${HETZNER_API_TOKEN}"
   echo "GITHUB_TOKEN=${GITHUB_TOKEN}"
   echo "HERMES_API_SERVER_KEY=${HERMES_API_SERVER_KEY}"
+  # Fresh VPS installs are clone-test-replace candidates by default. They must
+  # not write into production PWA chat or reuse production chat sessions until
+  # explicit promotion flips these values to production.
+  CLONE_INSTANCE_ID="${CTO_INSTANCE_ID:-candidate-${VPS_NAME}}"
+  echo "CTO_INSTANCE_ID=${CLONE_INSTANCE_ID}"
+  echo "CHAT_DB=/opt/cto/.candidate/${CLONE_INSTANCE_ID}/chat.db"
+  echo "OPENCLAW_SESSION_ID=${CLONE_INSTANCE_ID}-pwa-john-openclaw"
+  echo "HERMES_HUMAN_SESSION_ID=${CLONE_INSTANCE_ID}-pwa-john-hermes"
+  echo "HERMES_AGENT_SESSION_ID=${CLONE_INSTANCE_ID}-a2a-openclaw-hermes"
   # These will be filled in by install-cto.sh on the VPS if absent.
   # We don't pre-generate them on the laptop so they live on the VPS only.
   [ -n "${OPENAI_API_KEY:-}" ]     && echo "OPENAI_API_KEY=${OPENAI_API_KEY}"

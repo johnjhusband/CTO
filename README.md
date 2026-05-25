@@ -55,7 +55,7 @@ One command from this repo, on your laptop (or an existing CTO instance for auto
 bash scripts/install.sh
 ```
 
-Required input: `~/.cto-secrets.env` populated (see `example.cto-secrets.env`). The script provisions a fresh Hetzner VPS, bootstraps it, copies the `.env`, clones the repo, runs `install-cto.sh`, verifies the install. Mid-run human action: approve one Codex device-code prompt on your phone. See `install-plan.md` and `test-plan.md` for the details.
+Required input: `~/.cto-secrets.env` populated (see `example.cto-secrets.env`). The script provisions a fresh Hetzner VPS, bootstraps it, copies a candidate-scoped `.env`, clones the repo, runs `install-cto.sh`, and verifies the install. Fresh VPS installs default to `CTO_INSTANCE_ID=candidate-<VPS_NAME>` with an isolated `.candidate/.../chat.db` so a clone cannot post into production PWA chat before promotion. Mid-run human action is only needed if no reusable Codex OAuth file exists. See `install-plan.md` and `test-plan.md` for the details.
 
 ## How It Works
 

@@ -22,6 +22,42 @@ from typing import Optional, Iterable
 from contextlib import contextmanager
 
 CHAT_DB_PATH = os.environ.get("CHAT_DB", "/opt/cto/chat.db")
+CTO_ROOT = os.environ.get("CTO_ROOT", "/opt/cto")
+CTO_INSTANCE_ID = os.environ.get("CTO_INSTANCE_ID", "production")
+PRODUCTION_INSTANCE_IDS = {"production", "prod", "live"}
+
+
+def clone_chat_isolation_error(
+    *,
+    instance_id: str | None = None,
+    chat_db: str | None = None,
+    cto_root: str | None = None,
+) -> str | None:
+    """Return an error if a non-production clone is pointed at production chat.
+
+    Clone-test-replace candidates may reuse code and credentials, but they must
+    not read from or append to the production PWA chat database. Promotion is the
+    explicit moment that flips CTO_INSTANCE_ID/CHAT_DB back to production.
+    """
+    iid = (instance_id if instance_id is not None else os.environ.get("CTO_INSTANCE_ID", CTO_INSTANCE_ID) or "production").strip()
+    root = cto_root if cto_root is not None else os.environ.get("CTO_ROOT", CTO_ROOT) or "/opt/cto"
+    db = chat_db if chat_db is not None else os.environ.get("CHAT_DB", CHAT_DB_PATH) or "/opt/cto/chat.db"
+    if iid.lower() in PRODUCTION_INSTANCE_IDS:
+        return None
+    production_db = os.path.abspath(os.path.join(root, "chat.db"))
+    actual_db = os.path.abspath(db)
+    if actual_db == production_db:
+        return (
+            f"Candidate clone '{iid}' is configured to use production PWA chat DB "
+            f"{production_db}. Set CHAT_DB to an isolated candidate path before startup."
+        )
+    return None
+
+
+def assert_clone_chat_isolation(path: str = CHAT_DB_PATH) -> None:
+    error = clone_chat_isolation_error(chat_db=path)
+    if error:
+        raise RuntimeError(error)
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS messages (
@@ -44,6 +80,7 @@ def _init(conn: sqlite3.Connection) -> None:
 
 @contextmanager
 def connection(path: str = CHAT_DB_PATH):
+    assert_clone_chat_isolation(path)
     new = not os.path.exists(path)
     conn = sqlite3.connect(path, timeout=30, isolation_level=None)
     try:

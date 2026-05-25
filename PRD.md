@@ -168,7 +168,7 @@ CTO is **not locked to any provider**. Current auth path (CTO-DECISION-013, 2026
 
 Pro quotas (~20× Plus) are roughly an order of magnitude above Business standard-seat, giving headroom for autonomous research + heartbeat + occasional GEPA passes. Quota instrumentation remains a day-one concern — quotas observable via `openclaw models status` `5h`/`Week` counters.
 
-**No OpenRouter.** Removed across both hemispheres on 2026-05-24 [CTO-DECISION-014]. Hermes' session-summarization auxiliary that previously hit `openrouter/free` is now `openai-codex/gpt-5-mini`. OpenClaw's model fallback list is empty. If Codex ever fails, the documented rollback is to restore `~/.codex/auth.json.bak-john-business-*` on the VPS (Business seat under john@husband.llc) — same OAuth mechanism, different account. No PAYG Codex seats — explicitly avoiding accidental-overspend risk.
+**No OpenRouter.** Removed across both hemispheres on 2026-05-24 [CTO-DECISION-014]. Hermes' session-search and compression auxiliaries are pinned to `openai-codex/gpt-5.5` with 60s timeout [CTO-DECISION-015] because `gpt-5-mini` is blocked under ChatGPT-account Codex. OpenClaw's model fallback list is empty. If Codex ever fails, the documented rollback is to restore `~/.codex/auth.json.bak-john-business-*` on the VPS (Business seat under john@husband.llc) — same OAuth mechanism, different account. No PAYG Codex seats — explicitly avoiding accidental-overspend risk.
 
 ## 7. Test Plan
 

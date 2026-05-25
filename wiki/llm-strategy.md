@@ -1,19 +1,18 @@
 # LLM Strategy
-**L0:** **Both hemispheres on ChatGPT Business via Codex OAuth — John's existing $30/seat (single seat), included Codex 5-hour-window quotas.** Embeddings need separate OPENAI_API_KEY (pennies). OpenRouter retained as fallback. **Expected quota pressure based on prior OpenRouter pattern** — Pro on a separate email is the documented escape (CTO-DECISION-008). `model.thinking` is NOT a valid config key — use `thinkingDefault`.
-**L1:** Per CTO-DECISION-008 (2026-05-11), updating the earlier CTO-DECISION-005 framing: both OpenClaw and Hermes authenticate via the `openai-codex` provider against John's existing **ChatGPT Business standard seat** at $30/month (rate dropped from $25-30 to $20/seat annual, $25-30/seat monthly per OpenAI April 2026). Codex Local + device-code-authentication toggles enabled at the workspace admin level (chatgpt.com/admin/settings → Settings and Permissions). Documented Codex 5-hour quotas on Business: GPT-5.4-mini 1,200-7,000 local msgs / 5h; GPT-5.3-Codex 600-3,000 local + 200-1,200 cloud / 5h; GPT-5.4 400-2,000 / 5h; Code Reviews 400-1,000 / 5h. John explicitly expects we may hit limits (drawing parallel to prior OpenRouter quota issues) — instrument quota observation from day one. Escape if Business quotas constrain operation: ChatGPT Pro on a *separate email* (Pro cannot coexist with Business on the same email since John has no Personal workspace), re-point the Codex OAuth profiles. No PAYG Codex-seat path — John explicitly avoiding accidental-overspend risk per budget memory.
-**Last updated:** 2026-05-11
-**Verification:** Business quota numbers verified at OpenAI Codex rate card 2026-05-11. Pro-cannot-coexist-with-Business-on-same-email verified at OpenAI workspace-lifecycle docs.
-**Source:** Live research 2026-05-11. See `hemisphere.md` Provider Strategy, `wiki/codex-oauth-setup.md`, and `logs/decisions/CTO-DECISION-008.json`.
+**L0:** **Both hemispheres on Codex OAuth via cto@husband.llc ChatGPT Pro/Business-compatible account; active model path is `openai-codex/gpt-5.5` for primary, fallback, session search, and compression.** Embeddings need separate OPENAI_API_KEY (pennies). OpenRouter is retired, not a fallback (CTO-DECISION-014/015). **Expected quota pressure based on prior OpenRouter pattern** — Pro/Business seat management is the documented escape, not PAYG Codex seats. `model.thinking` is NOT a valid config key — use `thinkingDefault`.
+**L1:** CTO-DECISION-013 moved the active OAuth account to `cto@husband.llc` ChatGPT Pro. CTO-DECISION-014 removed OpenRouter across both hemispheres. CTO-DECISION-015 pinned Hermes auxiliary session-search and compression to `openai-codex/gpt-5.5` with 60s timeout because `gpt-5-mini` is blocked under ChatGPT-account Codex. Rollback, if Codex quotas constrain operation, is to restore the saved john@husband.llc Business Codex OAuth profile — same provider mechanism, different account — not to add PAYG Codex seats.
+**Last updated:** 2026-05-25
+**Verification:** Current active model/provider state cross-checked against CTO-DECISION-013/014/015 and install scripts.
+**Source:** See `logs/decisions/CTO-DECISION-013.json`, `CTO-DECISION-014.json`, `CTO-DECISION-015.json`, and `scripts/install-cto.sh`.
 
 ## Key Facts
-- CTO is **not locked to any single provider**
-- Budget: $10/month OpenRouter key limit, $200/month ceiling acceptable [set by John]
-- Using `openrouter/openrouter/auto` — OpenRouter picks best model per-request based on complexity [verified working]
-- Fallback: `openrouter/google/gemini-2.5-flash` [verified]
-- ~~ChatGPT Pro ($200/mo) is UI-only~~ WRONG — OpenAI explicitly allows subscription access through OpenClaw via Codex OAuth. $200/mo flat rate for CTO. [verified — OpenClaw docs, OpenRouter integration guide]
-- OpenAI API is also available as separate pay-per-token (not needed — subscription works via OpenClaw)
+- CTO is **not locked to any single provider** architecturally, but the active no-spend install path uses Codex OAuth only.
+- OpenRouter is retired and must not appear as an active install/config assignment.
+- `openai-codex/gpt-5.5` is the active model for main, fallback, session-search, and compression paths.
+- OpenAI API key is optional for embeddings only; it is not the primary LLM path.
+- Historical OpenRouter research below is retained as archive/context, not current operating guidance.
 
-## Lessons Learned from Installation [verified — all happened]
+## Historical OpenRouter Lessons [archive — no longer current operating guidance]
 - **$1 free credit is insufficient** — Claude Sonnet burns through it in ~10 messages
 - **Heartbeat costs add up** — 48 calls/day at 30-min intervals. Use cheapest model for heartbeat.
 - **`model.thinking` is NOT a valid config key** — crashes the gateway. Use `thinkingDefault: "adaptive"` at the agent defaults level instead.
@@ -53,8 +52,8 @@
 
 ## Provider Strategy for CTO
 
-### Approach: Multi-model via OpenRouter or LiteLLM
-Both Hermes Agent and Agent Zero support routing to any provider. This means CTO can:
+### Current approach: Codex OAuth first; provider switching remains architectural, not active config
+Both hemispheres currently use Codex OAuth. Provider switching remains possible at the architecture level, but active install scripts intentionally avoid OpenRouter. This means CTO can later:
 1. Use cheap models (GPT-5.4 nano, o4-mini) for routine daily research
 2. Escalate to stronger models (GPT-5.4, Claude Sonnet) for complex decisions
 3. Switch providers without code changes

@@ -7,6 +7,37 @@
 **Last updated:** 2026-05-25
 **Verification:** Test definitions cross-referenced against install-plan.md, live systemd units/ports on the CTO VPS, and CTO-DECISION-014/015.
 
+
+---
+
+## Phase 0 — No-Spend Clone-Readiness Gates (run before any VPS approval)
+
+Run from the repo root:
+
+```bash
+scripts/validate-no-spend.sh
+```
+
+**What it proves:** local scripts parse, Python service modules compile, PWA routing decisions are deterministic, candidate clone chat isolation blocks production `chat.db`, active install surfaces do not reintroduce `OPENROUTER_API_KEY`, and tracked secret/runtime files are not committed.
+
+**Expected:** `PASS: no-spend validation complete`. Skipped npm builds are acceptable only when `node_modules` is absent; if dependencies are installed, build failures are blocking.
+
+**On fail:** fix the named repo issue before provisioning any paid clone.
+
+### 0.1 Candidate chat isolation
+
+Fresh VPS installs created by `scripts/install.sh` must write these candidate-scoped values into `/opt/cto/.env`:
+
+```bash
+CTO_INSTANCE_ID=candidate-<VPS_NAME>
+CHAT_DB=/opt/cto/.candidate/<CTO_INSTANCE_ID>/chat.db
+OPENCLAW_SESSION_ID=<CTO_INSTANCE_ID>-pwa-john-openclaw
+HERMES_HUMAN_SESSION_ID=<CTO_INSTANCE_ID>-pwa-john-hermes
+HERMES_AGENT_SESSION_ID=<CTO_INSTANCE_ID>-a2a-openclaw-hermes
+```
+
+**Pass criteria:** a candidate PWA/backend process refuses to start or append if `CHAT_DB=/opt/cto/chat.db`. Production may use `/opt/cto/chat.db` only when `CTO_INSTANCE_ID=production`.
+
 ---
 
 ## How To Use This Document
@@ -246,6 +277,51 @@ If Phase 3 fails after Phase 1+2 passed: the wiring is wrong between hemispheres
 - Full long-horizon execution reliability beyond the PWA detached background-job handoff
 - Shared budget meter / rate-limit awareness layer
 - Daily research cycle end-to-end beyond heartbeat/watchers
-- Macro-evolution clone-test-replace cycle on a fresh VPS
+- Macro-evolution promotion reliability beyond the paid Phase 4 matrix below
 
 These are tested in subsequent upgrade cycles, one at a time per SOUL.md #15.
+
+---
+
+## Phase 4 — Paid Clone-Test-Replace Acceptance Plan
+
+Run only after John approves paid infrastructure. This is the concrete clone test matrix for promotion.
+
+### 4.1 OpenClaw
+- `systemctl --user is-active openclaw-gateway` is active.
+- `openclaw agent --agent main --session-id clone-smoke-openclaw --message "Reply with exactly: openclaw-ok" --thinking off --json` returns assistant text `openclaw-ok`.
+- Journal shows no provider/auth errors.
+
+### 4.2 Hermes
+- `systemctl --user is-active hermes-gateway cto-hermes-a2a-sidecar` is active.
+- `curl http://127.0.0.1:8642/health` and `curl http://127.0.0.1:8643/health` return ok.
+- A direct sidecar A2A request with sender `john` returns conversational text and uses the candidate `HERMES_HUMAN_SESSION_ID`.
+
+### 4.3 PWA
+- `curl http://127.0.0.1:8088/api/health` returns ok.
+- Auth rejects `/api/messages` without `PWA_AUTH_TOKEN`.
+- A token-authenticated short `@openclaw` message returns HTTP 202 and later appends an OpenClaw chat row.
+- A token-authenticated short `@hermes` message returns HTTP 202 and later appends a Hermes chat row.
+
+### 4.4 A2A and coordinated `@both` routing
+- `@both` produces one OpenClaw strategy row first, then one Hermes implementation row with the same coordination id.
+- Mixed mentions such as `@openclaw ... @hermes ...` route to coordinated `both`, not parallel independent replies.
+- `a2a_request` and `a2a_response` rows are present for Hermes sidecar traffic.
+
+### 4.5 Memory
+- `MEMORY.md`, `memory/`, and `wiki/` are present and readable by both process users.
+- Engram/SQLite files are initialized without corrupting or overwriting production memory artifacts.
+- `BACKLOG.md` and `logs/decisions/` are readable from OpenClaw and Hermes working directories.
+
+### 4.6 Keepalive
+- `cto-cache-keepalive.timer` is installed and active.
+- A manual `scripts/cache-keepalive.sh` run exits 0 and pings candidate session ids, not production session ids.
+- Keepalive failures append `system_event` rows to the candidate chat DB only.
+
+### 4.7 Background jobs
+- A long-job PWA prompt returns HTTP 202 with `background=true` and a `pwa-bg-*` id.
+- `services/pwa/backend/job_runner.py` records the job in the candidate `PWA_JOB_DB` and posts final output to the candidate chat DB.
+- A failed job emits `pwa_background_job_failed` or `pwa_background_job_crashed` as a `system_event`.
+
+### 4.8 Promotion blockers
+Any one of these blocks promotion: production `chat.db` touched by candidate; gateway/sidecar bound to public interfaces; OpenRouter references in active config; missing Codex OAuth on either hemisphere; PWA auth disabled on a public host; failing no-spend validation script; dirty uncommitted repo changes not explained in HANDOFF.
