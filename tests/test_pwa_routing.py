@@ -93,6 +93,15 @@ class PwaRoutingTests(unittest.TestCase):
                 cto_root="/opt/cto",
             )
             self.assertIsNone(error)
+    def test_candidate_chat_connection_creates_parent_directory(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            sys.modules.pop("chat.db", None)
+            os.environ["CTO_INSTANCE_ID"] = "candidate-db-test"
+            os.environ["CHAT_DB"] = str(Path(tmp) / "nested" / "candidate" / "chat.db")
+            chat_db = importlib.import_module("chat.db")
+            row_id = chat_db.append(sender="system", recipient="john", kind="system_event", content="ok")
+            self.assertGreater(row_id, 0)
+            self.assertTrue(Path(os.environ["CHAT_DB"]).exists())
 
 
 if __name__ == "__main__":

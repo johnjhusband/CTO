@@ -81,6 +81,9 @@ def _init(conn: sqlite3.Connection) -> None:
 @contextmanager
 def connection(path: str = CHAT_DB_PATH):
     assert_clone_chat_isolation(path)
+    parent = os.path.dirname(os.path.abspath(path))
+    if parent:
+        os.makedirs(parent, exist_ok=True)
     new = not os.path.exists(path)
     conn = sqlite3.connect(path, timeout=30, isolation_level=None)
     try:
