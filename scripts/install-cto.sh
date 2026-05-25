@@ -358,7 +358,7 @@ cat > "${OPENCLAW_DIR}/openclaw.json" <<JSON
           "CHAT_DB": "${CTO_ROOT}/chat.db"
         }
       },
-      "engram":     { "command": "engram", "args": ["mcp-server", "--db", "${CTO_ROOT}/.engram/cto.db"] },
+      "engram":     { "command": "engram", "args": ["mcp", "--tools=agent"], "env": { "ENGRAM_DATA_DIR": "${CTO_ROOT}/.engram", "ENGRAM_PROJECT": "cto" } },
       "vault":      { "command": "npx", "args": ["-y", "@bitbonsai/mcpvault@latest", "${CTO_ROOT}/wiki"] },
       "filesystem": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "${CTO_ROOT}"] },
       "github":     { "command": "/usr/local/bin/github-mcp-server", "args": [], "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" } },
@@ -486,15 +486,42 @@ install -m 0755 "${CTO_ROOT}/scripts/cache-keepalive.sh" /opt/cto/scripts/cache-
 install -m 0644 "${CTO_ROOT}/scripts/systemd/cto-cache-keepalive.service" "${HOME}/.config/systemd/user/cto-cache-keepalive.service"
 install -m 0644 "${CTO_ROOT}/scripts/systemd/cto-cache-keepalive.timer"   "${HOME}/.config/systemd/user/cto-cache-keepalive.timer"
 
+# Long Hermes turns should not surface in PWA as raw HTTP 500s. The sidecar
+# returns a clear 504 timeout payload; the PWA worker waits slightly longer.
+cat > "${SIDECAR_DROPIN}/20-timeout.conf" <<'CONF'
+[Service]
+Environment="HERMES_TIMEOUT_S=600"
+CONF
+
+PWA_DROPIN="${HOME}/.config/systemd/user/cto-pwa-backend.service.d"
+mkdir -p "${PWA_DROPIN}"
+cat > "${PWA_DROPIN}/20-hermes-timeout.conf" <<'CONF'
+[Service]
+Environment="HERMES_SEND_TIMEOUT_S=660"
+CONF
+
 systemctl --user daemon-reload
 systemctl --user enable --now cto-cache-keepalive.timer 2>/dev/null || true
 
-# Hermes shared-memory: configure engram as an MCP server Hermes can consume
-# (same DB OpenClaw uses, so cross-hemisphere knowledge is one corpus).
-# Hermes accepts MCP configs in its config.yaml under mcp.servers.
+# Hermes shared-memory: configure engram as an MCP server Hermes can consume.
+# Repaired 2026-05-25: engram's working MCP command is `engram mcp --tools=agent`
+# with ENGRAM_DATA_DIR/ENGRAM_PROJECT. The older `mcp-server --db .../cto.db`
+# path created a stale empty cto.db and broke Hermes MCP startup.
 hermes config set mcp.servers.engram.command engram 2>/dev/null || true
-hermes config set mcp.servers.engram.args "['mcp-server', '--db', '${CTO_ROOT}/.engram/cto.db']" 2>/dev/null || true
 mkdir -p "${CTO_ROOT}/.engram"
+python3 - <<PY
+from pathlib import Path
+import yaml
+p = Path.home() / '.hermes' / 'config.yaml'
+config = yaml.safe_load(p.read_text()) or {}
+servers = config.setdefault('mcp', {}).setdefault('servers', {})
+servers['engram'] = {
+    'command': 'engram',
+    'args': ['mcp', '--tools=agent'],
+    'env': {'ENGRAM_DATA_DIR': '${CTO_ROOT}/.engram', 'ENGRAM_PROJECT': 'cto'},
+}
+p.write_text(yaml.safe_dump(config, sort_keys=False))
+PY
 
 # Hermes: also wire the Gmail MCP so both hemispheres can read 2FA codes
 # (CTO-DECISION-010). OAuth scope is enforced at the Google Cloud project,
@@ -691,7 +718,8 @@ UNIT
 
 systemctl --user daemon-reload
 systemctl --user enable cto-hermes-a2a-sidecar cto-pwa-backend \
-  cto-watcher-heartbeat.timer cto-watcher-health.timer cto-watcher-anomaly.timer
+  cto-watcher-heartbeat.timer cto-watcher-health.timer cto-watcher-anomaly.timer \
+  cto-cache-keepalive.timer
 
 # ─── Section 6: Post-Configuration ─────────────────────────────────────────
 
@@ -700,7 +728,8 @@ section "Section 6 — Start, harden network, finalize"
 note "Starting daemons"
 systemctl --user enable --now openclaw-gateway hermes-gateway cto-a2a-registry \
   cto-hermes-a2a-sidecar cto-pwa-backend \
-  cto-watcher-heartbeat.timer cto-watcher-health.timer cto-watcher-anomaly.timer
+  cto-watcher-heartbeat.timer cto-watcher-health.timer cto-watcher-anomaly.timer \
+  cto-cache-keepalive.timer
 sleep 3
 
 note "Installing system Caddyfile (cto.husband.llc → 127.0.0.1:8088)"

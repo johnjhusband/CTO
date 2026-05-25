@@ -72,3 +72,7 @@ Review notes: Do not set `GATEWAY_ALLOW_ALL_USERS=true`; the remaining allowlist
 - [verified] A PWA-visible `hermes_send_failed` event at 00:25 UTC was caused by the Hermes A2A sidecar timing out after 180s while Hermes was still working; the sidecar caught the timeout via the generic exception path and returned HTTP 500, which the PWA rendered as `<HTTPError 500: 'Internal Server Error'>`.
 - [verified] OpenClaw patched `/opt/cto/services/hermes_a2a_sidecar/server.py` to catch timeout exceptions explicitly and return 504 with a clear timeout payload, patched `/opt/cto/services/pwa/backend/server.py` to use `HERMES_SEND_TIMEOUT_S` and parse sidecar HTTP errors, and added systemd user drop-ins setting `HERMES_TIMEOUT_S=600` and `HERMES_SEND_TIMEOUT_S=660`.
 - [verified] Services were restarted and a live PWA backend `send_to_hermes` smoke test returned `OK` with session id `pwa-john-hermes-main`.
+
+## 2026-05-25 — PWA content-aware routing shipped
+- [verified] OpenClaw patched `/opt/cto/services/pwa/backend/server.py` so explicit `@openclaw` and `@hermes` mentions still override routing, no-mention Hermes-addressed messages route to Hermes, greetings and both-hemisphere prompts route to both, repair/debug/orchestration prompts default to OpenClaw, and ambiguous prompts default to OpenClaw as orchestrator.
+- [verified] The PWA backend restarted cleanly, parser smoke tests passed, `/api/health` returned OK, and a no-mention message containing “Hermes” routed to Hermes and returned `OK`.

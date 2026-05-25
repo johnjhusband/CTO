@@ -18,8 +18,11 @@ headers.
 
 Routing of John's outbound messages:
   - Starts with "@hermes " (case-insensitive) → POST to Hermes A2A sidecar
-  - Starts with "@openclaw " or no @-mention → run the real OpenClaw agent via
-    the OpenClaw gateway-backed CLI session (not a raw model/capability fallback)
+  - Starts with "@openclaw " → run the real OpenClaw agent via the gateway-backed
+    CLI session (not a raw model/capability fallback)
+  - No @-mention → small content-aware router: Hermes-targeted language goes to
+    Hermes, greetings/both-hemisphere prompts go to both, everything else defaults
+    to OpenClaw as orchestrator.
 
 Implementation: pure stdlib http.server + threading. SSE via long-running
 generator response. Push notifications stored as DB rows for now (sending push
@@ -137,6 +140,14 @@ BROADCASTER = SSEBroadcaster()
 # ─── Routing logic ──────────────────────────────────────────────────────────
 
 MENTION_RE = re.compile(r"^\s*@(openclaw|hermes)\b\s*", re.IGNORECASE)
+GREETING_RE = re.compile(r"^\s*(hi|hello|hey|yo|gm|good\s+(morning|afternoon|evening))\b[\s!.?]*$", re.IGNORECASE)
+HERMES_ADDRESS_RE = re.compile(r"\b(hermes|right\s+hemisphere)\b", re.IGNORECASE)
+OPENCLAW_ADDRESS_RE = re.compile(r"\b(openclaw|left\s+hemisphere)\b", re.IGNORECASE)
+BOTH_ADDRESS_RE = re.compile(r"\b(both\s+(of\s+you|agents|hemispheres)|you\s+both|openclaw\s+and\s+hermes|hermes\s+and\s+openclaw)\b", re.IGNORECASE)
+OPENCLAW_ORCHESTRATION_RE = re.compile(
+    r"\b(fix|debug|repair|diagnos(e|is)|investigate|patch|restart|deploy|wire|route|why\s+(did|is|are|was|were)|what\s+happened)\b",
+    re.IGNORECASE,
+)
 
 _HUMAN_FIELD_PRIORITY = (
     "reply", "answer", "message", "response", "simplified_response", "final",
@@ -226,12 +237,24 @@ def _humanize_chat_content(text: str) -> str:
     return rendered or stripped
 
 def parse_mention(text: str) -> tuple[str, str]:
-    """Return (target, stripped_text). Target is 'openclaw' or 'hermes'."""
+    """Return (target, stripped_text). Target is 'openclaw', 'hermes', or 'both'."""
     m = MENTION_RE.match(text)
     if m:
         target = m.group(1).lower()
         stripped = text[m.end():].strip()
         return target, stripped
+    # Content-aware no-mention routing. Keep this deterministic and conservative:
+    # OpenClaw remains the default orchestrator for repairs, decisions, and ambiguous
+    # work; Hermes receives messages that are clearly addressed to Hermes; greetings
+    # are sent to both so John can immediately see whether both routes are alive.
+    if GREETING_RE.match(text) or BOTH_ADDRESS_RE.search(text):
+        return "both", text
+    if HERMES_ADDRESS_RE.search(text):
+        if OPENCLAW_ADDRESS_RE.search(text) or OPENCLAW_ORCHESTRATION_RE.search(text):
+            return "openclaw", text
+        return "hermes", text
+    if OPENCLAW_ADDRESS_RE.search(text):
+        return "openclaw", text
     return "openclaw", text  # default: OpenClaw is the left-hemisphere router/orchestrator
 
 def send_to_hermes(text: str, task_id: Optional[str] = None) -> dict:
@@ -481,22 +504,33 @@ class Handler(BaseHTTPRequestHandler):
 
         # Spawn worker so we can return 202 immediately and let SSE deliver the reply
         def worker():
-            if target == "hermes":
-                r = send_to_hermes(stripped or text)
+            msg = stripped or text
+
+            def deliver_hermes():
+                r = send_to_hermes(msg)
                 if r.get("ok"):
                     append(sender="hermes", recipient="john", kind="chat",
                            content=_humanize_chat_content(r.get("findings", "")))
                 else:
                     append(sender="system", recipient="john", kind="system_event",
                            content=json.dumps({"event": "hermes_send_timeout" if "timed out" in (r.get("error") or "") else "hermes_send_failed", "error": r.get("error")}))
-            else:  # openclaw or default
-                r = send_to_openclaw(stripped or text)
+
+            def deliver_openclaw():
+                r = send_to_openclaw(msg)
                 if r.get("ok"):
                     append(sender="openclaw", recipient="john", kind="chat",
                            content=_humanize_chat_content(r.get("reply", "")))
                 else:
                     append(sender="system", recipient="john", kind="system_event",
                            content=json.dumps({"event": "openclaw_send_failed", "error": r.get("error")}))
+
+            if target == "hermes":
+                deliver_hermes()
+            elif target == "both":
+                threading.Thread(target=deliver_openclaw, daemon=True).start()
+                threading.Thread(target=deliver_hermes, daemon=True).start()
+            else:  # openclaw or default
+                deliver_openclaw()
 
         threading.Thread(target=worker, daemon=True).start()
         return self._json(202, {"accepted": True, "target": target})
