@@ -1,14 +1,14 @@
 # Memory Architecture
 **L0:** Obsidian vault + SQLite coordination + tiered loading (L0/L1/L2). Memory is the moat — models are swappable, knowledge compounds.
 **L1:** Three-tier memory (hot/warm/cold) following community consensus. Obsidian vault for human-readable knowledge with wikilinks and graph. SQLite underneath for concurrent access and structured queries. Tiered context loading per OpenViking pattern: L0 summaries for discovery, L1 overviews for planning, L2 full content on demand (83% token reduction). SOUL.md for persistent identity. Graph memory (Mem0) as future enhancement. Leading frameworks: Mem0 (26% accuracy gain), Zep (temporal graph), Letta (OS-inspired), OpenViking (tiered loading, 23K stars [verified]).
-**Last updated:** 2026-04-26
-**Verification:** Obsidian headless limitation verified. MCPVault verified working. memweave verified installed but search quality poor. OpenViking and Mem0 claims from research, not independently verified.
-**Source:** Live web research (April 2026), second research round
+**Last updated:** 2026-05-24
+**Verification:** Obsidian headless limitation verified. MCPVault verified working. memweave search quality poor. Karpathy LLM Wiki primary gist verified 2026-05-24. OpenViking and Mem0 claims from prior research, not independently verified.
+**Source:** Live web research (April 2026), second research round; Karpathy LLM Wiki primary source (May 2026 review)
 
 ## Key Facts
 - Memory is the #1 reason agent projects fail (Gartner predicts 40% die by 2027 from this)
 - "A frontier model with no memory is a genius with amnesia"
-- Flat markdown wiki is already outdated — community converged on graph + vector hybrid with tiered loading
+- Unstructured flat markdown is weak; an agent-maintained interlinked wiki remains best practice when paired with schema, provenance, index/log discipline, and a rebuildable search/coordination layer
 - Memory is the moat — models and frameworks are swappable; memory compounds
 
 ## The Tiered Memory Model (Near-Universal Consensus)
@@ -102,14 +102,26 @@ Research on 41,300 AI agent posts showed +72 percentage point improvement in saf
 
 ## CTO Memory Architecture (Agreed Design)
 
-1. **Obsidian vault** as human-readable knowledge layer (wiki pages, decisions, research)
-2. **SQLite coordination layer** underneath for concurrent access and structured queries
-3. **Tiered loading** (L0/L1/L2 per OpenViking pattern) to minimize token costs
-4. **SOUL.md** for CTO's persistent identity
-5. **Graph memory** (Mem0 or similar) as CTO matures — evaluate as macro evolution decision
-6. Consider **OpenViking** for the context database if the scale warrants it
+1. **Wiki-first source of truth** — human-readable markdown pages, decision logs, research syntheses, and curated hot memory are canonical. This follows Karpathy's LLM Wiki pattern: compile knowledge once, keep it current, cross-link it, and explicitly flag contradictions.
+2. **Raw/source preservation** — sources and logs should remain immutable or append-only where practical; synthesized wiki pages can evolve.
+3. **SQLite/engram coordination layer** — `/opt/cto/.engram/cto.db` is a rebuildable index/cache/coordination layer over the markdown corpus, not the durable source of truth.
+4. **Tiered loading** (L0/L1/L2 per OpenViking pattern) to minimize token costs.
+5. **SOUL.md** for CTO's persistent identity.
+6. **Graph/vector memory** (Mem0, Zep, sqlite-vec, OpenViking, or similar) remains a future macro-evolution candidate once observed recall limits justify it.
 
 This is the agreed architecture. It must not be downgraded for implementation convenience.
+
+## Shared Memory Contract v2 (2026-05-24)
+
+OpenClaw and Hermes keep private memories private. The shared memory space is for durable, semantic knowledge that should compound across both hemispheres.
+
+Canonical shared memory goes into markdown first: `/opt/cto/wiki`, `logs/decisions/`, and curated summaries such as `MEMORY.md`. Engram may index, search, deduplicate, or coordinate writes, but it must be treated as rebuildable unless a future architecture decision changes that.
+
+Shared writes are allowed for stable decisions, John preferences, architecture facts, research syntheses, reusable procedures, and durable cross-session context. Shared writes are forbidden for transient task progress, issue/PR numbers, stale operational state, secrets, raw chain-of-thought, private tool traces, or anything likely to be obsolete within a week.
+
+Every material shared fact should carry provenance, owner/source agent, confidence, created/updated timestamp, and supersedes/contradiction notes when replacing older claims. If sources conflict, record both positions with dates and provenance rather than silently overwriting. Conflict priority: John's latest explicit instruction, documented CTO decision logs, then agent negotiation.
+
+Operational rule: before answering from shared memory, orient through the wiki/index/decision logs first, then use engram/search as acceleration. If engram and markdown disagree, markdown decision logs and John's latest instruction win.
 
 ## How This Maps onto OpenClaw's Native Memory
 

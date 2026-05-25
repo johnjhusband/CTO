@@ -43,11 +43,17 @@ The PWA chat is a **three-party conversation** — John, OpenClaw, Hermes — wi
 - Every A2A delegation (OpenClaw → Hermes) and its response (Hermes → OpenClaw) is **logged to chat** so John sees the internal conversation. Sender is rendered visibly (color-coded, icon).
 - Hermes never speaks unprompted unless: (a) responding to a delegation, (b) responding to a direct @-mention, (c) raising an escalation (heartbeat / health / repair failure), or (d) a daily-digest-trigger event.
 
-## SHARED MEMORY (engram via MCP)
+## SHARED MEMORY (wiki-first + engram coordination)
 
-Both hemispheres consume the same engram instance at `/opt/cto/.engram/` via MCP. Shared corpus: research findings, decisions, John's stated preferences, cross-session context. Hermes-only memory (auto-created skills): stays in `~/.hermes/skills/`. OpenClaw-only state (session history): stays in `~/.openclaw/`.
+Both hemispheres share memory through a wiki-first contract. Durable shared knowledge lives in the human-readable markdown corpus: `/opt/cto/wiki`, `logs/decisions/`, and curated hot summaries such as `MEMORY.md`. This follows Karpathy's LLM Wiki pattern: raw/context sources are preserved, the agent-maintained wiki compiles knowledge once, updates cross-references over time, and records contradictions instead of rediscovering the same fragments on every query.
 
-Engram does FTS5 keyword search + LLM-as-semantic-judge. Vector search via `sqlite-vec` extension is deferred — adopt only if observed recall ceiling demands it. (Per the "simplest thing that works" principle.)
+`/opt/cto/.engram/cto.db` remains the shared MCP/SQLite coordination layer, but it is not the canonical memory store. Treat it as rebuildable index/cache/coordination state over the markdown corpus unless a future decision explicitly promotes it. If engram and markdown disagree, markdown decision logs and John's latest instruction win.
+
+Shared corpus: stable research syntheses, decisions, John's stated preferences, architecture facts, reusable procedures, and cross-session context worth compounding. Hermes-only memory and auto-created skills stay in `~/.hermes/skills/`. OpenClaw-only session state stays in `~/.openclaw/`.
+
+Shared writes must include provenance, confidence, owner/source agent, timestamps, and supersedes/contradiction handling. Do not store transient task progress, PR numbers, stale session state, secrets, raw chain-of-thought, or private tool traces in shared memory.
+
+Engram can provide FTS5 keyword search + LLM-as-semantic-judge over the shared corpus. Vector search via `sqlite-vec` remains deferred until observed recall limits justify it. Graph/vector systems are future macro-evolution candidates, not a replacement for the wiki-first source of truth.
 
 ---
 

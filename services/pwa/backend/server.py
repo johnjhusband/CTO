@@ -18,10 +18,8 @@ headers.
 
 Routing of John's outbound messages:
   - Starts with "@hermes " (case-insensitive) → POST to Hermes A2A sidecar
-  - Starts with "@openclaw " → try OpenClaw gateway chat completions, then use
-    `openclaw capability model run --gateway --json` for a fast conversational
-    reply. The old embedded `openclaw agent --local` path remains last-resort only.
-  - No @-mention defaults to Hermes.
+  - Starts with "@openclaw " or no @-mention → run the real OpenClaw agent via
+    the OpenClaw gateway-backed CLI session (not a raw model/capability fallback)
 
 Implementation: pure stdlib http.server + threading. SSE via long-running
 generator response. Push notifications stored as DB rows for now (sending push
@@ -60,6 +58,7 @@ FRONTEND_DIR = Path(os.environ.get("PWA_FRONTEND", str(Path(__file__).resolve().
 
 HERMES_A2A_URL = os.environ.get("HERMES_A2A_URL", "http://127.0.0.1:8643/a2a/")
 HERMES_A2A_TOKEN = os.environ.get("HERMES_A2A_TOKEN", "")
+HERMES_SEND_TIMEOUT_S = int(os.environ.get("HERMES_SEND_TIMEOUT_S", "660"))
 
 OPENCLAW_MODEL = os.environ.get("OPENCLAW_MODEL", "openai-codex/gpt-5.5")
 # Stable session id keeps OpenClaw's prompt cache warm across PWA turns and preserves
@@ -233,7 +232,7 @@ def parse_mention(text: str) -> tuple[str, str]:
         target = m.group(1).lower()
         stripped = text[m.end():].strip()
         return target, stripped
-    return "hermes", text  # default (CTO-DECISION: OpenClaw chat path not yet wired)
+    return "openclaw", text  # default: OpenClaw is the left-hemisphere router/orchestrator
 
 def send_to_hermes(text: str, task_id: Optional[str] = None) -> dict:
     """Direct-from-John message to Hermes via the A2A sidecar."""
@@ -251,9 +250,19 @@ def send_to_hermes(text: str, task_id: Optional[str] = None) -> dict:
                  "Authorization": f"Bearer {HERMES_A2A_TOKEN}"},
     )
     try:
-        with urllib.request.urlopen(req, timeout=180) as resp:
+        with urllib.request.urlopen(req, timeout=HERMES_SEND_TIMEOUT_S) as resp:
             payload = json.loads(resp.read().decode("utf-8"))
         return {"ok": True, "task_id": task_id, "findings": payload.get("findings", "")}
+    except urllib.error.HTTPError as e:
+        try:
+            payload = json.loads(e.read().decode("utf-8"))
+        except Exception:
+            payload = {}
+        status = payload.get("status") if isinstance(payload, dict) else None
+        if e.code == 504 or status == "timeout":
+            return {"ok": False, "error": f"Hermes is still working or timed out after {HERMES_SEND_TIMEOUT_S}s; please retry or ask for a smaller step.", "task_id": task_id}
+        detail = payload.get("error") if isinstance(payload, dict) else None
+        return {"ok": False, "error": detail or f"Hermes HTTP {e.code}", "task_id": task_id}
     except Exception as e:
         return {"ok": False, "error": repr(e), "task_id": task_id}
 
@@ -479,7 +488,7 @@ class Handler(BaseHTTPRequestHandler):
                            content=_humanize_chat_content(r.get("findings", "")))
                 else:
                     append(sender="system", recipient="john", kind="system_event",
-                           content=json.dumps({"event": "hermes_send_failed", "error": r.get("error")}))
+                           content=json.dumps({"event": "hermes_send_timeout" if "timed out" in (r.get("error") or "") else "hermes_send_failed", "error": r.get("error")}))
             else:  # openclaw or default
                 r = send_to_openclaw(stripped or text)
                 if r.get("ok"):

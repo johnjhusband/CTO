@@ -406,6 +406,24 @@ hermes config set api_server.enabled true
 hermes config set api_server.key "${HERMES_API_SERVER_KEY}"
 [ -n "${OPENAI_API_KEY:-}" ] && hermes config set OPENAI_API_KEY "${OPENAI_API_KEY}"
 
+# Expose the toolsets the api_server platform should make available to callers
+# carrying a session key. Added by Hermes during the session-continuity work
+# (CTO-DECISION-016 negotiation, brought in 2026-05-25 during the reconciliation
+# merge). Without this list, the api_server platform exposes a smaller default
+# set that doesn't include session_search/delegation/todo/cronjob/code_execution
+# — needed by the cross-hemisphere A2A bridge.
+python3 - <<'PY'
+from pathlib import Path
+import yaml
+p = Path.home() / '.hermes' / 'config.yaml'
+config = yaml.safe_load(p.read_text()) or {}
+config.setdefault('platform_toolsets', {})['api_server'] = [
+    'web', 'terminal', 'file', 'skills', 'memory', 'session_search',
+    'delegation', 'todo', 'cronjob', 'code_execution'
+]
+p.write_text(yaml.safe_dump(config, sort_keys=False))
+PY
+
 # Hermes only reads ~/.hermes/.env (not /opt/cto/.env). Mirror the embeddings key.
 # OpenRouter retired (CTO-DECISION-014) — only OPENAI_API_KEY mirrors now.
 for KEY in OPENAI_API_KEY; do

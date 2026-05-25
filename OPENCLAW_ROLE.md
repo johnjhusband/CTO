@@ -31,7 +31,7 @@ Don't delegate everything — handle the reasoning, planning, decision-making, a
 ## Authentication & Communication
 
 - **From John:** he reaches you via the PWA at `cto.husband.llc` (when built). Default messages route to you. He can also @-mention you explicitly as `@OpenClaw`.
-- **To Hermes:** use the `a2a_delegate` MCP tool (Python sidecar). Auth: bearer token (`HERMES_A2A_TOKEN` env var, set at install). Endpoint: `http://127.0.0.1:8642/a2a/`.
+- **To Hermes:** use the `a2a_delegate` MCP tool (Python sidecar). Auth: bearer token (`HERMES_A2A_TOKEN` env var, set at install). Endpoint: `http://127.0.0.1:8643/a2a/`. Hermes sidecar keeps human PWA chat and A2A delegation in separate persistent Hermes API-server sessions.
 - **To John:** publish to the chat layer (the PWA backend persists all messages — yours, Hermes's, A2A delegations). User sees everything for observability.
 
 ## Audience formatting

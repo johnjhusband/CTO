@@ -1,0 +1,71 @@
+{
+  "id": "CTO-DECISION-016",
+  "timestamp": "2026-05-24T19:39:41Z",
+  "version_before": "0.2.2",
+  "version_after": "0.2.3",
+  "technology": "Shared memory contract v2: wiki-first memory with engram as coordination/index layer",
+  "source": "John's directive 2026-05-24: '@both there has been a lot of talk in the AI world about using a wiki for memory in particular Andrej Karpathy. research this. And re-negotiate the shared memory space to meet global best practices.'",
+  "category": "memory-architecture + multi-agent-coordination",
+  "architecture_layer": "memory",
+  "action": "adopted",
+  "supersedes_scope_of": "The 2026-05-24 shared-memory contract that treated /opt/cto/.engram/cto.db as the shared durable memory target. Engram remains shared infrastructure, but durable shared knowledge is now canonical in markdown/wiki/decision logs and engram is a rebuildable index/cache/coordination layer.",
+  "summary": "Karpathy's LLM Wiki pattern is adopted as the shared-memory operating model for the two-hemisphere CTO. Durable shared knowledge lives first in the human-readable markdown corpus: /opt/cto/wiki, logs/decisions/, and curated hot summaries such as MEMORY.md. The wiki compiles knowledge once, maintains cross-links, records contradictions, and keeps synthesis current instead of rediscovering source fragments on every query. /opt/cto/.engram/cto.db remains available via MCP for search, coordination, dedupe, and cache/index state, but it is not the canonical source of truth unless a later architecture decision promotes it. Private hemisphere memories remain private: Hermes skills stay in ~/.hermes/skills and OpenClaw session state stays in ~/.openclaw.",
+  "rationale": "Karpathy's primary LLM Wiki gist argues that RAG/file-upload systems re-derive knowledge at query time, while a persistent agent-maintained wiki compounds: cross-references are already present, contradictions are already flagged, and summaries evolve as new sources arrive. This matches CTO's memory-moat requirement better than writing isolated facts into a database. The best-practice synthesis is wiki-first plus machine acceleration: markdown for durable human-readable memory, schema/index/log discipline for agent operability, immutable raw sources/append-only decisions for provenance, and SQLite/search layers as rebuildable infrastructure rather than canonical memory.",
+  "evaluation": {
+    "what_it_makes_obsolete": "Using engram/SQLite as the primary durable shared memory store for facts. The shared-memory write target is now the wiki/decision-log layer first, with engram as acceleration/coordination.",
+    "cost_of_switching": "Documentation and operating-rule change only for now. No new paid service. Future implementation may add wiki linting, raw-source directories, or engram indexing jobs under a separate tested upgrade cycle.",
+    "monthly_cost": "$0 net change.",
+    "material_change": true
+  },
+  "test_results": {
+    "tested": true,
+    "notes": "Primary source fetched and reviewed from Karpathy's LLM Wiki gist. Existing /opt/cto/.engram/cto.db inspected and found to exist but be empty at the time of renegotiation, so no data migration was required. Documentation updated in MEMORY.md, hemisphere.md, wiki/memory-architecture.md, and logs/decisions/INDEX.md."
+  },
+  "shared_memory_contract_v2": {
+    "canonical_store": "Markdown/wiki/decision logs first: /opt/cto/wiki, logs/decisions/, MEMORY.md and other curated hot summaries.",
+    "coordination_store": "/opt/cto/.engram/cto.db via MCP, treated as rebuildable index/cache/coordination unless promoted by future decision.",
+    "allowed_shared_writes": [
+      "stable decisions",
+      "John's stated preferences",
+      "architecture facts",
+      "research syntheses",
+      "reusable procedures",
+      "durable cross-session context worth compounding"
+    ],
+    "forbidden_shared_writes": [
+      "transient task progress",
+      "issue or PR numbers likely to stale",
+      "temporary session state",
+      "secrets or credentials",
+      "raw chain-of-thought",
+      "private tool traces",
+      "artifacts likely to be obsolete within a week"
+    ],
+    "required_metadata": [
+      "provenance",
+      "owner or source agent",
+      "confidence",
+      "created/updated timestamp",
+      "supersedes or contradiction notes when replacing older claims"
+    ],
+    "conflict_priority": [
+      "John's latest explicit instruction",
+      "documented CTO decision logs",
+      "agent negotiation"
+    ]
+  },
+  "rollback": {
+    "instructions": "Revert MEMORY.md, hemisphere.md, wiki/memory-architecture.md, logs/decisions/INDEX.md, and remove logs/decisions/CTO-DECISION-015.json. This restores the earlier engram-primary shared-memory wording. No database rollback required because no engram data was changed."
+  },
+  "related_docs": [
+    "MEMORY.md",
+    "hemisphere.md",
+    "wiki/memory-architecture.md",
+    "logs/decisions/INDEX.md",
+    "logs/decisions/CTO-DECISION-015.json"
+  ],
+  "sources": [
+    "https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f"
+  ],
+  "_renumber_note": "Originally written by Hermes 2026-05-24 as CTO-DECISION-015 in the VPS-side divergence. Renumbered during the reconciliation merge \u2014 Claude Code had concurrently used the 015 slot for the A2A2H API-key/auxiliary fix (now CTO-DECISION-015 in origin). No content lost."
+}

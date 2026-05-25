@@ -27,9 +27,10 @@ import os
 import sys
 import time
 import uuid
+import socket
 import urllib.request
 import urllib.error
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -41,6 +42,16 @@ HERMES_API_URL = os.environ.get("HERMES_API_URL", "http://127.0.0.1:8642/v1/chat
 HERMES_API_KEY = os.environ.get("HERMES_API_SERVER_KEY", "")
 HERMES_MODEL = os.environ.get("HERMES_MODEL", "openai-codex/gpt-5.5")
 HERMES_TIMEOUT_S = int(os.environ.get("HERMES_TIMEOUT_S", "180"))
+
+# Keep PWA human chat and agent-to-agent delegation in separate persistent
+# Hermes API-server sessions. The Hermes API is still HTTP/stateless, but the
+# API-server loads the transcript for X-Hermes-Session-Id from its state DB and
+# returns the same session id on each turn, preserving short-term context while
+# keeping prompt-cache prefixes stable.
+HERMES_HUMAN_SESSION_ID = os.environ.get("HERMES_HUMAN_SESSION_ID", "pwa-john-hermes-main")
+HERMES_HUMAN_SESSION_KEY = os.environ.get("HERMES_HUMAN_SESSION_KEY", "pwa:john:hermes")
+HERMES_AGENT_SESSION_ID = os.environ.get("HERMES_AGENT_SESSION_ID", "a2a-openclaw-hermes-main")
+HERMES_AGENT_SESSION_KEY = os.environ.get("HERMES_AGENT_SESSION_KEY", "a2a:openclaw:hermes")
 
 
 def _build_hermes_messages(capability: str, inputs: dict, success_criteria: str, sender: str) -> list[dict]:
@@ -96,7 +107,7 @@ def _build_hermes_messages(capability: str, inputs: dict, success_criteria: str,
     ]
 
 
-def _call_hermes(messages: list[dict]) -> dict:
+def _call_hermes(messages: list[dict], *, session_id: str, session_key: str) -> dict:
     body = json.dumps({"model": HERMES_MODEL, "messages": messages}).encode("utf-8")
     req = urllib.request.Request(
         HERMES_API_URL,
@@ -105,6 +116,8 @@ def _call_hermes(messages: list[dict]) -> dict:
         headers={
             "Content-Type": "application/json",
             "Authorization": f"Bearer {HERMES_API_KEY}",
+            "X-Hermes-Session-Id": session_id,
+            "X-Hermes-Session-Key": session_key,
         },
     )
     with urllib.request.urlopen(req, timeout=HERMES_TIMEOUT_S) as resp:
@@ -131,7 +144,12 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.wfile.write(body)
+        except BrokenPipeError:
+            # Client timed out or disconnected before we finished the response.
+            # This should not poison the sidecar process or obscure the real failure.
+            pass
 
     def _unauth(self):
         self._send_json(401, {"error": "unauthorized"})
@@ -176,7 +194,13 @@ class Handler(BaseHTTPRequestHandler):
 
         try:
             messages = _build_hermes_messages(capability, inputs, success_criteria, sender)
-            hermes_resp = _call_hermes(messages)
+            if sender == "john" or (isinstance(inputs, dict) and inputs.get("audience") == "human"):
+                session_id = HERMES_HUMAN_SESSION_ID
+                session_key = HERMES_HUMAN_SESSION_KEY
+            else:
+                session_id = HERMES_AGENT_SESSION_ID
+                session_key = HERMES_AGENT_SESSION_KEY
+            hermes_resp = _call_hermes(messages, session_id=session_id, session_key=session_key)
             findings_text = _extract_text(hermes_resp)
         except urllib.error.HTTPError as e:
             err = {"task_id": task_id, "status": "error",
@@ -189,13 +213,18 @@ class Handler(BaseHTTPRequestHandler):
             log_a2a_response(task_id=task_id, sender="hermes", recipient=sender, payload=err)
             self._send_json(503, err)
             return
+        except (TimeoutError, socket.timeout) as e:
+            err = {"task_id": task_id, "status": "timeout", "error": f"Hermes timed out after {HERMES_TIMEOUT_S}s"}
+            log_a2a_response(task_id=task_id, sender="hermes", recipient=sender, payload=err)
+            self._send_json(504, err)
+            return
         except Exception as e:
             err = {"task_id": task_id, "status": "error", "error": repr(e)}
             log_a2a_response(task_id=task_id, sender="hermes", recipient=sender, payload=err)
             self._send_json(500, err)
             return
 
-        out = {"task_id": task_id, "status": "ok", "findings": findings_text}
+        out = {"task_id": task_id, "status": "ok", "findings": findings_text, "session_id": session_id}
         log_a2a_response(task_id=task_id, sender="hermes", recipient=sender, payload=out)
         self._send_json(200, out)
 
@@ -209,7 +238,9 @@ def main() -> None:
         sys.exit(2)
     append(sender="system", content=f"hermes-a2a-sidecar starting on 127.0.0.1:{PORT}",
            kind="system_event")
-    HTTPServer(("127.0.0.1", PORT), Handler).serve_forever()
+    server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
+    server.daemon_threads = True
+    server.serve_forever()
 
 
 if __name__ == "__main__":

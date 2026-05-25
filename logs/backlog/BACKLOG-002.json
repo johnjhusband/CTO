@@ -1,25 +1,24 @@
 {
   "id": "BACKLOG-002",
-  "timestamp": "2026-05-12T17:00:00Z",
-  "type": "missing-skill",
-  "priority": "P1",
-  "status": "escalated-to-john",
+  "timestamp": "2026-05-24T18:41:27Z",
+  "type": "fork-trigger",
+  "priority": "P2",
+  "status": "open",
   "surfaced_by": "john",
-  "surfaced_from": "Conversation 2026-05-12 — DNS strategy question raised after Namecheap API automation completed",
-  "affects": "autonomous self-clone (both hemispheres)",
-  "capability_needed": "Cutover strategy for clone-over: how the public-facing IP for cto.husband.llc transfers from parent CTO to child CTO with zero split-brain on shared state.",
-  "details": "When parent CTO clones a child, both must serve cto.husband.llc briefly. Two architectural options on the table; John has not picked. (a) DNS round-robin: two permanent IPs, both registered as A records, both servers run concurrently during validation, parent shuts down after cutover. Works for reachability but silently splits chat.db (both servers accept John's PWA messages → diverged SQLite files → cutover loses one side's messages). VAPID push keys also diverge unless parent's keys are replicated to child. (b) Hetzner Floating IP: one IP attached to one server at a time via hcloud API. DNS for cto.husband.llc points to the floating IP and never changes. Cutover = one API call (~2s atomic). Zero split-brain because only one server is publicly reachable at any moment. Parent talks to child by primary IP during validation phase.",
+  "surfaced_from": "PWA chat 2026-05-24 — John authorized temporary direct OpenClaw self-editing for repair speed and explicitly requested a backlog item to lock it down later",
+  "affects": "left-hemisphere (openclaw)",
+  "capability_needed": "Governed OpenClaw self-repair/edit mechanism to replace the temporary direct-edit exception",
+  "details": "While OpenClaw is being fixed, John authorized OpenClaw to directly edit its own files for speed. This is allowed as a temporary repair/debugging exception, not a normal operating mode. The future capability should lock this down with a safer governed mechanism: scoped write permissions, approvals or policy gates, backups/diffs, audit trail, and verification before restart or promotion.",
   "search_trail": [
-    "Reviewed Hetzner Cloud floating-IP docs (May 2026): per-region floating IP, hcloud assign command atomic per server, cost ~€0.50/mo per IP, no DNS interaction needed for cutover.",
-    "Reviewed PWA backend service for state consistency: chat.db is the canonical store for human-CTO conversation AND A2A audit; split-brain is silent (no schema-level conflict, just two diverged SQLite files).",
-    "Reviewed Web Push spec: subscriptions are bound to a single VAPID public key per origin. Two servers issuing different keys for the same origin breaks half of John's notifications until re-subscribe.",
-    "Reviewed Caddy + Let's Encrypt: two servers requesting certs for the same domain works (LE allows 5 dupes per week) but isn't elegant — share /var/lib/caddy/certificates between hosts via rsync if round-robin path chosen."
+    "Asked OpenClaw on 2026-05-24 which document should record the temporary policy and what guardrails should apply; OpenClaw answered AGENTS.md plus BACKLOG.md/logs/backlog, with backup/diff/verification guardrails.",
+    "Verified OpenClaw global install with command -v/npm root/test -d: /usr/bin/openclaw points to global install under /usr/lib/node_modules/openclaw.",
+    "Read /opt/cto/AGENTS.md and /opt/cto/BACKLOG.md; backlog schema supports a fork-trigger entry for source/governance changes outside normal Hermes Phase 1-4 scope."
   ],
-  "proposed_resolution": "Floating IP recommended. Trade-off: round-robin needs state replication (chat.db, VAPID keys, .codex/auth.json, .env) from parent to child PLUS cert sharing PLUS reconciliation logic for split-brain at cutover. Floating IP needs none of that — one API call replaces the entire mechanism. Cost difference is €0.50/mo.",
-  "blast_radius": "Picking floating IP: install.sh must allocate a floating IP on first install, save its ID alongside the host, and reattach it on every clone-over. PWA backend, Caddy config, DNS — all unchanged forever after first install. Picking round-robin: install.sh must replicate chat.db + VAPID + .codex + .env from parent to child during clone; Caddy needs shared cert volume; chat.db needs replay/reconciliation strategy.",
-  "rollback_plan": "Floating IP: detach via hcloud API, delete the IP, point DNS at the surviving host's primary IP — done in two API calls. Round-robin: remove second A record, decommission second server.",
-  "john_review_date": null,
+  "proposed_resolution": "Design and implement a governed OpenClaw self-repair mode or policy layer that allows direct source/config edits only under explicit scope, records every edit, creates rollback artifacts, and can be disabled once the repair phase is over.",
+  "blast_radius": "Changes OpenClaw repair workflow and possibly file-system/tool permissions for /usr/lib/node_modules/openclaw and related state under ~/.openclaw. It should reduce accidental self-modification risk without blocking urgent repair work.",
+  "rollback_plan": "Disable the governed self-repair mode or restore previous permissions/policy, revert any OpenClaw source changes from backup or package reinstall, and keep the temporary AGENTS.md exception only until a better replacement is proven.",
+  "john_review_date": "2026-05-24",
   "resolution_date": null,
   "resolution_notes": null,
-  "related_decision_log": "CTO-DECISION-009 (Namecheap API automation provides the DNS-management capability either path needs)"
+  "related_decision_log": null
 }
