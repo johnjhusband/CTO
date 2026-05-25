@@ -406,6 +406,17 @@ hermes config set api_server.enabled true
 hermes config set api_server.key "${HERMES_API_SERVER_KEY}"
 [ -n "${OPENAI_API_KEY:-}" ] && hermes config set OPENAI_API_KEY "${OPENAI_API_KEY}"
 
+# Compression: let conversations fill the gpt-5.5 272K context window before
+# auto-summarizing — the 0.5 default fired too eagerly and burned tokens
+# compressing turns that still fit. With 24h prompt-cache retention on gpt-5.5
+# (the model's API default) + keep-alive every 30 min (below), the long
+# session is cheap; let it run (CTO-DECISION-017, 2026-05-25).
+hermes config set compression.enabled true
+hermes config set compression.threshold 0.9
+hermes config set compression.target_ratio 0.3
+hermes config set compression.protect_last_n 40
+hermes config set agent.max_turns 500
+
 # Expose the toolsets the api_server platform should make available to callers
 # carrying a session key. Added by Hermes during the session-continuity work
 # (CTO-DECISION-016 negotiation, brought in 2026-05-25 during the reconciliation
@@ -467,7 +478,16 @@ cat > "${SIDECAR_DROPIN}/10-api-key.conf" <<CONF
 Environment="HERMES_API_SERVER_KEY=${HERMES_API_SERVER_KEY}"
 CONF
 
+# Cache keep-alive: ping each live session (PWA→OpenClaw, PWA→Hermes) every
+# 30 min so OpenAI's prompt cache stays warm and we don't pay the ~45K
+# bootstrap re-warm on every idle gap. The pings travel the real PWA/A2A
+# paths, costing a handful of tokens vs 45K of fresh bootstrap (CTO-DECISION-017).
+install -m 0755 "${CTO_ROOT}/scripts/cache-keepalive.sh" /opt/cto/scripts/cache-keepalive.sh 2>/dev/null || cp "${CTO_ROOT}/scripts/cache-keepalive.sh" /opt/cto/scripts/cache-keepalive.sh
+install -m 0644 "${CTO_ROOT}/scripts/systemd/cto-cache-keepalive.service" "${HOME}/.config/systemd/user/cto-cache-keepalive.service"
+install -m 0644 "${CTO_ROOT}/scripts/systemd/cto-cache-keepalive.timer"   "${HOME}/.config/systemd/user/cto-cache-keepalive.timer"
+
 systemctl --user daemon-reload
+systemctl --user enable --now cto-cache-keepalive.timer 2>/dev/null || true
 
 # Hermes shared-memory: configure engram as an MCP server Hermes can consume
 # (same DB OpenClaw uses, so cross-hemisphere knowledge is one corpus).

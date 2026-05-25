@@ -1,0 +1,38 @@
+{
+  "id": "CTO-DECISION-017",
+  "timestamp": "2026-05-25T02:20:00Z",
+  "version_before": "0.2.3",
+  "version_after": "0.2.4",
+  "technology": "Cache-warmth strategy: max OpenAI prompt-cache retention + 30-min session keep-alive + delayed Hermes compression",
+  "source": "John's directive 2026-05-25: 'max the duration and institute a keep alive. I want to hit the max context window and I want it to have to compress.' plus the research that confirmed (a) gpt-5.5 default prompt_cache_retention is already 24h, and (b) ChatGPT-account Codex has no server-side resume primitive — local replay + warm cache is the only path.",
+  "category": "infrastructure + cost-control",
+  "architecture_layer": "brain + spine",
+  "action": "adopted",
+  "supersedes_scope_of": "CTO-DECISION-014's bootstrap-raise rationale partially. The bootstrap is still loaded, but the fix for excessive token spend turns out NOT to be trimming SOUL.md/AGENTS.md — it's keeping the prompt cache warm so the bootstrap is only paid once per ~24h. The size-trimming follow-up from CTO-DECISION-014 is now de-prioritized.",
+  "summary": "Three changes adopted to push CTO from ~2-day-per-Pro-quota to ~30-day-per-Pro-quota without architectural surgery. (1) Confirmed gpt-5.5 default prompt_cache_retention is 24h (OpenAI docs: 'for gpt-5.5, gpt-5.5-pro, and all future models, the default is 24h'). Hermes' config.yaml prompt_caching.cache_ttl=5m is for Anthropic breakpoints and irrelevant to our Codex setup — no override needed; the model gives us 24h. (2) Hermes compression knobs bumped: threshold 0.5 -> 0.9, target_ratio 0.2 -> 0.3, protect_last_n 20 -> 40, agent.max_turns 60 -> 500. Lets sessions grow to ~90% of the 272K gpt-5.5 context before auto-summarizing instead of compressing at 50% full. (3) New scripts/cache-keepalive.sh + scripts/systemd/cto-cache-keepalive.{service,timer}. Fires every 30 minutes, pings pwa-john-main via the real openclaw agent CLI and pwa-john-hermes-main via the A2A sidecar with a single-word query. Each ping costs ~250 fresh tokens against a 100K cached prefix instead of paying 45K bootstrap when the cache evicts after idle. ~48 pings/day * ~250 tokens = ~12K tokens/day of keep-alive overhead vs eliminating the cache cold-start tax that was easily 10x that under intermittent chat. Resume mechanism: per docs, ChatGPT-account Codex has no server-side conversation persistence past cache TTL — local replay (which Hermes/OpenClaw both do via session JSONLs) plus warm cache is the only resume. We already have it.",
+  "rationale": "Earlier diagnosis (CTO-DECISION-014, observed 6.3M billable input tokens in a day) attributed waste to bootstrap size and inter-hemisphere session churn. Session churn was fixed by CTO-DECISION-015 (stable session ids). What remained: bootstrap re-pays whenever cache evicts. Two ways to attack that — shrink the bootstrap (content surgery on SOUL.md/AGENTS.md) or keep the cache warm. Keep-warm is cheaper and reversible. With cache hits at 88-99% on active sessions, an idle gap >5-10 min reverts to a cold-start cost. The keep-alive holds the cache hot through normal multi-hour idle windows; the only true cold-start now is after >24h (the OpenAI hard ceiling on extended retention).",
+  "evaluation": {
+    "what_it_makes_obsolete": "The plan to surgically shrink SOUL.md/AGENTS.md (CTO-DECISION-014 follow-up) is shelved. The earlier framing of 'one long phone call' as a session-id problem is also partially superseded: the session-id was already fixed; what was actually causing 'new phone call every time' was prompt-cache TTL evicting between idle gaps.",
+    "cost_of_switching": "Three config keys in install-cto.sh, one shell script, two systemd units, this decision log + INDEX. Operational risk: keep-alive could mask a hung agent (the cron will report 'fine' while real chat is broken) — mitigation is to keep watching health alerts in the system_event row stream.",
+    "monthly_cost_delta": "Keep-alive overhead ~12K tokens/day = ~360K tokens/month. Savings: eliminating cold re-bootstrap on every ~5-10 min idle gap, which under intermittent chat was 45K * 20-50 gaps/day = 0.9-2.3M tokens/day. Net: 25-65x reduction in cold-start tokens for the price of a tiny constant overhead.",
+    "monthly_cost": "$0 net change ($200/mo Pro subscription unchanged) — purely a quota-efficiency play.",
+    "material_change": true
+  },
+  "test_results": {
+    "tested": true,
+    "notes": "Keep-alive systemd timer installed 2026-05-25 02:16 UTC; first fire failed (45s wall-clock too tight for cold OpenClaw call); bumped to 90s wrap + 60s inner; second fire completed in 9 seconds. Verified the ping landed in pwa-john-main.jsonl as a real message turn. Subsequent usage records show 92-99% cache hit (fresh_input ranges from 246 to 1,963 tokens vs 44,747 on cold start). Sidecar log shows the parallel Hermes ping as POST /a2a/ 200 OK. Hermes restarted with new compression knobs; current session pwa-john-main is at 102K total tokens and growing without artificial compression."
+  },
+  "rollback": {
+    "instructions": "Disable keep-alive: systemctl --user disable --now cto-cache-keepalive.timer; remove the two systemd unit files and the script. Revert Hermes compression: set compression.threshold=0.5 target_ratio=0.2 protect_last_n=20 agent.max_turns=60 in ~/.hermes/config.yaml; restart hermes-gateway. No data migration needed."
+  },
+  "related_docs": [
+    "scripts/cache-keepalive.sh",
+    "scripts/systemd/cto-cache-keepalive.service",
+    "scripts/systemd/cto-cache-keepalive.timer",
+    "scripts/install-cto.sh (compression + timer install)",
+    "~/.hermes/config.yaml (compression block)",
+    "OpenAI Prompt Caching docs: https://developers.openai.com/api/docs/guides/prompt-caching (24h policy)",
+    "logs/decisions/CTO-DECISION-014.json (originating diagnosis, partially superseded)",
+    "logs/decisions/CTO-DECISION-015.json (auxiliary pinning + API key wiring)"
+  ]
+}
