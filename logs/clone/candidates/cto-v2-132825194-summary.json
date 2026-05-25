@@ -1,0 +1,10 @@
+{
+  "name": "cto-v2",
+  "id": 132825194,
+  "ip": "46.225.230.136",
+  "status": "failed_destroyed",
+  "failure_phase": "scripts/install.sh section 7 — Populate /opt/cto/.env on VPS",
+  "reason": "install.sh used optional `[ -n ... ] && echo ...` commands inside an env-generation pipeline under set -euo pipefail; absent BRAVE_API_KEY made the pipeline fail before repo clone/install-cto.sh.",
+  "evidence_log": "/opt/cto/logs/clone/candidates/cto-v2-132825194-install-failure.log",
+  "fix_commit": "595f3ea"
+}

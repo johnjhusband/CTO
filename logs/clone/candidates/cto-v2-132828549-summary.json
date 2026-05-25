@@ -1,0 +1,10 @@
+{
+  "name": "cto-v2",
+  "id": 132828549,
+  "ip": "178.104.58.152",
+  "status": "failed_destroyed",
+  "failure_phase": "install-cto.sh Phase 2 service verification",
+  "reason": "Candidate A2A sidecar/PWA could not open candidate CHAT_DB because parent directory creation fix was not yet on the candidate's installed commit. Patch/tests were committed as ef27c74 after failure.",
+  "evidence_log": "/opt/cto/logs/clone/candidates/cto-v2-132828549-install-failure.log",
+  "fix_commit": "ef27c74"
+}

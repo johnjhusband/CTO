@@ -1,0 +1,10 @@
+{
+  "name": "cto-v2",
+  "id": 132826106,
+  "ip": "46.225.230.136",
+  "status": "failed_destroyed",
+  "failure_phase": "install-cto.sh Hermes gateway install / cache keepalive setup",
+  "reason": "Hermes gateway install prompted in noninteractive SSH; after unblocking, install hit same-file cache-keepalive install/cp handling. Patch made Hermes install noninteractive, suppressed secret echo, and fixed same-file keepalive handling.",
+  "evidence_log": "/opt/cto/logs/clone/candidates/cto-v2-132826106-install-failure.log",
+  "fix_commit": "25527fa"
+}

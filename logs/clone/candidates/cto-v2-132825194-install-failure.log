@@ -1,0 +1,200 @@
+=== CTO Install (entry script) — 2026-05-25T05:19:44+00:00 ===
+Log: /opt/cto/logs/install/install-wrapper-20260525-051944.log
+
+
+═══ 1 — Load secrets ═══
+→ /home/cto/.cto-secrets.env not found — relying on env vars from current shell
+→ BRAVE_API_KEY not set — Brave search MCP will fail at runtime
+→ Secrets loaded
+
+═══ 2 — SSH key resolution ═══
+→ Using local SSH key: /home/cto/.ssh/cto-clone-20260525051919
+→ Hetzner SSH key 'cto-clone-20260525051919' has ID 112781961
+
+═══ 3 — Pick a new VPS name (auto-increment) ═══
+→ New VPS name: cto-v2
+
+═══ 4 — Provision Hetzner VPS ═══
+→ Attempting server_type=cx43 at nbg1
+→   cx43 unavailable: http_error
+→ Attempting server_type=cpx42 at nbg1
+→ Provisioned with server_type=cpx42
+→ Provisioned: cto-v2 ID=132825194 IP=46.225.230.136
+
+═══ 5 — Wait for SSH on new VPS ═══
+  waiting...
+  waiting...
+  waiting...
+→ SSH reachable on 46.225.230.136
+
+═══ 6 — Bootstrap VPS (root): create cto user, install Node 22 ═══
+Reading package lists...
+Building dependency tree...
+Reading state information...
+git is already the newest version (1:2.43.0-1ubuntu7.3).
+curl is already the newest version (8.5.0-2ubuntu10.9).
+The following NEW packages will be installed:
+  jq libjq1 libonig5
+0 upgraded, 3 newly installed, 0 to remove and 6 not upgraded.
+Need to get 380 kB of archives.
+After this operation, 1,127 kB of additional disk space will be used.
+Get:1 https://mirror.hetzner.com/ubuntu/packages noble/main amd64 libonig5 amd64 6.9.9-1build1 [172 kB]
+Get:2 https://mirror.hetzner.com/ubuntu/packages noble-updates/main amd64 libjq1 amd64 1.7.1-3ubuntu0.24.04.2 [142 kB]
+Get:3 https://mirror.hetzner.com/ubuntu/packages noble-updates/main amd64 jq amd64 1.7.1-3ubuntu0.24.04.2 [65.7 kB]
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+dpkg-preconfigure: unable to re-open stdin: 
+Fetched 380 kB in 0s (8,569 kB/s)
+Selecting previously unselected package libonig5:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 38746 files and directories currently installed.)
+Preparing to unpack .../libonig5_6.9.9-1build1_amd64.deb ...
+Unpacking libonig5:amd64 (6.9.9-1build1) ...
+Selecting previously unselected package libjq1:amd64.
+Preparing to unpack .../libjq1_1.7.1-3ubuntu0.24.04.2_amd64.deb ...
+Unpacking libjq1:amd64 (1.7.1-3ubuntu0.24.04.2) ...
+Selecting previously unselected package jq.
+Preparing to unpack .../jq_1.7.1-3ubuntu0.24.04.2_amd64.deb ...
+Unpacking jq (1.7.1-3ubuntu0.24.04.2) ...
+Setting up libonig5:amd64 (6.9.9-1build1) ...
+Setting up libjq1:amd64 (1.7.1-3ubuntu0.24.04.2) ...
+Setting up jq (1.7.1-3ubuntu0.24.04.2) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+[38;5;79m2026-05-25 05:20:27 - Installing pre-requisites[0m
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Hit:1 https://mirror.hetzner.com/ubuntu/packages noble InRelease
+Hit:2 https://mirror.hetzner.com/ubuntu/packages noble-updates InRelease
+Hit:3 https://mirror.hetzner.com/ubuntu/packages noble-backports InRelease
+Hit:4 https://mirror.hetzner.com/ubuntu/security noble-security InRelease
+Reading package lists...
+Building dependency tree...
+Reading state information...
+6 packages can be upgraded. Run 'apt list --upgradable' to see them.
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Reading package lists...
+Building dependency tree...
+Reading state information...
+ca-certificates is already the newest version (20240203).
+ca-certificates set to manually installed.
+curl is already the newest version (8.5.0-2ubuntu10.9).
+gnupg is already the newest version (2.4.4-2ubuntu17.4).
+The following NEW packages will be installed:
+  apt-transport-https
+0 upgraded, 1 newly installed, 0 to remove and 6 not upgraded.
+Need to get 3,970 B of archives.
+After this operation, 36.9 kB of additional disk space will be used.
+Get:1 https://mirror.hetzner.com/ubuntu/packages noble-updates/universe amd64 apt-transport-https all 2.8.3 [3,970 B]
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+dpkg-preconfigure: unable to re-open stdin: 
+Fetched 3,970 B in 0s (93.5 kB/s)
+Selecting previously unselected package apt-transport-https.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 38764 files and directories currently installed.)
+Preparing to unpack .../apt-transport-https_2.8.3_all.deb ...
+Unpacking apt-transport-https (2.8.3) ...
+Setting up apt-transport-https (2.8.3) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+Hit:1 https://mirror.hetzner.com/ubuntu/packages noble InRelease
+Hit:2 https://mirror.hetzner.com/ubuntu/packages noble-updates InRelease
+Hit:3 https://mirror.hetzner.com/ubuntu/packages noble-backports InRelease
+Hit:4 https://mirror.hetzner.com/ubuntu/security noble-security InRelease
+Get:5 https://deb.nodesource.com/node_22.x nodistro InRelease [12.1 kB]
+Get:6 https://deb.nodesource.com/node_22.x nodistro/main amd64 Packages [10.1 kB]
+Fetched 22.3 kB in 0s (62.3 kB/s)
+Reading package lists...
+Building dependency tree...
+Reading state information...
+6 packages can be upgraded. Run 'apt list --upgradable' to see them.
+[1;34m2026-05-25 05:20:33 - Repository configured successfully.[0m
+[38;5;79m2026-05-25 05:20:33 - To install Node.js, run: apt install nodejs -y[0m
+[38;5;79m2026-05-25 05:20:33 - You can use N|solid Runtime as a node.js alternative[0m
+[1;32m2026-05-25 05:20:33 - To install N|solid Runtime, run: apt install nsolid -y 
+[0m
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following NEW packages will be installed:
+  nodejs
+0 upgraded, 1 newly installed, 0 to remove and 6 not upgraded.
+Need to get 37.9 MB of archives.
+After this operation, 236 MB of additional disk space will be used.
+Get:1 https://deb.nodesource.com/node_22.x nodistro/main amd64 nodejs amd64 22.22.2-1nodesource1 [37.9 MB]
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+dpkg-preconfigure: unable to re-open stdin: 
+Fetched 37.9 MB in 0s (112 MB/s)
+Selecting previously unselected package nodejs.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 38768 files and directories currently installed.)
+Preparing to unpack .../nodejs_22.22.2-1nodesource1_amd64.deb ...
+Unpacking nodejs (22.22.2-1nodesource1) ...
+Setting up nodejs (22.22.2-1nodesource1) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (This frontend requires a controlling tty.)
+debconf: falling back to frontend: Teletype
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+bootstrap complete: v22.22.2, cto user ready
+
+═══ 7 — Populate /opt/cto/.env on VPS ═══
