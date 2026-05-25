@@ -243,7 +243,7 @@ fi
 
 note "Installing Hermes daemon (systemd user service)"
 if ! systemctl --user list-unit-files | grep -q hermes-gateway; then
-  hermes gateway install
+  printf 'n\nn\n' | hermes gateway install
   systemctl --user daemon-reload
 fi
 
@@ -425,8 +425,8 @@ hermes config set max_output_tokens 2000
 hermes config set gateway.port 8642
 hermes config set gateway.bind loopback
 hermes config set api_server.enabled true
-hermes config set api_server.key "${HERMES_API_SERVER_KEY}"
-[ -n "${OPENAI_API_KEY:-}" ] && hermes config set OPENAI_API_KEY "${OPENAI_API_KEY}"
+hermes config set api_server.key "${HERMES_API_SERVER_KEY}" >/dev/null
+[ -n "${OPENAI_API_KEY:-}" ] && hermes config set OPENAI_API_KEY "${OPENAI_API_KEY}" >/dev/null
 
 # Compression: let conversations fill the gpt-5.5 272K context window before
 # auto-summarizing — the 0.5 default fired too eagerly and burned tokens
@@ -488,6 +488,9 @@ CONF
 # chat path breaks (CTO-DECISION-015, 2026-05-24).
 cat > "${HERMES_DROPIN}/30-api-key.conf" <<CONF
 [Service]
+Environment="API_SERVER_ENABLED=1"
+Environment="API_SERVER_HOST=127.0.0.1"
+Environment="API_SERVER_PORT=8642"
 Environment="API_SERVER_KEY=${HERMES_API_SERVER_KEY}"
 CONF
 
@@ -504,7 +507,11 @@ CONF
 # 30 min so OpenAI's prompt cache stays warm and we don't pay the ~45K
 # bootstrap re-warm on every idle gap. The pings travel the real PWA/A2A
 # paths, costing a handful of tokens vs 45K of fresh bootstrap (CTO-DECISION-017).
-install -m 0755 "${CTO_ROOT}/scripts/cache-keepalive.sh" /opt/cto/scripts/cache-keepalive.sh 2>/dev/null || cp "${CTO_ROOT}/scripts/cache-keepalive.sh" /opt/cto/scripts/cache-keepalive.sh
+if [ "${CTO_ROOT}/scripts/cache-keepalive.sh" != "/opt/cto/scripts/cache-keepalive.sh" ]; then
+  install -m 0755 "${CTO_ROOT}/scripts/cache-keepalive.sh" /opt/cto/scripts/cache-keepalive.sh 2>/dev/null || cp "${CTO_ROOT}/scripts/cache-keepalive.sh" /opt/cto/scripts/cache-keepalive.sh
+else
+  chmod 0755 /opt/cto/scripts/cache-keepalive.sh
+fi
 install -m 0644 "${CTO_ROOT}/scripts/systemd/cto-cache-keepalive.service" "${HOME}/.config/systemd/user/cto-cache-keepalive.service"
 install -m 0644 "${CTO_ROOT}/scripts/systemd/cto-cache-keepalive.timer"   "${HOME}/.config/systemd/user/cto-cache-keepalive.timer"
 
