@@ -16,6 +16,7 @@
 | `upstream-pr-needed` | A patch that should go upstream first (less urgent than a fork; PR before fork) | CTO drafts the PR; John approves before submission to upstream |
 | `missing-mcp` | A needed MCP server doesn't exist in the community | CTO researches alternatives; if none, John decides build vs defer |
 | `missing-skill` | A needed skill doesn't exist in OpenClaw's catalogue or Hermes's bundled set | Hermes attempts auto-creation first; if not feasible, logged for John |
+| `security` | A discrete security finding from audit, exposure review, credential hygiene, hardening, or recovery posture | Prioritize by risk; remediate through clone-test-replace or explicit approved hardening |
 
 ## Statuses
 
@@ -38,6 +39,17 @@
 |---|---|---|---|---|---|---|
 | [BACKLOG-001](logs/backlog/BACKLOG-001.json) | 2026-05-11 | missing-skill | P1 | human-interface | Self-hosted PWA at `cto.husband.llc` — A2A2H chat + web-push, no per-clone config | escalated-to-john |
 | [BACKLOG-002](logs/backlog/BACKLOG-002.json) | 2026-05-24 | fork-trigger | P2 | left-hemisphere (openclaw) | Governed OpenClaw self-repair/edit mechanism to replace temporary direct-edit exception | open |
+| [BACKLOG-004](logs/backlog/BACKLOG-004.json) | 2026-05-25 | upstream-pr-needed | P1 | human-interface (A2A2H) | Voice mode for A2A2H PWA — audible CTO reports and spoken replies from John | open |
+| [BACKLOG-005](logs/backlog/BACKLOG-005.json) | 2026-05-25 | security | P0 | core-cto / public repo / PWA push identity | Rotate and scrub VAPID/Web Push private key leaked into repo history | open |
+| [BACKLOG-006](logs/backlog/BACKLOG-006.json) | 2026-05-25 | security | P0 | core-cto / credential hygiene | Rotate live service credentials and remove secret values from operational logs/history | open |
+| [BACKLOG-007](logs/backlog/BACKLOG-007.json) | 2026-05-25 | security | P1 | infrastructure / network perimeter | Add deny-by-default host/cloud firewall policy for CTO servers and clone candidates | open |
+| [BACKLOG-008](logs/backlog/BACKLOG-008.json) | 2026-05-25 | security | P1 | clone-test-replace / attack surface | Quarantine or retire public clone candidates immediately after validation windows | open |
+| [BACKLOG-009](logs/backlog/BACKLOG-009.json) | 2026-05-25 | security | P1 | A2A2H PWA / authentication | Replace URL query-token PWA auth with cookie/session auth and reduce token logging risk | open |
+| [BACKLOG-010](logs/backlog/BACKLOG-010.json) | 2026-05-25 | security | P1 | availability / recovery | Enable backup/snapshot and deletion-protection policy for production CTO state | open |
+| [BACKLOG-011](logs/backlog/BACKLOG-011.json) | 2026-05-25 | security | P2 | host hardening / SSH | Complete privileged SSH/fail2ban hardening verification | open |
+| [BACKLOG-012](logs/backlog/BACKLOG-012.json) | 2026-05-25 | security | P2 | patch management / dependency hygiene | Patch OpenClaw and add dependency/security scanning gates | open |
+| [BACKLOG-013](logs/backlog/BACKLOG-013.json) | 2026-05-25 | security | P0 | A2A2H PWA / authentication and access control | Close PWA chat access-control bug so knowing the chat URL is not sufficient | open |
+| [BACKLOG-014](logs/backlog/BACKLOG-014.json) | 2026-05-25 | upstream-pr-needed | P1 | A2A2H PWA / notifications and background delivery | Reliable background notifications so John can context-switch without missing replies | open |
 
 ## Escalated to John (Awaiting Decision)
 
