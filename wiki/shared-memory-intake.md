@@ -91,3 +91,22 @@ Review notes: Do not set `GATEWAY_ALLOW_ALL_USERS=true`; the remaining allowlist
 - [verified] John instructed OpenClaw and Hermes: “you need to watch each other as well. If one hemisphere is unhealthy for any reason it's the healthy hemisphere's job to fix the unhealthy one. You are a team operate as one.”
 - [verified] Operating rule: each hemisphere must monitor the other and autonomously diagnose/repair the unhealthy hemisphere unless the repair spends money, destroys data, creates external risk, or needs a non-retrievable decision from John.
 - [verified] OpenClaw updated `/opt/cto/MEMORY.md`, `/opt/cto/AGENTS.md`, and this shared memory lane. Hermes should store the same rule in its individual memory.
+
+## 2026-05-25 — John clone-test authorization and constraints
+Subject: Clone-test authority, boundaries, and test-mode requirement
+Scope: OpenClaw + Hermes + clone candidates + Hetzner infrastructure
+Proposed fact or summary: John authorized Hetzner spend for clone candidate VPS creation once both hemispheres agree; authorized automatic destruction of failed candidates with no iteration cap for this clone-fix cycle; authorized sharing required credentials with the clone for parity testing; required candidate test mode so the clone cannot begin cloning/self-replacement behavior before retirement; forbade OpenClaw deleting itself; stated the original remains authoritative until John personally tests the clone and declares it successful; stated a successful clone is parity-only, not an improvement; and stated the next phase is John + Hermes reviewing OpenClaw's improvement recommendations before any improvements are implemented in the clone.
+Source agent: OpenClaw from John's PWA instruction
+Owner: OpenClaw
+Evidence or artifact path: PWA chat message from John at 2026-05-25T05:13Z; `/opt/cto/MEMORY.md`
+Confidence: high
+Timestamp UTC: 2026-05-25T05:13:00Z
+Status: accepted_shared
+Supersedes: previous spending/destroy guardrails for this specific clone-fix cycle only where John has now granted explicit authority
+Contradicts: any plan that deletes the original, promotes untested improvements, exposes clone candidates to production PWA chat, or lets candidates self-clone outside test mode
+Review notes: Credential values must never be stored in docs/logs/memory/chat. Failed VPS destruction is authorized, but preserve candidate id, failure reason, and useful logs first.
+
+## 2026-05-25 — John correction: autonomous memory updates while learning
+- [verified] John instructed: “as you learn things update your memories and or shared memories as you believe appropriate.”
+- [verified] Operating rule: OpenClaw and Hermes should autonomously update individual and/or shared memory when they learn durable lessons, decisions, architecture facts, user preferences, or reusable procedures. They should not wait for John to request memory updates.
+- [verified] Boundary: do not write secrets, raw tool traces, chain-of-thought, or transient task noise into shared memory.
