@@ -9,11 +9,11 @@
 > Required input: `~/.cto-secrets.env` populated with API tokens (see `example.cto-secrets.env`).
 > Zero manual steps outside the script. Memory: `feedback_install_must_be_reproducible_from_repo.md`.
 
-**L0:** Plan for the install. Two hemispheres on one Hetzner VPS: OpenClaw (left, thinking, port 18789) + Hermes (right, doing, port 8642) + A2A registry (port 9000) + **A2A protocol** as both corpus callosum AND eventual comms layer to John (replacing Telegram per CTO-DECISION-006). Both halves on Codex OAuth via one ChatGPT Pro/Business. The wrapper script `scripts/install.sh` provisions a fresh Hetzner VPS, bootstraps it (cto user, Node 22 via NodeSource, /opt/cto, SSH access, `.env` from your secrets, repo clone), then invokes `scripts/install-cto.sh` on the VPS as the cto user. The on-VPS script handles OpenClaw + Hermes install, Codex device-code OAuth, A2A registry setup, daemons, UFW, decision logging, verification gates.
+**L0:** Plan for the install. Two hemispheres on one Hetzner VPS: OpenClaw (left, thinking, port 18789) + Hermes (right, doing, port 8642) + A2A registry (port 9000) + Hermes A2A sidecar (port 8643) + PWA human interface. **A2A protocol** is the corpus callosum and the comms layer to John (replacing Telegram per CTO-DECISION-006). Both halves run on Codex OAuth via one ChatGPT Pro account. The wrapper script `scripts/install.sh` provisions a fresh Hetzner VPS, bootstraps it (cto user, Node 22 via NodeSource, /opt/cto, SSH access, `.env` from your secrets, repo clone), then invokes `scripts/install-cto.sh` on the VPS as the cto user. The on-VPS script handles OpenClaw + Hermes install, Codex device-code OAuth, A2A registry/sidecar/PWA setup, daemons, UFW, decision logging, verification gates.
 
-**L1:** This is a **one-time, human-directed bundled install**, not an autonomous upgrade — SOUL.md #15 ("one material change per cycle") applies to CTO's autonomous upgrade discipline, not the initial human-driven build. Sections: (0) Pre-install conflict analysis; (1) Human-required prereqs (none done yet per John as of 2026-05-11 — remind when ready); (2) Download packages and binaries; (3) Install system prereqs (runtimes, OS tweaks); (4) Install OpenClaw + Hermes + supporting binaries; (5) Configure both halves + publish A2A Agent Cards; (6) Post-config verification + decision log entry. **No Telegram anywhere** — replaced by A2A + human interface (interface implementation is a separate phase, not v1.0 install scope). Full autonomy preserved: no hardening of the autonomy/sandbox layer, per architecture-decisions-john.md #3 and #8.
+**L1:** This is a **one-time, human-directed bundled install**, not an autonomous upgrade — SOUL.md #15 ("one material change per cycle") applies to CTO's autonomous upgrade discipline, not the initial human-driven build. Sections: (0) Pre-install conflict analysis; (1) Human-required prereqs; (2) Download packages and binaries; (3) Install system prereqs (runtimes, OS tweaks); (4) Install OpenClaw + Hermes + supporting binaries; (5) Configure both halves, publish A2A Agent Cards, install the A2A delegate/sidecar/PWA; (6) Post-config verification + decision log entry. **No Telegram anywhere** — replaced by A2A + PWA. Full autonomy preserved: no hardening of the autonomy/sandbox layer, per architecture-decisions-john.md #3 and #8.
 
-**Last updated:** 2026-05-11
+**Last updated:** 2026-05-25
 **Verification:** Primary sources today — docs.openclaw.ai, hermes-agent.nousresearch.com, github.com/Gentleman-Programming/engram, plus CTO docs (wiki/openclaw-setup.md, wiki/codex-oauth-setup.md, architecture-decisions-john.md).
 **Source:** Live web research 2026-05-11 + existing `scripts/install.sh` review.
 
@@ -393,15 +393,18 @@ systemctl --user enable --now cto-a2a-registry
 
 Both Agent Cards published at registry startup. Card JSONs live in `/opt/cto/a2a/registry/cards/`.
 
-### 5.5 Human interface (deferred — separate phase)
-The human-facing interface on top of A2A is out of scope for v1.0 install. v1.0 ships with the A2A registry and both Agent Cards published; the interface (web UI / phone-accessible client) is a v1.1 build. Until it exists, John interacts with CTO via direct A2A calls from his laptop's Claude Code session (already paired via Remote Control).
+### 5.5 Human interface and Hermes A2A sidecar
+The human-facing path is part of the live install: Caddy serves the PWA over HTTPS, `cto-pwa-backend` routes John-addressed traffic, and `cto-hermes-a2a-sidecar` translates A2A-shaped JSON into Hermes API calls. The PWA backend also accepts long-job intent as a detached background job so the chat session stays usable while work continues.
 
 ### 5.6 Verification gate
 ```bash
 openclaw doctor      # schema valid, gateway reachable
 ss -tlnp | grep -E ":18789|:8642"   # both ports bound, loopback
-systemctl --user is-active openclaw-gateway hermes-gateway cto-a2a-registry
+ss -tlnp | grep -E ":8643|:8088"     # sidecar/PWA backend bound locally
+systemctl --user is-active openclaw-gateway hermes-gateway cto-a2a-registry cto-hermes-a2a-sidecar cto-pwa-backend
 curl -s http://127.0.0.1:8642/health   # Hermes health
+curl -s http://127.0.0.1:8643/health   # Hermes A2A sidecar health
+curl -s http://127.0.0.1:8088/api/health # PWA backend health
 curl -s http://127.0.0.1:18789/healthz  # OpenClaw health (if equivalent endpoint exists; confirm during install)
 ```
 
@@ -474,7 +477,7 @@ Every section safe to re-run. Package installs check `command -v` first. Config 
 
 ## What This Replaces
 
-`scripts/install.sh` (OpenClaw-only, OpenRouter-only, last touched 2026-05-03). Archive the old one to `scripts/archive/install-openclaw-only.sh` after the new script validates.
+The old OpenClaw-only/OpenRouter-era installer. Current `scripts/install.sh` is the bundled two-hemisphere Codex installer; no OpenRouter key is carried into the VPS environment.
 
 ## Relationships
 

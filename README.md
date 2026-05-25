@@ -59,18 +59,18 @@ Required input: `~/.cto-secrets.env` populated (see `example.cto-secrets.env`). 
 
 ## How It Works
 
-1. **Daily Research** — CTO autonomously scans GitHub, HN, arXiv, YouTube, changelogs, and the broader web for new AI technologies. OpenClaw plans the research scope; Hermes executes the multi-source synthesis. *(Inter-hemisphere wiring not yet built — see `hemisphere.md` "CURRENT IMPLEMENTATION STATUS".)*
+1. **Daily Research** — CTO autonomously scans GitHub, HN, arXiv, YouTube, changelogs, and the broader web for new AI technologies. OpenClaw plans the research scope; Hermes executes delegated synthesis through the A2A delegate/sidecar path.
 2. **Evaluate** — Filters signal from noise via LLM relevance scoring, determines what's worth integrating.
 3. **Self-Improve (Hermes side, continuous)** — Hermes's GEPA loop reads execution traces and proposes patches to skills, prompts, tool descriptions, and tool implementation code via PRs against the CTO repo. Anything outside Phase 1-4 scope (kernel, memory ABC, gateway core, framework swap) is logged to `BACKLOG.md` for John's review.
 4. **Clone-Test-Replace (macro evolution)** — `scripts/install.sh` provisions a fresh Hetzner VPS, applies the candidate change, runs full test suite on real infrastructure. If tests pass, the candidate becomes the new CTO. If they fail, it iterates or abandons with a documented reason. Hermes-proposed PRs feed this same gate.
 5. **Archive** — Every replaced version is archived with Hetzner snapshots and git tags for instant rollback.
-6. **Report** — Every decision is logged. Daily report (delivered via the A2A-based human interface — see CTO-DECISION-006; *implementation pending*) includes a `BACKLOG.md` summary so John sees capability gaps within 24 hours.
+6. **Report** — Every decision is logged. The A2A/PWA human interface is present on the live VPS; daily reports include a `BACKLOG.md` summary so John sees capability gaps within 24 hours.
 
 ## Architecture
 
 Built on the five-layer model the AI community has converged on:
 
-1. **Brain** — ChatGPT Pro on cto@husband.llc via Codex OAuth on both hemispheres (`openai-codex/gpt-5.5` primary, `gpt-5-mini` for summarization). OpenRouter retired 2026-05-24 [CTO-DECISION-014].
+1. **Brain** — ChatGPT Pro on cto@husband.llc via Codex OAuth on both hemispheres (`openai-codex/gpt-5.5` for primary, fallback, session search, and compression). OpenRouter retired 2026-05-24 [CTO-DECISION-014]; `gpt-5-mini` is not used under ChatGPT-account Codex [CTO-DECISION-015].
 2. **Hands** — Tools via MCP (the universal standard, 139M monthly downloads)
 3. **Memory** — Obsidian vault + SQLite coordination + tiered loading (the moat)
 4. **Spine** — OpenClaw framework + A2A protocol for future multi-agent
@@ -117,7 +117,7 @@ CTO/
 
 ## Status
 
-**Phase: Verification Complete → Ready for Installation**
+**Phase: Live VPS installed; clone-readiness verification in progress**
 
 Two rounds of research (21+ agents), component research (4 agents), verification phase (2 agents + hands-on testing). OpenClaw selected [decision logged]. Five-layer architecture defined from community consensus [verified against multiple sources]. VPS provisioned at 116.203.68.119 (cx43) [verified]. All API keys obtained and verified working. All npm/PyPI packages verified existing. OpenClaw behavior verified against official docs (6 wrong claims found and corrected). Every document tagged with [verified]/[unverified] status. Full assumption audit in wiki/assumption-audit.md.
 

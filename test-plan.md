@@ -4,8 +4,8 @@
 
 **L1:** Test plan companion to `install-plan.md` §6.4. Run after install completes. Each test has an expected output; deviation is a fail. No "looks fine" — every check is a grep/curl/exit-code assertion. If a test fails, the entry-point script halts and writes the failure to `/opt/cto/logs/install/install-failed-<timestamp>.log`. Rollback policy at the bottom.
 
-**Last updated:** 2026-05-11
-**Verification:** Test definitions cross-referenced against install-plan.md §0 conflict resolutions, primary OpenClaw/Hermes docs, and architecture-decisions-john.md.
+**Last updated:** 2026-05-25
+**Verification:** Test definitions cross-referenced against install-plan.md, live systemd units/ports on the CTO VPS, and CTO-DECISION-014/015.
 
 ---
 
@@ -85,11 +85,11 @@ echo "PASS: no Telegram artefacts"
 
 ### 1.7 systemd units present
 ```bash
-systemctl --user list-unit-files | grep -E "openclaw-gateway|hermes-gateway|cto-a2a-registry" \
-  | wc -l | grep -q "^3$" || { echo "FAIL: not all 3 unit files installed"; exit 1; }
+systemctl --user list-unit-files | grep -E "openclaw-gateway|hermes-gateway|cto-a2a-registry|cto-hermes-a2a-sidecar|cto-pwa-backend" \
+  | wc -l | grep -q "^5$" || { echo "FAIL: not all 5 core unit files installed"; exit 1; }
 ```
-**Expected:** Three unit files present.
-**On fail:** Re-run install §4.4, §4.5, §5.4.
+**Expected:** Five core unit files present (gateways, registry, Hermes A2A sidecar, PWA backend).
+**On fail:** Re-run install §4.4, §4.5, §5.4–5.5.
 
 ### 1.8 Linger enabled
 ```bash
@@ -102,33 +102,36 @@ loginctl show-user "$(whoami)" | grep -q "Linger=yes" || exit 1
 
 ## Phase 2 — Service Checks (run by install script after start)
 
-### 2.1 Three daemons active
+### 2.1 Core daemons active
 ```bash
-for svc in openclaw-gateway hermes-gateway cto-a2a-registry; do
+for svc in openclaw-gateway hermes-gateway cto-a2a-registry cto-hermes-a2a-sidecar cto-pwa-backend; do
   systemctl --user is-active "$svc" >/dev/null || { echo "FAIL: $svc not active"; exit 1; }
 done
-echo "PASS: all 3 services active"
+echo "PASS: all core services active"
 ```
-**Expected:** All three active.
+**Expected:** All five active.
 **On fail:** `journalctl --user -u <svc> --since "5 minutes ago"` for the failed service.
 
 ### 2.2 Ports bound (loopback only)
 ```bash
 ss -tlnp | grep -q "127.0.0.1:18789" || { echo "FAIL: OpenClaw 18789 not bound to loopback"; exit 1; }
 ss -tlnp | grep -q "127.0.0.1:8642"  || { echo "FAIL: Hermes 8642 not bound to loopback"; exit 1; }
+ss -tlnp | grep -q "127.0.0.1:8643"  || { echo "FAIL: Hermes A2A sidecar 8643 not bound to loopback"; exit 1; }
 # Confirm neither is bound to 0.0.0.0
-ss -tlnp | grep -E "0\.0\.0\.0:(18789|8642)" && { echo "FAIL: gateway bound to public iface"; exit 1; }
+ss -tlnp | grep -E "0\.0\.0\.0:(18789|8642|8643)" && { echo "FAIL: gateway/sidecar bound to public iface"; exit 1; }
 ```
-**Expected:** Both on 127.0.0.1, neither on 0.0.0.0.
+**Expected:** Gateway and sidecar ports on 127.0.0.1, none on 0.0.0.0.
 **On fail:** Check `gateway.bind: loopback` in both configs; restart services.
 
 ### 2.3 Health endpoints respond
 ```bash
 curl -fsS http://127.0.0.1:8642/health | grep -q '"status":\s*"ok"' || { echo "FAIL: Hermes /health"; exit 1; }
+curl -fsS http://127.0.0.1:8643/health | grep -q '"status"' || { echo "FAIL: Hermes A2A sidecar /health"; exit 1; }
+curl -fsS http://127.0.0.1:8088/api/health | grep -q '"status":\s*"ok"' || { echo "FAIL: PWA backend /api/health"; exit 1; }
 # OpenClaw health — verify exact endpoint during install (typically /healthz or /api/health)
 openclaw status | grep -qi "running\|healthy" || { echo "FAIL: OpenClaw status"; exit 1; }
 ```
-**Expected:** Hermes returns `{"status": "ok"}`, OpenClaw status reports running/healthy.
+**Expected:** Hermes, Hermes A2A sidecar, and PWA backend health endpoints respond; OpenClaw status reports running/healthy.
 **On fail:** Check logs via `journalctl --user -u <service>`.
 
 ### 2.4 UFW status
@@ -153,15 +156,15 @@ curl -fsS http://127.0.0.1:<registry_port>/cards | grep -qE "openclaw|hermes"
 
 ---
 
-## Phase 3 — Functional Check (run manually by John after install)
+## Phase 3 — Functional Check (run manually after install)
 
-> **2026-05-11 update — Phase 3 is currently UNRUNNABLE on v1.0 install.** Inter-hemisphere delegation (the thing tested by §3.1 below) is not wired: neither agent has an `a2a_delegate` tool or any reference to the other hemisphere. See `hemisphere.md` "CURRENT IMPLEMENTATION STATUS" section. The Phase 3 tests below describe the INTENDED behavior once the wiring is built; they will return false negatives if run today.
+> **2026-05-25 update:** Phase 3 is runnable on the live stack. OpenClaw has an `a2a-delegate` MCP server, Hermes has the A2A sidecar on `127.0.0.1:8643`, and the PWA backend can route John-addressed traffic to either hemisphere. Long-job intent is accepted as a detached PWA background job.
 
 The canonical first-real-prompt: a single prompt that exercises decomposition → delegation → execution → synthesis → return.
 
 ### 3.1 Canonical bidirectional delegation test
 
-**Test prompt** (sent to OpenClaw via Claude Code Remote Control / direct A2A call):
+**Test prompt** (sent to OpenClaw via PWA or direct OpenClaw session):
 
 > "Identify what shipped in the Hermes Agent project in the last 7 days — pull from the GitHub releases feed and the CHANGELOG. Categorise by area (features / fixes / security / docs). Return a short structured summary."
 
@@ -172,7 +175,7 @@ The canonical first-real-prompt: a single prompt that exercises decomposition �
 4. OpenClaw synthesises the structured output into a human-readable summary and returns it.
 
 **Expected outcome:**
-- Response time: < 60 seconds
+- Response time: < 60 seconds for short prompts; long-job prompts may return HTTP 202/background job ID first
 - Output: structured summary with at least 3 categories populated
 - Both hemispheres show activity in their respective logs
 - A2A audit log (`/opt/cto/a2a/registry/audit.log`) shows at least one OpenClaw → Hermes delegation entry
@@ -185,8 +188,9 @@ test -s /opt/cto/a2a/registry/audit.log
 grep -q "openclaw.*->.*hermes" /opt/cto/a2a/registry/audit.log
 
 # 2. Both daemons logged work
-journalctl --user -u openclaw-gateway --since "2 minutes ago" | grep -q "delegate"
-journalctl --user -u hermes-gateway --since "2 minutes ago" | grep -q "tool_call\|skill"
+journalctl --user -u openclaw-gateway --since "2 minutes ago" | grep -qi "delegate\|a2a"
+journalctl --user -u cto-hermes-a2a-sidecar --since "2 minutes ago" | grep -qi "a2a\|task\|POST"
+journalctl --user -u hermes-gateway --since "2 minutes ago" | grep -qi "chat\|completion\|tool_call\|skill"
 
 # 3. The response from OpenClaw mentions both fetched data and categorisation
 # (asserted by John reading the output)
@@ -196,7 +200,7 @@ journalctl --user -u hermes-gateway --since "2 minutes ago" | grep -q "tool_call
 ```bash
 # A trivial prompt to each side, observe both call openai-codex
 openclaw run "what is 2+2"
-hermes run "what is 2+2"   # confirm exact command
+hermes run "what is 2+2"
 # Look at journalctl for both — confirm openai-codex provider invoked
 ```
 **Pass criteria:** Both responses arrive, both logs show `openai-codex` provider in use.
@@ -238,11 +242,10 @@ If Phase 3 fails after Phase 1+2 passed: the wiring is wrong between hemispheres
 
 ## What This Plan Does NOT Test (deferred to v1.1)
 
-- Hermes Phase 1-4 self-evolution loop generating PRs (not installed v1.0)
-- Long-horizon execution (multi-minute or longer tasks)
+- Hermes Phase 1-4 self-evolution loop generating PRs end-to-end
+- Full long-horizon execution reliability beyond the PWA detached background-job handoff
 - Shared budget meter / rate-limit awareness layer
-- The human interface on top of A2A
-- Daily research cycle end-to-end (HEARTBEAT.md target — not yet implemented)
+- Daily research cycle end-to-end beyond heartbeat/watchers
 - Macro-evolution clone-test-replace cycle on a fresh VPS
 
 These are tested in subsequent upgrade cycles, one at a time per SOUL.md #15.
