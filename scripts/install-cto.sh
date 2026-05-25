@@ -225,12 +225,13 @@ hcloud version
 note "Installing OpenClaw daemon (systemd user service)"
 # Onboard only if not already onboarded
 if ! systemctl --user list-unit-files | grep -q openclaw-gateway; then
-  # OpenRouter retired (CTO-DECISION-014) — use --skip-auth for onboard; Codex OAuth
+  # OpenRouter retired (CTO-DECISION-014) — skip auth during onboard; Codex OAuth
   # is registered separately in Section 5 once ~/.codex/auth.json is populated by
-  # the upstream Codex CLI device-code flow.
+  # the upstream Codex CLI device-code flow. OpenClaw 2026.5.22 uses
+  # --auth-choice skip rather than the removed --skip-auth flag.
   openclaw onboard --non-interactive --accept-risk \
     --mode local \
-    --skip-auth \
+    --auth-choice skip \
     --gateway-port 18789 \
     --gateway-bind loopback \
     --install-daemon \
