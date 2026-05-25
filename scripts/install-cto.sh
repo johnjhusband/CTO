@@ -59,7 +59,8 @@ set +a
 
 # Optional but recommended
 [ -z "${OPENAI_API_KEY:-}" ] && note "OPENAI_API_KEY not set — embeddings will be unavailable"
-[ -z "${OPENROUTER_API_KEY:-}" ] && note "OPENROUTER_API_KEY not set — no LLM fallback configured"
+# OpenRouter retired 2026-05-24 (CTO-DECISION-014). Both hemispheres run on Codex
+# (cto@husband.llc Pro) only. No fallback configured here on purpose.
 [ -z "${BRAVE_API_KEY:-}" ] && note "BRAVE_API_KEY not set — Brave search MCP will fail at runtime"
 
 note "Env vars present"
@@ -224,10 +225,12 @@ hcloud version
 note "Installing OpenClaw daemon (systemd user service)"
 # Onboard only if not already onboarded
 if ! systemctl --user list-unit-files | grep -q openclaw-gateway; then
+  # OpenRouter retired (CTO-DECISION-014) — use --skip-auth for onboard; Codex OAuth
+  # is registered separately in Section 5 once ~/.codex/auth.json is populated by
+  # the upstream Codex CLI device-code flow.
   openclaw onboard --non-interactive --accept-risk \
     --mode local \
-    --auth-choice "openrouter-api-key" \
-    --openrouter-api-key "${OPENROUTER_API_KEY:-placeholder}" \
+    --skip-auth \
     --gateway-port 18789 \
     --gateway-bind loopback \
     --install-daemon \
@@ -323,24 +326,25 @@ mkdir -p "${OPENCLAW_DIR}"
 cat > "${OPENCLAW_DIR}/openclaw.json" <<JSON
 {
   "env": {
-    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY:-}",
     "GITHUB_TOKEN": "${GITHUB_TOKEN}",
     "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}",
     "BRAVE_API_KEY": "${BRAVE_API_KEY:-}",
     "OPENAI_API_KEY": "${OPENAI_API_KEY:-}"
   },
   "gateway": { "mode": "local", "bind": "loopback", "auth": { "mode": "token" }, "port": 18789 },
-  "plugins": { "entries": { "bonjour": { "enabled": false } } },
+  "plugins": { "entries": { "bonjour": { "enabled": false }, "openai": { "enabled": true } } },
   "agents": {
     "defaults": {
       "workspace": "${CTO_ROOT}",
       "model": {
         "primary": "openai-codex/gpt-5.5",
-        "fallbacks": ["openrouter/openrouter/auto"]
+        "fallbacks": []
       },
       "thinkingDefault": "adaptive",
       "sandbox": { "mode": "off" },
-      "memorySearch": { "extraPaths": ["${CTO_ROOT}/wiki", "${CTO_ROOT}/logs/decisions"] }
+      "memorySearch": { "extraPaths": ["${CTO_ROOT}/wiki", "${CTO_ROOT}/logs/decisions"] },
+      "bootstrapMaxChars": 16000,
+      "bootstrapTotalMaxChars": 120000
     }
   },
   "mcp": {
@@ -371,14 +375,30 @@ note "Validating OpenClaw config"
 openclaw doctor || fail "openclaw doctor reported errors — see ${LOG_FILE}"
 
 note "Writing Hermes config"
-# Hermes model — uses ChatGPT Business via Codex OAuth (CTO-DECISION-008).
-# After fresh install, one-time human prereq: from a laptop terminal run
-#   ssh -tt cto@<VPS_IP> 'PATH=$HOME/.local/bin:$PATH hermes auth add openai-codex --type oauth --no-browser'
-# Approve the device code in a browser, then this default works. Until that
-# OAuth is wired, Hermes falls back to openrouter/free if OPENROUTER_API_KEY
-# is set (works out of the box, free tier rate-limited).
+# Hermes model — Codex OAuth via cto@husband.llc Pro (CTO-DECISION-013, 2026-05-24).
+# Codex CLI device-code flow above populated ~/.codex/auth.json; Hermes consumes
+# it directly. Summarization fallback is openai-codex/gpt-5-mini (CTO-DECISION-014,
+# 2026-05-24) — was openrouter/free, removed entirely with all other OR refs.
 hermes config set model.default "${HERMES_MODEL:-gpt-5.5}"
 hermes config set model.provider "${HERMES_PROVIDER:-openai-codex}"
+# fallback_model must be a dict (provider+model), not a string — Hermes warns at
+# startup otherwise. gpt-5-mini is rejected under ChatGPT-account Codex
+# ('The gpt-5-mini model is not supported when using Codex with a ChatGPT
+# account.') so the fallback model must also be gpt-5.5 (CTO-DECISION-015,
+# 2026-05-24).
+hermes config set fallback_model.provider openai-codex
+hermes config set fallback_model.model gpt-5.5
+# Auxiliary tasks (session_search, compression) — pin them at the main model
+# to bypass the hardcoded openrouter->nous->custom->api-key fallback chain in
+# agent/auxiliary_client.py that has no working provider after we retired OR.
+# 60s timeout (default 30s) so transient codex peer-closed errors do not
+# cascade into 'no fallback available' retry storms (CTO-DECISION-015).
+hermes config set auxiliary.session_search.provider openai-codex
+hermes config set auxiliary.session_search.model gpt-5.5
+hermes config set auxiliary.session_search.timeout 60
+hermes config set auxiliary.compression.provider openai-codex
+hermes config set auxiliary.compression.model gpt-5.5
+hermes config set auxiliary.compression.timeout 60
 hermes config set max_output_tokens 2000
 hermes config set gateway.port 8642
 hermes config set gateway.bind loopback
@@ -386,15 +406,50 @@ hermes config set api_server.enabled true
 hermes config set api_server.key "${HERMES_API_SERVER_KEY}"
 [ -n "${OPENAI_API_KEY:-}" ] && hermes config set OPENAI_API_KEY "${OPENAI_API_KEY}"
 
-# Hermes only reads ~/.hermes/.env (not /opt/cto/.env). Mirror provider keys
-# so Hermes can authenticate to OpenRouter for chat. CTO-DECISION-012.
-for KEY in OPENROUTER_API_KEY OPENAI_API_KEY; do
+# Hermes only reads ~/.hermes/.env (not /opt/cto/.env). Mirror the embeddings key.
+# OpenRouter retired (CTO-DECISION-014) — only OPENAI_API_KEY mirrors now.
+for KEY in OPENAI_API_KEY; do
   VAL=$(grep "^${KEY}=" "${CTO_ROOT}/.env" 2>/dev/null | head -1)
   if [ -n "${VAL}" ] && ! grep -q "^${KEY}=" "${HOME}/.hermes/.env" 2>/dev/null; then
     echo "${VAL}" >> "${HOME}/.hermes/.env"
   fi
 done
 chmod 0600 "${HOME}/.hermes/.env" 2>/dev/null || true
+
+# Hermes autonomy gate: this is a headless VPS; John is never on it; the
+# architecture is fully autonomous (architecture-decisions-john.md #3,
+# HERMES_ROLE.md Failure Handling). Without HERMES_YOLO_MODE=1, Hermes will block
+# on its built-in approval prompts for things like systemctl restart of cto-*
+# units that it legitimately needs to do (e.g., heartbeat watcher restarting a
+# crashed gateway). Wire it via a systemd drop-in so it survives Hermes restarts.
+HERMES_DROPIN="${HOME}/.config/systemd/user/hermes-gateway.service.d"
+mkdir -p "${HERMES_DROPIN}"
+cat > "${HERMES_DROPIN}/10-autonomy.conf" <<'CONF'
+# Per architecture-decisions-john.md #3 + HERMES_ROLE.md Failure Handling:
+# Hermes runs fully autonomously; bypass the approval gate in tools/approval.py.
+[Service]
+Environment="HERMES_YOLO_MODE=1"
+CONF
+
+# Hermes also reads API_SERVER_KEY from env (not from the api_server.key config
+# path — that's at a different schema location). Without this, Hermes refuses
+# every X-Hermes-Session-Key from the sidecar with HTTP 403 and the entire PWA
+# chat path breaks (CTO-DECISION-015, 2026-05-24).
+cat > "${HERMES_DROPIN}/30-api-key.conf" <<CONF
+[Service]
+Environment="API_SERVER_KEY=${HERMES_API_SERVER_KEY}"
+CONF
+
+# Sidecar must send the matching Bearer token. Read as HERMES_API_SERVER_KEY by
+# services/hermes_a2a_sidecar/server.py (line 41).
+SIDECAR_DROPIN="${HOME}/.config/systemd/user/cto-hermes-a2a-sidecar.service.d"
+mkdir -p "${SIDECAR_DROPIN}"
+cat > "${SIDECAR_DROPIN}/10-api-key.conf" <<CONF
+[Service]
+Environment="HERMES_API_SERVER_KEY=${HERMES_API_SERVER_KEY}"
+CONF
+
+systemctl --user daemon-reload
 
 # Hermes shared-memory: configure engram as an MCP server Hermes can consume
 # (same DB OpenClaw uses, so cross-hemisphere knowledge is one corpus).

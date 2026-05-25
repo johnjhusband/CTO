@@ -75,8 +75,9 @@ The bootstrap script handles every step that can be automated. The human-only pr
 3. **Hetzner Cloud API token** at console.hetzner.cloud (Read & Write).
 4. **SSH key registered with Hetzner** (named `cto-agent-deploy` by default; matches `~/.ssh/cto-deploy` private key).
 5. **(Optional) OpenAI API key** for embeddings — pennies/month.
-6. **(Optional) OpenRouter API key with $5+ credits** as Codex fallback.
-7. **(Optional) Brave Search API key** for the brave-search MCP.
+6. **(Optional) Brave Search API key** for the brave-search MCP.
+
+OpenRouter is no longer used and no longer required at any stage (CTO-DECISION-014, 2026-05-24). Both hemispheres run on Codex (cto@husband.llc Pro) only.
 
 ### 1.2 Populate `~/.cto-secrets.env` on the host that runs `scripts/install.sh`
 Copy `example.cto-secrets.env` from the repo, fill the values, chmod 0600. That's the single input to the install script.
@@ -217,12 +218,11 @@ hermes --version  # expect v0.13.0+ as of 2026-05-11
 
 ### 4.4 OpenClaw daemon (systemd user service)
 ```bash
-# OAuth provider deferred to Section 5. Use OpenRouter (optional fallback) for onboard so it succeeds.
+# OAuth provider deferred to Section 5. Onboard with --skip-auth (CTO-DECISION-014, 2026-05-24).
 # --skip-bootstrap prevents OpenClaw from generating its own SOUL.md/AGENTS.md/etc.
 openclaw onboard --non-interactive \
   --mode local \
-  --auth-choice "openrouter-api-key" \
-  --openrouter-api-key "${OPENROUTER_API_KEY:-noop}" \
+  --skip-auth \
   --gateway-port 18789 \
   --gateway-bind loopback \
   --install-daemon \
@@ -273,8 +273,10 @@ systemctl --user list-unit-files | grep -E "openclaw|hermes" || { echo "FAIL: ga
 ```bash
 # Step 1 — ONE device-code flow via upstream Codex CLI
 codex login --device-auth
-# Prints URL + 8-char code. John opens URL on phone, signs into Business workspace,
-# enters code, clicks Authorize. ~/.codex/auth.json is now populated.
+# Prints URL + 8-char code. John opens URL on phone signed in as cto@husband.llc Pro
+# (per CTO-DECISION-013), enters code, clicks Authorize. ~/.codex/auth.json now holds
+# the cto@husband.llc Pro tokens. Device Code Authorization must be ON in that account's
+# Security Settings first — see wiki/codex-oauth-setup.md Prerequisites.
 
 # Token sanity check
 jq '{auth_mode, last_refresh, has_access_token: ((.tokens.access_token // "") != "")}' ~/.codex/auth.json
@@ -298,7 +300,6 @@ Full reference in `wiki/openclaw-setup.md`. Key blocks below — **no Telegram (
 ```json
 {
   "env": {
-    "OPENROUTER_API_KEY": "${OPENROUTER_API_KEY}",
     "GITHUB_TOKEN": "${GITHUB_TOKEN}",
     "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}",
     "BRAVE_API_KEY": "${BRAVE_API_KEY}",
@@ -306,17 +307,19 @@ Full reference in `wiki/openclaw-setup.md`. Key blocks below — **no Telegram (
   },
   "gateway": { "bind": "loopback", "auth": { "mode": "token" }, "port": 18789 },
   "skills": { "autoInstall": false },
-  "plugins": { "entries": { "bonjour": { "enabled": false } } },
+  "plugins": { "entries": { "bonjour": { "enabled": false }, "openai": { "enabled": true } } },
   "agents": {
     "defaults": {
       "workspace": "/opt/cto",
       "model": {
         "primary": "openai-codex/gpt-5.5",
-        "fallbacks": ["openrouter/openrouter/auto"]
+        "fallbacks": []
       },
       "thinkingDefault": "adaptive",
       "sandbox": { "mode": "off" },
-      "memorySearch": { "extraPaths": ["/opt/cto/wiki", "/opt/cto/logs/decisions"] }
+      "memorySearch": { "extraPaths": ["/opt/cto/wiki", "/opt/cto/logs/decisions"] },
+      "bootstrapMaxChars": 16000,
+      "bootstrapTotalMaxChars": 120000
     }
   },
   "mcp": {

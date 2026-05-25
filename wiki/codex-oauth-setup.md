@@ -1,21 +1,19 @@
-# OpenClaw + Hermes + Codex OAuth (Business or Pro)
-**L0:** ChatGPT **Business** ($30/seat — what John has) AND Pro ($200/mo) both work with OpenClaw and Hermes via Codex OAuth. Headless VPS uses device-code flow. For Business: enable BOTH "Allow members to use Codex Local" AND "Enable device code authentication for Codex CLI" in workspace admin at chatgpt.com/admin/settings. Embeddings not included — need separate OPENAI_API_KEY.
-**L1:** Per CTO-DECISION-008 (2026-05-11), primary is John's existing **Business standard seat** at $30/month — Pro on a separate email is the escape if observed Business Codex quotas constrain operation. OpenAI explicitly allows subscription access through OpenClaw and Hermes — use `openai-codex` provider, authenticate via device-code flow on headless VPS. Business and Pro both support the same auth path; quota tiers differ. Documented Business Codex 5-hour quotas: GPT-5.4-mini 1,200-7,000 local msgs / 5h; GPT-5.3-Codex 600-3,000 local + 200-1,200 cloud / 5h; GPT-5.4 400-2,000 / 5h. Pro $200 = 20× Plus equivalent (typically higher than Business). Known bugs: store:true rejection, stale OAuth profiles. **No PAYG Codex seats** per John's no-accidental-overspend policy.
-**Last updated:** 2026-05-11
-**Verification:** Business quotas verified at OpenAI Codex rate card 2026-05-11. Both hemispheres' provider support verified at primary docs (docs.openclaw.ai/providers/openai, hermes-agent.nousresearch.com/docs/integrations/providers).
+# OpenClaw + Hermes + Codex OAuth (Pro — dedicated cto@husband.llc account)
+**L0:** Primary auth as of 2026-05-24 is **ChatGPT Pro on `cto@husband.llc`** (dedicated, separate from John's personal Business workspace). Headless VPS uses device-code flow. Enable **Device Code Authorization** in cto@husband.llc Security Settings before running `codex login --device-auth`. Embeddings not included — need separate OPENAI_API_KEY.
+**L1:** Per CTO-DECISION-013 (2026-05-24), the auth account is the dedicated Pro subscription on `cto@husband.llc`. This exercises the documented Pro-escape clause from CTO-DECISION-008. Pro $200 ≈ 20× Plus quota — significantly above Business standard-seat quotas. OpenAI explicitly allows subscription access through OpenClaw and Hermes via `openai-codex` provider. Known bugs to watch: store:true rejection, stale OAuth profiles. **No PAYG Codex seats** per John's no-accidental-overspend policy.
+**Last updated:** 2026-05-24
+**Verification:** Both hemispheres' provider support verified at primary docs (docs.openclaw.ai/providers/openai, hermes-agent.nousresearch.com/docs/integrations/providers). Pro device-code-auth toggle path verified in OpenAI account UI 2026-05-24.
 
-## Prerequisites (Business plan — what John has)
-1. **ChatGPT Business** subscription — $30/seat/month [John already pays this — CTO-DECISION-008]
-2. **Workspace admin toggles** — both must be ON at https://chatgpt.com/admin/settings → Settings and Permissions:
-   - "Allow members to use Codex Local"
-   - "Enable device code authentication for Codex CLI"
-   - Wait up to 10 minutes after enabling for propagation [verified — OpenAI Codex Admin Setup docs]
+## Prerequisites (Pro plan on `cto@husband.llc` — PRIMARY)
+1. **ChatGPT Pro subscription** on `cto@husband.llc` ($200/mo) — created by John 2026-05-24 [CTO-DECISION-013]
+2. Enable **Device Code Authorization** in `cto@husband.llc` Security Settings (https://chatgpt.com → signed in as cto@husband.llc → Settings → Security → Device Code Authorization toggle ON). This is an individual user-level setting, NOT a workspace toggle. Without it, `codex login --device-auth` returns an authorization error.
 3. OpenClaw v2026.4.22+ [verified — device-code flow added in this version]
 4. Hermes Agent v0.13.0+ (for `openai-codex` provider support) [verified — Hermes providers docs]
 
-## Prerequisites (Pro plan — future escape path, on a separate email)
-1. ChatGPT Pro subscription ($200/mo) — created manually at chatgpt.com/pricing **on a different email from the Business workspace** (Pro and Business cannot coexist on one email if no Personal workspace exists)
-2. Enable **Device Code Authorization** in ChatGPT Security Settings (individual user-level setting; not the Business workspace toggle)
+## Prerequisites (Business plan on `john@husband.llc` — RETIRED for CTO use)
+John retains this seat for his personal use. Kept here for the rollback path. To rollback: restore `~/.codex/auth.json.bak-john-business-*` on cto-vps; no other changes needed since the OAuth mechanism is identical.
+1. ChatGPT Business — $30/seat/month
+2. Workspace admin toggles at https://chatgpt.com/admin/settings → Settings and Permissions: both "Allow members to use Codex Local" and "Enable device code authentication for Codex CLI" ON
 3. OpenClaw v2026.4.22+, Hermes v0.13.0+
 
 ## Authentication Flow (Headless VPS — verified 2026-05-11)
@@ -25,8 +23,8 @@
 ```bash
 # 1) ONE device-code flow via upstream Codex CLI
 codex login --device-auth
-# Prints URL + 8-char code. Approve on phone — select Business workspace.
-# Result: ~/.codex/auth.json populated.
+# Prints URL + 8-char code. John opens URL signed in as cto@husband.llc, enters code, clicks Authorize.
+# Result: ~/.codex/auth.json populated with the cto@husband.llc Pro tokens.
 
 # 2) Verify the token landed
 jq '{auth_mode, last_refresh, has_access_token: ((.tokens.access_token // "") != "")}' ~/.codex/auth.json

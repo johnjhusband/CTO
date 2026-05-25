@@ -50,6 +50,23 @@ body { display: flex; flex-direction: column; }
 .msg.hermes   { border-color: var(--hermes); }
 .msg.system   { border-color: var(--system); opacity: 0.7; font-size: 0.85em; }
 .msg.a2a      { background: #0e0e1a; opacity: 0.85; font-size: 0.85em; }
+
+/* A2A / JSON visibility toggles in the topbar. State stored in localStorage
+   and applied as body classes; CSS does the hiding so there's no re-render. */
+.topbar .toggles {
+  display: flex; gap: 0.7em; font-size: 0.8em; color: var(--muted);
+}
+.topbar .toggles label {
+  display: flex; align-items: center; gap: 0.25em;
+  cursor: pointer; user-select: none;
+}
+.topbar .toggles input { margin: 0; cursor: pointer; }
+
+/* Default: a2a rows hidden. The body gets `.show-a2a` when toggle is on. */
+body:not(.show-a2a) .msg.a2a { display: none; }
+/* Within visible a2a rows, hide the JSON body unless `.show-json` is set.
+   Keep the meta (sender / kind / time) visible so the user can see traffic happened. */
+body:not(.show-json) .msg.a2a .msg-content { display: none; }
 .msg-meta {
   font-size: 0.75em; color: var(--muted);
   margin-bottom: 0.3em;

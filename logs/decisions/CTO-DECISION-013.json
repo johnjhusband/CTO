@@ -1,0 +1,34 @@
+{
+  "id": "CTO-DECISION-013",
+  "timestamp": "2026-05-24T00:00:00Z",
+  "version_before": "0.2.0",
+  "version_after": "0.2.1",
+  "technology": "LLM auth account: ChatGPT Pro on cto@husband.llc (dedicated, separate email) — exercising the documented Pro-escape path from CTO-DECISION-008",
+  "source": "John's directive 2026-05-24: 'I have created a new openai pro account. The user name is cto@husband.llc. Update hermes to use oauth for this account.'",
+  "category": "llm-provider",
+  "architecture_layer": "brain",
+  "action": "adopted",
+  "supersedes_scope_of": "CTO-DECISION-008 — auth account changes from john@husband.llc Business ($30/seat) to cto@husband.llc Pro ($200/mo). The Codex OAuth mechanism and openai-codex provider on both hemispheres are unchanged.",
+  "summary": "CTO operates against a dedicated ChatGPT Pro subscription on cto@husband.llc (separate from John's personal/Business workspace under john@husband.llc). Both hemispheres consume ~/.codex/auth.json populated by codex login --device-auth on the VPS. John's personal Business seat is retained for his own use but is no longer the CTO auth path.",
+  "rationale": "CTO-DECISION-008 designated Pro on a separate email as the documented escape if Business quotas constrained operation. John has now created that account and authorized the switch. The escape clause being exercised is consistent with the decision chain — not a contradiction of it. Clean ownership separation: CTO's auth state belongs to CTO's account, not John's personal account.",
+  "evaluation": {
+    "what_it_makes_obsolete": "Business seat as the primary CTO auth path. Existing docs that name john@husband.llc Business as primary (MEMORY.md, install-plan.md, wiki/codex-oauth-setup.md) must be updated to name cto@husband.llc Pro.",
+    "cost_of_switching": "+$170/mo gross ($200 Pro − $30 Business that John keeps for himself = $200 net new since Business is preserved for John's personal use). Documentation updates across the same files updated in CTO-DECISION-008. One-time: re-run device-code OAuth flow on VPS with cto@husband.llc credentials.",
+    "monthly_cost": "$200/mo Pro (new) + $30/mo Business (retained for John, NOT charged to CTO). Embeddings still require separate small OPENAI_API_KEY (pennies).",
+    "material_change": true
+  },
+  "test_results": {
+    "tested": false,
+    "notes": "Pending: codex login --device-auth on cto-vps with cto@husband.llc authorization. Verification: jq decode of .tokens.id_token payload should show email=cto@husband.llc."
+  },
+  "rollback": {
+    "instructions": "Restore ~/.codex/auth.json.bak-john-business-20260524-131845 on cto-vps (created prior to swap). Both hemispheres pick up the prior auth state automatically on next request."
+  },
+  "related_docs": [
+    "MEMORY.md (LLM line)",
+    "wiki/codex-oauth-setup.md (Prerequisites + L0/L1 — re-prioritise Pro as primary)",
+    "install-plan.md (§5.1 Codex OAuth — note cto@husband.llc account)",
+    "logs/decisions/CTO-DECISION-008.json (the escape clause this exercises)",
+    "logs/decisions/CTO-DECISION-005.json (two-hemisphere context — auth state is shared)"
+  ]
+}

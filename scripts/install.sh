@@ -26,8 +26,8 @@
 #     GITHUB_TOKEN=...        # or gh auth will be used if gh CLI is installed
 #   Optional in same file:
 #     OPENAI_API_KEY=...      # for embeddings
-#     OPENROUTER_API_KEY=...  # fallback LLM
 #     BRAVE_API_KEY=...       # Brave web-search MCP
+# OpenRouter retired 2026-05-24 (CTO-DECISION-014). Do NOT set OPENROUTER_API_KEY.
 
 set -euo pipefail
 
@@ -79,7 +79,7 @@ fi
 
 # Optional secrets — warn if absent but don't fail
 [ -z "${OPENAI_API_KEY:-}" ]     && note "OPENAI_API_KEY not set — embeddings unavailable on CTO"
-[ -z "${OPENROUTER_API_KEY:-}" ] && note "OPENROUTER_API_KEY not set — no LLM fallback"
+# OpenRouter retired 2026-05-24 (CTO-DECISION-014). No LLM fallback configured.
 [ -z "${BRAVE_API_KEY:-}" ]      && note "BRAVE_API_KEY not set — Brave search MCP will fail at runtime"
 
 # Auto-generate the Hermes API server key
@@ -241,7 +241,7 @@ section "7 — Populate /opt/cto/.env on VPS"
   # These will be filled in by install-cto.sh on the VPS if absent.
   # We don't pre-generate them on the laptop so they live on the VPS only.
   [ -n "${OPENAI_API_KEY:-}" ]     && echo "OPENAI_API_KEY=${OPENAI_API_KEY}"
-  [ -n "${OPENROUTER_API_KEY:-}" ] && echo "OPENROUTER_API_KEY=${OPENROUTER_API_KEY}"
+  # OPENROUTER_API_KEY intentionally NOT carried — retired in CTO-DECISION-014.
   [ -n "${BRAVE_API_KEY:-}" ]      && echo "BRAVE_API_KEY=${BRAVE_API_KEY}"
 } | ssh "${SSH_OPTS[@]}" "cto@${VPS_IP}" 'cat > /opt/cto/.env && chmod 0600 /opt/cto/.env'
 

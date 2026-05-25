@@ -6,7 +6,7 @@
 - **Architecture:** **Two-hemisphere brain** on Hetzner VPS — OpenClaw (left, thinking) + Hermes Agent (right, doing) + A2A protocol (corpus callosum) [adopted 2026-05-11, see hemisphere.md and CTO-DECISION-005]
 - **VPS:** 116.203.68.119 [installed and running OpenClaw side]
 - **Status:** OpenClaw INSTALLED AND OPERATIONAL on VPS. Hermes installation pending. Gateway running via systemd. Telegram connected.
-- **LLM:** Both hemispheres on Codex OAuth via John's existing **ChatGPT Business standard seat** ($30/seat — Codex Local + device-code-auth enabled in workspace admin). Pro on a separate email is the documented escape only if Business quotas constrain operation. Embeddings require separate OPENAI_API_KEY (pennies). [decision CTO-DECISION-008, superseding the Pro $200 scope of architecture-decisions-john.md #2]
+- **LLM:** Both hemispheres on Codex OAuth via the dedicated **ChatGPT Pro account `cto@husband.llc`** ($200/mo, separate email from john@husband.llc Business). Embeddings require separate OPENAI_API_KEY (pennies). [decision CTO-DECISION-013, 2026-05-24 — exercising the documented Pro-escape path from CTO-DECISION-008. Business seat under john@husband.llc remains valid for John's personal use but is no longer the CTO auth path.]
 - **First response:** 2026-04-27 via Telegram. Installation verified working.
 - **Architecture pattern:** Five-layer (Brain/Hands/Memory/Spine/Guardrails) mapped onto the two hemispheres [verified — community consensus]
 

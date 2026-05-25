@@ -1,0 +1,35 @@
+{
+  "id": "CTO-DECISION-015",
+  "timestamp": "2026-05-25T00:20:00Z",
+  "version_before": "0.2.2",
+  "version_after": "0.2.3",
+  "technology": "Hermes API-key wiring + auxiliary client pinned at Codex (A2A2H reliability fix)",
+  "source": "John's directive 2026-05-25 after observing every PWA→Hermes chat failing with HTTP 502 / 403: 'fix hermes', then 'Also fix the bugs with herme's llm calls we discussed earlier'",
+  "category": "infrastructure + agent-runtime",
+  "architecture_layer": "spine",
+  "action": "adopted",
+  "supersedes_scope_of": "Partial coverage of CTO-DECISION-014. The auxiliary client fix completes the OpenRouter retirement (CTO-DECISION-014 set fallback_model in config but the auxiliary client ignores that field; this decision pins the auxiliary at openai-codex via auxiliary.session_search.* and auxiliary.compression.* config which the auxiliary DOES honor).",
+  "summary": "Two-part fix to make A2A2H reliable after Hermes self-activated session-key authentication. (1) API-key wiring: Hermes' api_server.key sat in config.yaml but Hermes actually reads API_SERVER_KEY from env (or platforms.api_server.key in config — different schema location than the top-level api_server.key set by install-cto.sh). The cto-hermes-a2a-sidecar also sends Authorization: Bearer ${HERMES_API_SERVER_KEY} but its systemd unit had no such env var. Result: every sidecar→Hermes call 403'd with 'X-Hermes-Session-Key requires API key authentication'. Fix: two systemd drop-ins — ~/.config/systemd/user/hermes-gateway.service.d/30-api-key.conf sets API_SERVER_KEY, ~/.config/systemd/user/cto-hermes-a2a-sidecar.service.d/10-api-key.conf sets HERMES_API_SERVER_KEY. Both populated from the same value (HERMES_API_SERVER_KEY in /opt/cto/.env). Both services restarted. End-to-end verified via PWA chat. (2) Auxiliary client retry storms: Hermes' tools/session_search_tool.py and the compression auxiliary use agent/auxiliary_client.py which has a hardcoded provider fallback chain (openrouter→nous→local/custom→api-key) when the main provider hits a connection error. With OpenRouter retired (CTO-DECISION-014) and nothing else configured, every transient codex peer-closed or 30s timeout triggered 3 retries × 4 providers × failure cascade, eventually causing Hermes to self-restart via its heartbeat watcher (multiple times today). Fix: pin auxiliary.session_search and auxiliary.compression at provider=openai-codex, model=gpt-5.5, timeout=60 in config.yaml — these are the per-task config keys auxiliary_client.py honors. Same provider as main loop (gpt-5-mini is blocked under ChatGPT-account Codex), longer timeout (default 30s → 60s) so transient codex hiccups don't trigger fallback.",
+  "rationale": "PWA chat was end-to-end broken — every @hermes message returned 502. Hermes had autonomously enabled session-key infrastructure as part of the 'one long phone call' efficiency delegation, but the wiring was half-installed (config-side present, env-side missing). The auxiliary retry storm was a known consequence of CTO-DECISION-014's OR retirement that I flagged but didn't fix at the time; this completes that.",
+  "evaluation": {
+    "what_it_makes_obsolete": "The half-installed session-key auth state. The implicit dependency on OpenRouter as an auxiliary fallback. The install-cto.sh assumption that hermes config set api_server.key alone is sufficient.",
+    "cost_of_switching": "Two systemd drop-ins + six hermes config keys + install script edits + this decision log + INDEX/TOOLS doc updates.",
+    "monthly_cost": "$0 change — same Codex Pro subscription, same providers.",
+    "material_change": true
+  },
+  "test_results": {
+    "tested": true,
+    "notes": "End-to-end verified 2026-05-25 00:21 UTC. PWA→@hermes one-sentence prompts return in ~1-5 seconds with proper conversational replies. Hermes responses include session_id: pwa-john-hermes-main confirming the stable-session-id work (from the in-flight session-continuity delegation) is also functional. OpenClaw remains active. Both hemispheres acknowledged the fix via PWA chat (rows 478 onward in chat.db)."
+  },
+  "rollback": {
+    "instructions": "rm ~/.config/systemd/user/hermes-gateway.service.d/30-api-key.conf and ~/.config/systemd/user/cto-hermes-a2a-sidecar.service.d/10-api-key.conf (will revert to pre-session-key behavior — Hermes will start without API_SERVER_KEY warning, sidecar won't send Bearer). For the auxiliary config: remove auxiliary.session_search and auxiliary.compression keys from ~/.hermes/config.yaml (will revert to auto-detect, which works while Codex is healthy but storms on flakes). systemctl --user daemon-reload; systemctl --user restart hermes-gateway cto-hermes-a2a-sidecar."
+  },
+  "related_docs": [
+    "scripts/install-cto.sh (drop-ins now part of fresh install)",
+    "TOOLS.md (session-key auth section)",
+    "logs/decisions/CTO-DECISION-014.json (OR retirement that exposed the auxiliary bug)",
+    "~/.hermes/config.yaml (auxiliary.* now populated)",
+    "~/.hermes/hermes-agent/agent/auxiliary_client.py (the file with the hardcoded fallback chain — patched via config, not source edit)",
+    "~/.hermes/hermes-agent/tools/session_search_tool.py (reads auxiliary.session_search.*)"
+  ]
+}

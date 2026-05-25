@@ -61,10 +61,10 @@ FRONTEND_DIR = Path(os.environ.get("PWA_FRONTEND", str(Path(__file__).resolve().
 HERMES_A2A_URL = os.environ.get("HERMES_A2A_URL", "http://127.0.0.1:8643/a2a/")
 HERMES_A2A_TOKEN = os.environ.get("HERMES_A2A_TOKEN", "")
 
-OPENCLAW_CHAT_URL = os.environ.get("OPENCLAW_CHAT_URL", "http://127.0.0.1:18789/v1/chat/completions")
-OPENCLAW_AUTH_TOKEN = os.environ.get("OPENCLAW_AUTH_TOKEN", "")
 OPENCLAW_MODEL = os.environ.get("OPENCLAW_MODEL", "openai-codex/gpt-5.5")
-OPENCLAW_USE_CLI = os.environ.get("OPENCLAW_USE_CLI", "0") == "1"
+# Stable session id keeps OpenClaw's prompt cache warm across PWA turns and preserves
+# conversation continuity. Single-user assumption; if multi-user comes, derive per user.
+OPENCLAW_SESSION_ID = os.environ.get("OPENCLAW_SESSION_ID", "pwa-john-main")
 
 HUMAN_CHAT_STYLE = (
     "Audience: John Husband in the PWA chat. Reply in plain conversational English. "
@@ -257,31 +257,6 @@ def send_to_hermes(text: str, task_id: Optional[str] = None) -> dict:
     except Exception as e:
         return {"ok": False, "error": repr(e), "task_id": task_id}
 
-def send_to_openclaw_http(text: str) -> dict:
-    """Try the OpenAI-compatible chat-completions surface on the OpenClaw gateway."""
-    body = json.dumps({
-        "model": OPENCLAW_MODEL,
-        "messages": [
-            {"role": "system", "content": HUMAN_CHAT_STYLE},
-            {"role": "user", "content": text},
-        ],
-    }).encode("utf-8")
-    headers = {"Content-Type": "application/json"}
-    if OPENCLAW_AUTH_TOKEN:
-        headers["Authorization"] = f"Bearer {OPENCLAW_AUTH_TOKEN}"
-    req = urllib.request.Request(OPENCLAW_CHAT_URL, data=body, method="POST", headers=headers)
-    try:
-        with urllib.request.urlopen(req, timeout=5) as resp:
-            payload = json.loads(resp.read().decode("utf-8"))
-        # Extract OpenAI-shaped reply
-        try:
-            content = payload["choices"][0]["message"]["content"]
-        except Exception:
-            content = json.dumps(payload)
-        return {"ok": True, "reply": content}
-    except Exception as e:
-        return {"ok": False, "error": repr(e)}
-
 def _extract_json_object(raw: str) -> Optional[dict]:
     """OpenClaw may print logs around --json output; parse the first JSON object."""
     decoder = json.JSONDecoder()
@@ -297,77 +272,53 @@ def _extract_json_object(raw: str) -> Optional[dict]:
 
 
 def _extract_openclaw_reply(payload: dict) -> str:
-    """Return the assistant-visible text from OpenClaw's agent --json payload."""
-    meta = payload.get("meta") if isinstance(payload.get("meta"), dict) else {}
-    for key in ("finalAssistantVisibleText", "finalAssistantRawText"):
-        value = meta.get(key)
-        if isinstance(value, str) and value.strip():
-            return value.strip()
-    payloads = payload.get("payloads")
-    if isinstance(payloads, list):
-        for item in payloads:
-            if isinstance(item, dict) and isinstance(item.get("text"), str) and item["text"].strip():
-                return item["text"].strip()
+    """Return the assistant-visible text from OpenClaw's `agent --json` payload.
+
+    The 2026.5.7 structure is:
+        {"status": "ok", "summary": "completed",
+         "result": {"payloads": [{"text": "..."}], "meta": {...}}}
+
+    Older versions had `payloads` and `meta` at the top level. Handle both.
+    Falls back to a JSON dump only as a last resort.
+    """
+    # Look at result.* first (current shape), fall through to top-level (legacy).
+    for root in (payload.get("result") if isinstance(payload.get("result"), dict) else None, payload):
+        if not isinstance(root, dict):
+            continue
+        meta = root.get("meta") if isinstance(root.get("meta"), dict) else {}
+        for key in ("finalAssistantVisibleText", "finalAssistantRawText"):
+            value = meta.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+        payloads = root.get("payloads")
+        if isinstance(payloads, list):
+            parts = []
+            for item in payloads:
+                if isinstance(item, dict) and isinstance(item.get("text"), str) and item["text"].strip():
+                    parts.append(item["text"].strip())
+            if parts:
+                return "\n".join(parts)
     return json.dumps(payload)
 
 
-def send_to_openclaw_model_run(text: str) -> dict:
-    """Use the running OpenClaw gateway's lightweight model capability.
+def send_to_openclaw(text: str) -> dict:
+    """Full agent turn through OpenClaw via the running gateway.
 
-    This avoids cold-starting the embedded agent/tool bundle for every PWA chat
-    message, while still using OpenClaw's configured provider auth and gateway.
+    Routes to `openclaw agent` (gateway transport) with a stable session id so
+    SOUL.md / AGENTS.md / IDENTITY.md / skills / memory are loaded and the prompt
+    cache stays warm across PWA turns. The earlier HTTP and model.run paths were
+    removed — they were bare LLM completions, not agent runs (see CTO-DECISION-013
+    follow-up: PWA OpenClaw routing fix).
     """
     human_message = f"{HUMAN_CHAT_STYLE}\n\nJohn says: {text}"
-    cmd = [
-        "openclaw", "capability", "model", "run",
-        "--gateway",
-        "--model", OPENCLAW_MODEL,
-        "--prompt", human_message,
-        "--json",
-    ]
-    try:
-        r = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=45,
-            cwd="/opt/cto",
-            env={**os.environ, "HOME": os.environ.get("HOME", "/home/cto")},
-        )
-        combined = (r.stdout or "") + ("\n" + r.stderr if r.stderr else "")
-        if r.returncode != 0:
-            return {"ok": False, "error": combined.strip() or f"openclaw model.run exited {r.returncode}"}
-        payload = _extract_json_object(combined)
-        if not payload:
-            return {"ok": False, "error": f"openclaw model.run returned no parseable JSON: {combined[-1000:]}"}
-        outputs = payload.get("outputs")
-        if isinstance(outputs, list):
-            parts = []
-            for item in outputs:
-                if isinstance(item, dict) and isinstance(item.get("text"), str) and item["text"].strip():
-                    parts.append(item["text"].strip())
-                elif isinstance(item, str) and item.strip():
-                    parts.append(item.strip())
-            if parts:
-                return {"ok": True, "reply": "\n".join(parts), "transport": payload.get("transport", "gateway")}
-        text_value = payload.get("text") or payload.get("reply") or payload.get("content")
-        if isinstance(text_value, str) and text_value.strip():
-            return {"ok": True, "reply": text_value.strip(), "transport": payload.get("transport", "gateway")}
-        return {"ok": False, "error": f"openclaw model.run returned no text: {json.dumps(payload)[-1000:]}"}
-    except Exception as e:
-        return {"ok": False, "error": repr(e)}
-
-
-def send_to_openclaw_cli(text: str) -> dict:
-    """Last-resort embedded-agent fallback; slower because it cold-starts tools."""
-    session_id = f"pwa-{uuid.uuid4().hex}"
-    human_message = f"{HUMAN_CHAT_STYLE}\n\nJohn says: {text}"
+    # Don't pass --model: the gateway rejects per-caller model overrides with
+    # "GatewayClientRequestError: provider/model overrides are not authorized
+    # for this caller." The agent uses agents.defaults.model.primary from
+    # openclaw.json (openai-codex/gpt-5.5) which is what we want anyway.
     cmd = [
         "openclaw", "agent",
-        "--local",
         "--agent", "main",
-        "--model", OPENCLAW_MODEL,
-        "--session-id", session_id,
+        "--session-id", OPENCLAW_SESSION_ID,
         "--message", human_message,
         "--thinking", "off",
         "--json",
@@ -388,26 +339,9 @@ def send_to_openclaw_cli(text: str) -> dict:
         payload = _extract_json_object(combined)
         if not payload:
             return {"ok": False, "error": f"openclaw returned no parseable JSON: {combined[-1000:]}"}
-        return {"ok": True, "reply": _extract_openclaw_reply(payload), "session_id": session_id}
+        return {"ok": True, "reply": _extract_openclaw_reply(payload), "session_id": OPENCLAW_SESSION_ID}
     except Exception as e:
         return {"ok": False, "error": repr(e)}
-
-
-def send_to_openclaw(text: str) -> dict:
-    if OPENCLAW_USE_CLI:
-        return send_to_openclaw_cli(text)
-    http_result = send_to_openclaw_http(text)
-    if http_result.get("ok"):
-        return http_result
-    model_result = send_to_openclaw_model_run(text)
-    if model_result.get("ok"):
-        return model_result
-    # Last resort for complex cases if the lightweight gateway model path fails.
-    cli_result = send_to_openclaw_cli(text)
-    if not cli_result.get("ok"):
-        cli_result["http_error"] = http_result.get("error")
-        cli_result["model_run_error"] = model_result.get("error")
-    return cli_result
 
 # ─── HTTP handler ───────────────────────────────────────────────────────────
 

@@ -164,13 +164,11 @@ See `hemisphere.md` for the full design, `hermes.md` for the right hemisphere re
 
 ## 6. LLM Strategy
 
-CTO is **not locked to any provider**. Primary auth path (CTO-DECISION-008, 2026-05-11): John's existing **ChatGPT Business standard seat** ($30/seat/month) via the `openai-codex` provider on both hemispheres, device-code OAuth. Workspace admin Codex Local + device-code-auth toggles enabled.
+CTO is **not locked to any provider**. Current auth path (CTO-DECISION-013, 2026-05-24, exercising the escape clause of CTO-DECISION-008): dedicated **ChatGPT Pro on `cto@husband.llc`** ($200/mo, separate email from john@husband.llc Business) via the `openai-codex` provider on both hemispheres, device-code OAuth. The Business seat is retained for John's personal use; the Pro account is exclusively CTO's. Embeddings still require a small separate `OPENAI_API_KEY` for `text-embedding-3` (Codex subscription does not cover embeddings).
 
-Documented Business Codex 5-hour quotas: GPT-5.4-mini 1,200-7,000 local msgs / 5h; GPT-5.3-Codex 600-3,000 local + 200-1,200 cloud / 5h; GPT-5.4 400-2,000 / 5h. John expects quota pressure based on prior OpenRouter experience; instrument observation from day one.
+Pro quotas (~20× Plus) are roughly an order of magnitude above Business standard-seat, giving headroom for autonomous research + heartbeat + occasional GEPA passes. Quota instrumentation remains a day-one concern — quotas observable via `openclaw models status` `5h`/`Week` counters.
 
-**Escape if Business quotas constrain operation:** ChatGPT Pro $200/mo on a *separate email* (Pro cannot coexist with Business on the same email since no Personal workspace exists). No PAYG Codex seats — explicitly avoiding accidental-overspend risk.
-
-**Fallback:** OpenRouter retained in Hermes/OpenClaw configs for the case where Codex OAuth is throttled or unavailable. Prepaid, not postpaid. CTO must ask John before any new spending.
+**No OpenRouter.** Removed across both hemispheres on 2026-05-24 [CTO-DECISION-014]. Hermes' session-summarization auxiliary that previously hit `openrouter/free` is now `openai-codex/gpt-5-mini`. OpenClaw's model fallback list is empty. If Codex ever fails, the documented rollback is to restore `~/.codex/auth.json.bak-john-business-*` on the VPS (Business seat under john@husband.llc) — same OAuth mechanism, different account. No PAYG Codex seats — explicitly avoiding accidental-overspend risk.
 
 ## 7. Test Plan
 
@@ -230,6 +228,6 @@ Documented Business Codex 5-hour quotas: GPT-5.4-mini 1,200-7,000 local msgs / 5
 3. ~~YouTube~~ — RESOLVED: Browser-based for v1 [decision]
 4. What does "stable CTO" look like before building CFO? Define graduation criteria. [open]
 5. ~~Communication~~ — RESOLVED: A2A protocol + human interface (CTO-DECISION-006, 2026-05-11). Supersedes the earlier Telegram-Bot choice (CTO-DECISION-003).
-6. OpenRouter needs more credits for paid models — how much should John add? [open]
+6. ~~OpenRouter credits~~ — RESOLVED: OpenRouter retired (CTO-DECISION-014, 2026-05-24). Both hemispheres run on Codex (cto@husband.llc Pro) only.
 7. ~~memweave~~ — RESOLVED: Replaced with engram (Go binary, MCP-native). memweave had poor search quality (0.14 scores).
 8. SearXNG vs Brave for web search — SearXNG is free but needs Docker [open]

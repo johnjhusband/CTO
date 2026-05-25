@@ -70,7 +70,7 @@ Required input: `~/.cto-secrets.env` populated (see `example.cto-secrets.env`). 
 
 Built on the five-layer model the AI community has converged on:
 
-1. **Brain** — Multi-model LLM via OpenRouter (cheap for routine, escalate for complex)
+1. **Brain** — ChatGPT Pro on cto@husband.llc via Codex OAuth on both hemispheres (`openai-codex/gpt-5.5` primary, `gpt-5-mini` for summarization). OpenRouter retired 2026-05-24 [CTO-DECISION-014].
 2. **Hands** — Tools via MCP (the universal standard, 139M monthly downloads)
 3. **Memory** — Obsidian vault + SQLite coordination + tiered loading (the moat)
 4. **Spine** — OpenClaw framework + A2A protocol for future multi-agent
@@ -103,7 +103,7 @@ CTO/
 │   ├── research-sources.md         # YouTube channels, GitHub, HN, etc.
 │   ├── communication.md            # CTO's outbound notification channel (A2A secure)
 │   ├── claude-code-telegram-setup.md # John ↔ Claude Code Telegram channel (distinct from CTO's)
-│   ├── llm-strategy.md             # Multi-model routing via OpenRouter
+│   ├── llm-strategy.md             # Codex OAuth strategy (Pro on cto@husband.llc)
 │   ├── upgrade-cycle.md            # VPS-based clone-test-replace
 │   ├── decision-log-format.md      # Decision JSON schema
 │   ├── version-archive.md          # Snapshots + git tags

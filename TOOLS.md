@@ -14,9 +14,16 @@
 - **MCP config key (OpenClaw):** `mcp.servers` (NOT `mcpServers`) [verified against OpenClaw docs]
 
 ## LLM
-- **Primary:** ChatGPT Pro $200/mo via Codex OAuth, shared by both hemispheres [verified — both halves support `openai-codex` provider, see wiki/codex-oauth-setup.md and hermes.md Provider section]
+- **Primary:** ChatGPT Pro $200/mo on `cto@husband.llc` via Codex OAuth, shared by both hemispheres [CTO-DECISION-013, 2026-05-24 — exercising the Pro-escape clause of CTO-DECISION-008]
+- **Hermes auxiliary tasks (session_search, compression):** pinned at `openai-codex/gpt-5.5` with 60s timeout via `auxiliary.session_search.*` and `auxiliary.compression.*` in `~/.hermes/config.yaml` [CTO-DECISION-015, 2026-05-25]. Same model as main loop because `gpt-5-mini` is blocked under ChatGPT-account Codex.
 - **Embeddings:** separate `OPENAI_API_KEY` for `text-embedding-3` (Codex subscription does NOT cover embeddings)
-- **Fallback:** OpenRouter (multi-model, single API key) [verified — API key works, model format confirmed]
+- **No OpenRouter:** retired across both hemispheres 2026-05-24 [CTO-DECISION-014]. If Codex quotas ever throttle, the rollback path is to restore `~/.codex/auth.json.bak-john-business-*` (Business seat under john@husband.llc) — same OAuth mechanism, different account.
+
+## A2A2H session-key auth
+- Hermes' API server requires `Authorization: Bearer ${API_SERVER_KEY}` from anyone sending `X-Hermes-Session-Key` (the session-continuity header). Both sides need the matching value:
+  - `hermes-gateway`: `API_SERVER_KEY` env var, set via systemd drop-in `~/.config/systemd/user/hermes-gateway.service.d/30-api-key.conf` [CTO-DECISION-015]
+  - `cto-hermes-a2a-sidecar`: `HERMES_API_SERVER_KEY` env var, set via `~/.config/systemd/user/cto-hermes-a2a-sidecar.service.d/10-api-key.conf` [CTO-DECISION-015]
+- Value sourced from `HERMES_API_SERVER_KEY` in `/opt/cto/.env` (generated once by `scripts/install-cto.sh`).
 
 ## Communication
 - **Outbound (CTO → John):** A2A protocol with a human-facing interface built/exposed on top [adopted CTO-DECISION-006, 2026-05-11; human interface implementation deferred to v1.1]. Interim: John reads `/opt/cto/logs/install/*.log`, decision JSON files, and BACKLOG.md directly.

@@ -14,6 +14,10 @@
   <header class="topbar">
     <h1>CTO</h1>
     <div class="status" id="status">connecting…</div>
+    <div class="toggles" title="A2A: show/hide agent-to-agent traffic. JSON: show the raw JSON envelopes (only meaningful when A2A is on).">
+      <label><input type="checkbox" id="toggle-a2a" /> A2A</label>
+      <label><input type="checkbox" id="toggle-json" /> JSON</label>
+    </div>
     <button id="enable-push" hidden>Enable push</button>
   </header>
   <main id="messages" aria-live="polite"></main>

@@ -50,6 +50,9 @@ function tsLabel(ts) {
 }
 
 function appendMessage(m) {
+  // a2a_* rows (JSON envelopes for agent-to-agent traffic) are rendered into the DOM
+  // but hidden by CSS unless the user enables the A2A toggle in the topbar.
+  // The toggle controls a body class; CSS does the actual hiding (style.css).
   const el = document.createElement("div");
   el.className = "msg " + m.sender + (m.kind && m.kind.startsWith("a2a_") ? " a2a" : "");
   el.dataset.id = m.id;
@@ -174,6 +177,29 @@ function urlBase64ToUint8(base64) {
 }
 
 $enablePush.addEventListener("click", enablePush);
+
+// ─── Toggles ─────────────────────────────────────────────────────────────
+// Two independent body classes drive visibility (style.css does the hiding):
+//   .show-a2a   — render a2a_request / a2a_response rows at all
+//   .show-json  — within visible a2a rows, also render the JSON body
+// State persists in localStorage so the user's preference survives reloads.
+const $toggleA2A = document.getElementById("toggle-a2a");
+const $toggleJSON = document.getElementById("toggle-json");
+
+function applyToggle(name, on) {
+  document.body.classList.toggle("show-" + name, on);
+  localStorage.setItem("pwa-show-" + name, on ? "1" : "0");
+}
+
+function initToggle($el, name) {
+  const on = localStorage.getItem("pwa-show-" + name) === "1";
+  $el.checked = on;
+  applyToggle(name, on);
+  $el.addEventListener("change", () => applyToggle(name, $el.checked));
+}
+
+initToggle($toggleA2A, "a2a");
+initToggle($toggleJSON, "json");
 
 // Boot
 captureTokenFromUrl();
