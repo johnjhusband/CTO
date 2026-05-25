@@ -257,9 +257,13 @@ section "7 — Populate /opt/cto/.env on VPS"
   echo "HERMES_AGENT_SESSION_ID=${CLONE_INSTANCE_ID}-a2a-openclaw-hermes"
   # These will be filled in by install-cto.sh on the VPS if absent.
   # We don't pre-generate them on the laptop so they live on the VPS only.
-  [ -n "${OPENAI_API_KEY:-}" ]     && echo "OPENAI_API_KEY=${OPENAI_API_KEY}"
+  if [ -n "${OPENAI_API_KEY:-}" ]; then
+    echo "OPENAI_API_KEY=${OPENAI_API_KEY}"
+  fi
   # OPENROUTER_API_KEY intentionally NOT carried — retired in CTO-DECISION-014.
-  [ -n "${BRAVE_API_KEY:-}" ]      && echo "BRAVE_API_KEY=${BRAVE_API_KEY}"
+  if [ -n "${BRAVE_API_KEY:-}" ]; then
+    echo "BRAVE_API_KEY=${BRAVE_API_KEY}"
+  fi
 } | ssh "${SSH_OPTS[@]}" "cto@${VPS_IP}" 'cat > /opt/cto/.env && chmod 0600 /opt/cto/.env'
 
 ssh "${SSH_OPTS[@]}" "cto@${VPS_IP}" 'echo "--- .env keys present (values redacted) ---"; sed "s/=.*/=<set>/" /opt/cto/.env'
