@@ -64,6 +64,13 @@ else
   note "${CTO_SECRETS} not found — relying on env vars from current shell"
 fi
 
+# Refuse autonomous self-cloning from a test-mode candidate unless an operator
+# explicitly overrides for debugging. Production/original may still run this
+# script to create candidates once John has approved spend.
+if [ -f /opt/cto/.env ] && grep -q '^CTO_TEST_MODE=1' /opt/cto/.env && [ "${ALLOW_TEST_MODE_SELF_CLONE:-}" != "1" ]; then
+  fail "This host is in CTO_TEST_MODE=1; refusing to self-clone. Set ALLOW_TEST_MODE_SELF_CLONE=1 only for explicit operator debugging."
+fi
+
 # Required
 : "${HETZNER_API_TOKEN:?HETZNER_API_TOKEN missing — add to ${CTO_SECRETS} or export it}"
 
@@ -139,7 +146,7 @@ PROVISION_BODY=$(cat <<JSON
   "image": "ubuntu-24.04",
   "location": "${VPS_LOCATION}",
   "ssh_keys": [${HETZNER_SSH_KEY_ID}],
-  "labels": {"purpose": "cto", "version": "v${NEXT_N}"}
+  "labels": {"purpose": "cto", "version": "v${NEXT_N}", "role": "clone-candidate", "test_mode": "true"}
 }
 JSON
 )
@@ -243,6 +250,7 @@ section "7 — Populate /opt/cto/.env on VPS"
   # explicit promotion flips these values to production.
   CLONE_INSTANCE_ID="${CTO_INSTANCE_ID:-candidate-${VPS_NAME}}"
   echo "CTO_INSTANCE_ID=${CLONE_INSTANCE_ID}"
+  echo "CTO_TEST_MODE=1"
   echo "CHAT_DB=/opt/cto/.candidate/${CLONE_INSTANCE_ID}/chat.db"
   echo "OPENCLAW_SESSION_ID=${CLONE_INSTANCE_ID}-pwa-john-openclaw"
   echo "HERMES_HUMAN_SESSION_ID=${CLONE_INSTANCE_ID}-pwa-john-hermes"

@@ -22,6 +22,9 @@ python3 tests/test_pwa_routing.py
 
 section "clone chat isolation defaults"
 grep -q 'CLONE_INSTANCE_ID=.*candidate-' scripts/install.sh || fail "scripts/install.sh must namespace fresh VPS installs as candidates"
+grep -q 'CTO_TEST_MODE=1' scripts/install.sh || fail "scripts/install.sh must put fresh candidates in test mode"
+grep -q 'test_mode.*true' scripts/install.sh || fail "Hetzner candidate labels must include test_mode=true"
+grep -q 'ALLOW_TEST_MODE_SELF_CLONE' scripts/install.sh || fail "test-mode candidates must refuse self-clone by default"
 grep -q 'CHAT_DB=/opt/cto/.candidate/' scripts/install.sh || fail "scripts/install.sh must route candidates to isolated chat DB"
 python3 - <<'PY'
 import os, sys, tempfile

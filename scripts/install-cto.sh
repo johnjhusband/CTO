@@ -309,6 +309,9 @@ fi
 if ! grep -q "^CTO_INSTANCE_ID=" "${ENV_FILE_VPS}"; then
   echo "CTO_INSTANCE_ID=production" >> "${ENV_FILE_VPS}"
 fi
+if ! grep -q "^CTO_TEST_MODE=" "${ENV_FILE_VPS}"; then
+  echo "CTO_TEST_MODE=0" >> "${ENV_FILE_VPS}"
+fi
 if ! grep -q "^CHAT_DB=" "${ENV_FILE_VPS}"; then
   echo "CHAT_DB=${CTO_ROOT}/chat.db" >> "${ENV_FILE_VPS}"
 fi
@@ -657,6 +660,7 @@ Environment=HERMES_A2A_PORT=8643
 Environment=HERMES_API_URL=http://127.0.0.1:8642/v1/chat/completions
 Environment=CHAT_DB=${CHAT_DB}
 Environment=CTO_INSTANCE_ID=${CTO_INSTANCE_ID}
+Environment=CTO_TEST_MODE=${CTO_TEST_MODE}
 Environment=HERMES_HUMAN_SESSION_ID=${HERMES_HUMAN_SESSION_ID}
 Environment=HERMES_AGENT_SESSION_ID=${HERMES_AGENT_SESSION_ID}
 ExecStart=/usr/bin/python3 ${CTO_ROOT}/services/hermes_a2a_sidecar/server.py
@@ -680,6 +684,7 @@ Environment=PWA_BIND=127.0.0.1
 Environment=PWA_FRONTEND=${CTO_ROOT}/services/pwa/frontend
 Environment=CHAT_DB=${CHAT_DB}
 Environment=CTO_INSTANCE_ID=${CTO_INSTANCE_ID}
+Environment=CTO_TEST_MODE=${CTO_TEST_MODE}
 Environment=OPENCLAW_SESSION_ID=${OPENCLAW_SESSION_ID}
 Environment=HERMES_A2A_URL=http://127.0.0.1:8643/a2a/
 Environment=OPENCLAW_CHAT_URL=http://127.0.0.1:18789/v1/chat/completions
