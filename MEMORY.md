@@ -45,7 +45,7 @@
 
 ## What John Cares About [all verified — explicit instructions]
 - Macro evolution from community research, not micro self-optimization
-- Full autonomy — don't wait on him; if a needed capability is clear, build or wire it without waiting unless it spends money, destroys data, or creates external risk. At the completion of every task, ask “what’s next?” and start the next step autonomously unless it spends money, destroys data, or creates external risk. [reinforced 2026-05-25]
+- Full autonomy — don't wait on him; if a needed capability is clear, build or wire it without waiting unless it spends money, destroys data, or creates external risk. At the completion of every task, ask “what’s next?” and start the next step autonomously unless it spends money, destroys data, or creates external risk. Always be working on something; avoid idle pauses and keep advancing useful work whenever safe. [reinforced 2026-05-25 and 2026-05-26]
 - Two-hemisphere mutual care: OpenClaw and Hermes operate as one team. Each hemisphere must monitor the other; if one hemisphere is unhealthy for any reason, the healthy hemisphere is responsible for diagnosing and fixing the unhealthy one unless doing so spends money, destroys data, creates external risk, or needs a non-retrievable decision from John. [explicit instruction from John, 2026-05-25]
 - Memory hygiene autonomy: as I learn durable lessons, I should update individual memory and/or shared memory as appropriate without waiting for John, while keeping secrets, raw tool traces, and transient noise out. [explicit instruction from John, 2026-05-25]
 - Honest reporting — say what happened, including failures
