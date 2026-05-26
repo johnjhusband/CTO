@@ -4,6 +4,8 @@ node_modules/
 !example.cto-secrets.env
 .openclaw/
 .vapid/
+.vapid-new/
+.vapid-compromised-*/
 .cache/
 .engram/
 chat.db
