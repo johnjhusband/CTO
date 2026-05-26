@@ -1,0 +1,24 @@
+{
+  "id": "BACKLOG-017",
+  "timestamp": "2026-05-26T19:11:00Z",
+  "type": "feature",
+  "priority": "P1",
+  "status": "open",
+  "surfaced_by": "john",
+  "surfaced_from": "PWA chat 2026-05-26 ~19:10 UTC — John: 'I'm still loosing context on pwa when it's in the background. I need all of the info to be available like a log file so I can review it at a later date.'",
+  "affects": "A2A2H PWA / chat history persistence and review",
+  "capability_needed": "Durable, human-readable chat log export John can review at any time without needing the PWA in the foreground",
+  "details": "The PWA currently relies on EventSource (SSE) for live message delivery and a since_id-paginated /api/messages call for history. When iOS Safari (or Chrome on iOS) backgrounds the PWA tab, the EventSource is killed by the OS, the in-page chat state can be reset, and any messages that flowed while the tab was background may not appear when the page is foregrounded again — they're in chat.db but never make it onto John's screen. Web Push is wired but only fires on new messages; it does not back-fill missed history.\n\nWhat John needs:\n1) A durable on-disk log file (NOT chat.db, which is a binary SQLite) — something like /opt/cto/logs/pwa-chat/YYYY-MM-DD.md, one file per day, append-only, plain markdown with timestamp+sender+content. The cto user owns it, gitignored, served by the PWA backend as /chat-log so John can open https://cto.husband.llc/chat-log/2026-05-26 from any browser without needing the live PWA at all.\n2) The PWA chat UI should ALSO render full history on foreground re-entry. The existing /api/messages?since_id=0 endpoint already does this; what's missing is the PWA calling it on visibilitychange (when the tab becomes visible again) instead of trusting the stream alone.\n3) Optional but valuable: a downloadable text/markdown export endpoint (/api/chat/export?from=YYYY-MM-DD&to=YYYY-MM-DD) so John can pull a date range to his phone for offline review.\n4) Whatever log format the agents pick, ensure the log file (a) excludes structured a2a JSON unless toggled in, (b) renders the human-readable chat content for John, sender labels included, (c) is timezone-aware (UTC timestamp + local-time render in the file header).\n\nSeparate from this: the PWA's visibility/foreground behavior is currently un-tested across iOS Safari standalone-PWA mode, iOS Chrome, Android Chrome. The fix should include a test plan that exercises background-foreground cycles on at least iOS Safari (John's daily driver).",
+  "search_trail": [
+    "chat.db is the single source of truth for all messages — it persists across PWA tab closes and service restarts. The issue is the PWA UI does not reliably re-sync history when foregrounded.",
+    "Earlier in session: John raised 'PWA isn't working' (2026-05-26 ~18:30 UTC) — that was a cached service-worker issue, separate from this background-loss issue.",
+    "Web Push subscription exists (1 endpoint registered) but pywebpush sends are per-message, not history back-fill."
+  ],
+  "proposed_resolution": "Two-part fix: (a) backend ships a rolling per-day markdown log (mirrors chat.db inserts to /opt/cto/logs/pwa-chat/YYYY-MM-DD.md) plus a /chat-log/* read-only route that serves them with cookie auth; (b) frontend adds a 'visibilitychange' listener that calls /api/messages?since_id=0 on foreground to re-load all history from chat.db. Optional: /api/chat/export endpoint for a downloadable range. The MD log file becomes John's durable, foreground-independent review surface.",
+  "blast_radius": "Adds disk I/O to chat appends (small — one append per message). Adds one route to the PWA backend. No security impact if the new /chat-log/* route is gated by the same cookie auth as /api/messages. The log file must be gitignored (already covered by logs/*.log pattern but verify per-directory).",
+  "rollback_plan": "Disable the new mirror by env flag and remove the new route. The chat.db itself is unchanged so nothing existing breaks.",
+  "john_review_date": "2026-05-26",
+  "resolution_date": null,
+  "resolution_notes": null,
+  "related_decision_log": null
+}
