@@ -14,7 +14,7 @@ fi
 : "${HERMES_A2A_TOKEN:?HERMES_A2A_TOKEN is required}"
 
 python3 - <<'PY'
-import json, os, time, urllib.request, urllib.error
+import json, os, subprocess, time, urllib.request, urllib.error
 
 token = os.environ['HERMES_A2A_TOKEN']
 now = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
@@ -61,13 +61,48 @@ def post(payload: dict) -> str:
         return resp.read().decode('utf-8', 'replace')
 
 
+def sidecar_health(timeout: int = 5) -> bool:
+    try:
+        with urllib.request.urlopen('http://127.0.0.1:8643/health', timeout=timeout) as resp:
+            return resp.status == 200
+    except Exception:
+        return False
+
+
+def recover_hermes_runtime() -> tuple[bool, str]:
+    """Restart the existing Hermes user services after repeated provider-side agent_incomplete.
+
+    This is intentionally narrow: it does not touch credentials, data, cloud resources,
+    or create a new scheduler. It clears the Hermes API process state that can wedge
+    after provider-side agent_incomplete while preserving the existing work-pump path.
+    """
+    if os.environ.get('HERMES_WORK_PUMP_RECOVERY_RESTART', '1') == '0':
+        return False, 'recovery restart disabled by HERMES_WORK_PUMP_RECOVERY_RESTART=0'
+    cmd = [
+        'systemctl', '--user', 'restart',
+        'hermes-gateway.service',
+        'cto-hermes-a2a-sidecar.service',
+    ]
+    try:
+        completed = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=90)
+    except Exception as e:
+        return False, f'restart command failed: {type(e).__name__}'
+    if completed.returncode != 0:
+        return False, f'restart command exited {completed.returncode}'
+    for _ in range(30):
+        if sidecar_health(timeout=2):
+            return True, 'restarted hermes-gateway and cto-hermes-a2a-sidecar; sidecar health is ok'
+        time.sleep(1)
+    return False, 'services restarted but sidecar health did not recover within 30s'
+
+
 def is_transient_agent_incomplete(status: int, text: str) -> bool:
     if status != 502:
         return False
     return "agent_incomplete" in text or "'NoneType' object is not iterable" in text
 
 
-def write_blocked_note(error_text: str) -> str:
+def write_blocked_note(error_text: str, recovery_note: str = '') -> str:
     """Record a durable, sanitized blocked note for strategy follow-up."""
     log_dir = "/opt/cto/logs/repairs"
     os.makedirs(log_dir, exist_ok=True)
@@ -79,7 +114,9 @@ def write_blocked_note(error_text: str) -> str:
         f.write("- Selected item: hemisphere health / Hermes continuous work pump reliability\n")
         f.write("- Status: blocked_degraded\n")
         f.write("- Evidence: Hermes A2A sidecar returned HTTP 502 with `agent_incomplete` / provider-side `NoneType` error after a fresh task-scoped retry.\n")
-        f.write("- Action taken: recorded this explicit blocked note and allowed the systemd pump unit to complete cleanly; OpenClaw remains responsible for follow-up repair.\n")
+        f.write("- Action taken: retried with a fresh task-scoped session; after repeat failure, attempted the configured existing-service recovery restart once, then recorded this explicit blocked note and allowed the systemd pump unit to complete cleanly.\n")
+        if recovery_note:
+            f.write(f"- Recovery attempt: {recovery_note}\n")
         f.write("- Secret handling: no request headers, bearer tokens, environment values, or raw tool traces recorded.\n")
         f.write("\n## Sanitized error preview\n\n")
         f.write(error_text[:800].replace(os.environ.get('HERMES_A2A_TOKEN', ''), '[REDACTED]'))
@@ -88,7 +125,9 @@ def write_blocked_note(error_text: str) -> str:
 
 
 last_error = ""
-for attempt in (1, 2):
+recovery_attempted = False
+recovery_note = ""
+for attempt in (1, 2, 3):
     try:
         body = post(build_payload(attempt))
         if attempt > 1:
@@ -98,13 +137,23 @@ for attempt in (1, 2):
     except urllib.error.HTTPError as e:
         text = e.read().decode('utf-8', 'replace')[:1000]
         last_error = f"HTTP {e.code}: {text}"
-        if attempt == 1 and is_transient_agent_incomplete(e.code, text):
-            print("Hermes work pump got transient agent_incomplete from Hermes; retrying once with a fresh task-scoped session")
-            time.sleep(5)
-            continue
         if is_transient_agent_incomplete(e.code, text):
-            artifact = write_blocked_note(last_error)
-            print(json.dumps({"status": "blocked_degraded", "artifact": artifact}))
+            if attempt == 1:
+                print("Hermes work pump got transient agent_incomplete from Hermes; retrying once with a fresh task-scoped session")
+                time.sleep(5)
+                continue
+            if attempt == 2 and not recovery_attempted:
+                print("Hermes work pump got repeat agent_incomplete; restarting existing Hermes user services once before final retry")
+                recovery_attempted = True
+                ok, recovery_note = recover_hermes_runtime()
+                if ok:
+                    time.sleep(5)
+                    continue
+                artifact = write_blocked_note(last_error, recovery_note)
+                print(json.dumps({"status": "blocked_degraded", "artifact": artifact, "recovery": recovery_note}))
+                raise SystemExit(0)
+            artifact = write_blocked_note(last_error, recovery_note)
+            print(json.dumps({"status": "blocked_degraded", "artifact": artifact, "recovery": recovery_note}))
             raise SystemExit(0)
         print(last_error)
         raise SystemExit(1)
