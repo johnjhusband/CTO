@@ -3,7 +3,7 @@
   "timestamp": "2026-05-26T19:11:00Z",
   "type": "feature",
   "priority": "P0",
-  "status": "implemented_pending_runtime_verification",
+  "status": "implemented_pending_mobile_verification",
   "surfaced_by": "john",
   "surfaced_from": "PWA chat 2026-05-26 ~19:10 UTC \u2014 John: 'I'm still loosing context on pwa when it's in the background. I need all of the info to be available like a log file so I can review it at a later date.'",
   "affects": "A2A2H PWA / chat history persistence and review",
@@ -19,7 +19,7 @@
   "rollback_plan": "Disable the new mirror by env flag and remove the new route. The chat.db itself is unchanged so nothing existing breaks.",
   "john_review_date": "2026-05-26",
   "resolution_date": null,
-  "resolution_notes": "Implemented daily markdown chat-log mirror, authenticated /chat-log and /api/chat/export routes, frontend foreground full-history resync, regression tests, and gitignore coverage. Runtime mobile/PWA background-foreground verification remains pending.",
+  "resolution_notes": "Implemented daily markdown chat-log mirror, authenticated /chat-log and /api/chat/export routes, frontend foreground full-history resync, regression tests, and gitignore coverage. Live backend runtime verification passed for authenticated chat-log/export access, unauthenticated denial, markdown content, and traversal rejection on 2026-05-26T20:40Z. Device-specific mobile/PWA background-foreground verification remains pending on John's iOS/standalone PWA path.",
   "related_decision_log": null,
   "escalation_log": [
     "Priority raised to P0 on 2026-05-26 per John: 'the pwa is worthless as is. raise all pwa issues to p0.'",

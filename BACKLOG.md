@@ -53,7 +53,7 @@
 | [BACKLOG-014](logs/backlog/BACKLOG-014.json) | 2026-05-25 | upstream-pr-needed | P0 | A2A2H PWA / notifications and background delivery | Reliable background notifications so John can context-switch without missing replies | implemented_pending_runtime_push_verification |
 | [BACKLOG-015](logs/backlog/BACKLOG-015.json) | 2026-05-25 | missing-mcp | P1 | reporting / A2A2H human interface | Outbound email status updates to John at john@husband.llc | adapter_implemented_blocked_on_credentials |
 | [BACKLOG-016](logs/backlog/BACKLOG-016.json) | 2026-05-26 | upstream-pr-needed | P0 | A2A2H PWA / inter-hemisphere transparency | Visible OpenClaw/Hermes coordination transcript or audit view in the PWA | open |
-| [BACKLOG-017](logs/backlog/BACKLOG-017.json) | 2026-05-26 | feature | P0 | A2A2H PWA / chat history persistence and review | Durable, human-readable chat log export John can review without needing the PWA foregrounded | implemented_pending_runtime_verification |
+| [BACKLOG-017](logs/backlog/BACKLOG-017.json) | 2026-05-26 | feature | P0 | A2A2H PWA / chat history persistence and review | Durable, human-readable chat log export John can review without needing the PWA foregrounded | implemented_pending_mobile_verification |
 
 ## Escalated to John (Awaiting Decision)
 
