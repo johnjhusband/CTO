@@ -53,6 +53,11 @@ TOKEN_PATTERNS = [
     ("private_key_block", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----", re.DOTALL)),
 ]
 
+# Legacy PWA bootstrap URLs used ?token=... before cookie/session auth landed.
+# Keep the parameter name for auditability, but redact the value anywhere it
+# appears in operational logs or chat rows.
+URL_QUERY_TOKEN_RE = re.compile(r"(?P<prefix>(?:[?&]|%3[Ff]|%26)token(?:=|%3[Dd]))(?P<value>[^\s&#'\"<>]+)")
+
 TEXT_EXTENSIONS = {
     ".log", ".md", ".json", ".txt", ".env", ".out", ".err", ".yaml", ".yml"
 }
@@ -87,6 +92,15 @@ def redact_text(text: str) -> tuple[str, dict[str, int]]:
         return f"{match.group('prefix')}{quote}REDACTED{quote}"
 
     text = ENV_ASSIGNMENT_RE.sub(repl_env, text)
+
+    def repl_url_query_token(match: re.Match[str]) -> str:
+        value = match.group("value") or ""
+        if value in {"REDACTED", "%5BREDACTED%5D"}:
+            return match.group(0)
+        counts["url_query_token"] = counts.get("url_query_token", 0) + 1
+        return f"{match.group('prefix')}REDACTED"
+
+    text = URL_QUERY_TOKEN_RE.sub(repl_url_query_token, text)
 
     for marker, pattern in TOKEN_PATTERNS:
         def repl_token(match: re.Match[str], marker: str = marker) -> str:

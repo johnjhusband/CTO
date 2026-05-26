@@ -53,6 +53,21 @@ class RedactOperationalSecretsTests(unittest.TestCase):
         self.assertIn("env:GOOGLE_ACCOUNT_PASSWORD_PENDING", rendered)
         self.assertNotIn("super-secret-value", rendered)
 
+    def test_redacts_legacy_pwa_query_token_values(self):
+        redacted, counts = redactor.redact_text(
+            "GET /api/stream?token=legacy-secret&since_id=1 HTTP/1.1\n"
+            "https://cto.example/?x=1&token=another-secret#frag\n"
+            "encoded=%2F%3Ftoken%3Durlencoded-secret\n"
+        )
+
+        self.assertEqual(counts, {"url_query_token": 3})
+        self.assertIn("?token=REDACTED&since_id=1", redacted)
+        self.assertIn("&token=REDACTED#frag", redacted)
+        self.assertIn("%3Ftoken%3DREDACTED", redacted)
+        self.assertNotIn("legacy-secret", redacted)
+        self.assertNotIn("another-secret", redacted)
+        self.assertNotIn("urlencoded-secret", redacted)
+
 
 if __name__ == "__main__":
     unittest.main()
