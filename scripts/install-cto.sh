@@ -349,6 +349,7 @@ fi
 note "Writing OpenClaw openclaw.json"
 OPENCLAW_DIR="${HOME}/.openclaw"
 mkdir -p "${OPENCLAW_DIR}"
+chmod 0700 "${OPENCLAW_DIR}"
 cat > "${OPENCLAW_DIR}/openclaw.json" <<JSON
 {
   "env": {
@@ -397,6 +398,7 @@ cat > "${OPENCLAW_DIR}/openclaw.json" <<JSON
   }
 }
 JSON
+chmod 0600 "${OPENCLAW_DIR}/openclaw.json"
 note "Validating OpenClaw config"
 openclaw doctor || fail "openclaw doctor reported errors — see ${LOG_FILE}"
 
@@ -480,12 +482,14 @@ chmod 0600 "${HOME}/.hermes/.env" 2>/dev/null || true
 # crashed gateway). Wire it via a systemd drop-in so it survives Hermes restarts.
 HERMES_DROPIN="${HOME}/.config/systemd/user/hermes-gateway.service.d"
 mkdir -p "${HERMES_DROPIN}"
+chmod 0700 "${HERMES_DROPIN}"
 cat > "${HERMES_DROPIN}/10-autonomy.conf" <<'CONF'
 # Per architecture-decisions-john.md #3 + HERMES_ROLE.md Failure Handling:
 # Hermes runs fully autonomously; bypass the approval gate in tools/approval.py.
 [Service]
 Environment="HERMES_YOLO_MODE=1"
 CONF
+chmod 0600 "${HERMES_DROPIN}/10-autonomy.conf"
 
 # Hermes also reads API_SERVER_KEY from env (not from the api_server.key config
 # path — that's at a different schema location). Without this, Hermes refuses
@@ -498,15 +502,18 @@ Environment="API_SERVER_HOST=127.0.0.1"
 Environment="API_SERVER_PORT=8642"
 Environment="API_SERVER_KEY=${HERMES_API_SERVER_KEY}"
 CONF
+chmod 0600 "${HERMES_DROPIN}/30-api-key.conf"
 
 # Sidecar must send the matching Bearer token. Read as HERMES_API_SERVER_KEY by
 # services/hermes_a2a_sidecar/server.py (line 41).
 SIDECAR_DROPIN="${HOME}/.config/systemd/user/cto-hermes-a2a-sidecar.service.d"
 mkdir -p "${SIDECAR_DROPIN}"
+chmod 0700 "${SIDECAR_DROPIN}"
 cat > "${SIDECAR_DROPIN}/10-api-key.conf" <<CONF
 [Service]
 Environment="HERMES_API_SERVER_KEY=${HERMES_API_SERVER_KEY}"
 CONF
+chmod 0600 "${SIDECAR_DROPIN}/10-api-key.conf"
 
 # Cache keep-alive: ping each live session (PWA→OpenClaw, PWA→Hermes) every
 # 30 min so OpenAI's prompt cache stays warm and we don't pay the ~45K
@@ -529,10 +536,12 @@ CONF
 
 PWA_DROPIN="${HOME}/.config/systemd/user/cto-pwa-backend.service.d"
 mkdir -p "${PWA_DROPIN}"
+chmod 0700 "${PWA_DROPIN}"
 cat > "${PWA_DROPIN}/20-hermes-timeout.conf" <<'CONF'
 [Service]
 Environment="HERMES_SEND_TIMEOUT_S=660"
 CONF
+chmod 0600 "${PWA_DROPIN}/20-hermes-timeout.conf"
 
 systemctl --user daemon-reload
 systemctl --user enable --now cto-cache-keepalive.timer 2>/dev/null || true
