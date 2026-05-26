@@ -145,3 +145,18 @@ class PwaAccessControlTests(unittest.TestCase):
             handler.path = "/api/messages"
             handler.headers = {"Cookie": f"cto_pwa_session={urllib.parse.quote(value)}"}
             self.assertTrue(handler._auth_ok())
+
+class PwaPushNotificationTests(unittest.TestCase):
+    def test_push_payload_truncates_reply_body(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            server = fresh_server_module(tmp)
+            payload = server._push_payload(sender="openclaw", body="x" * 250, correlation="job-1")
+            self.assertEqual(payload["title"], "OpenClaw replied")
+            self.assertEqual(payload["tag"], "job-1")
+            self.assertLessEqual(len(payload["body"]), 180)
+
+    def test_push_without_vapid_key_degrades_to_noop(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["VAPID_PRIVATE_KEY_FILE"] = str(Path(tmp) / "missing.pem")
+            server = fresh_server_module(tmp)
+            self.assertEqual(server._send_push_notification(sender="openclaw", body="done"), (0, 0))
