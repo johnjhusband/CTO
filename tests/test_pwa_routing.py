@@ -268,6 +268,24 @@ class PwaAccessControlTests(unittest.TestCase):
             self.assertIn("token=[REDACTED]", logged)
             self.assertNotIn("test-secret-token", logged)
 
+    def test_legacy_stream_query_token_stops_eventsource_retry_storm(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
+            server = fresh_server_module(tmp)
+            handler = object.__new__(server.Handler)
+            handler.path = "/api/stream?token=test-secret-token"
+            handler.headers = {}
+            statuses = []
+            headers = []
+            handler.send_response = lambda code: statuses.append(code)
+            handler.send_header = lambda name, value: headers.append((name, value))
+            handler.end_headers = lambda: None
+
+            handler.do_GET()
+
+            self.assertEqual(statuses, [204])
+            self.assertIn(("Cache-Control", "no-store"), headers)
+
     def test_session_cookie_authenticates(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
