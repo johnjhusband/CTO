@@ -4,7 +4,7 @@ Timestamp: 2026-05-26T21:14Z
 
 Result: rotation was not completed.
 
-Reason: SMTP out-of-band delivery failed with provider authentication rejection before the PWA backend was restarted. To avoid locking John out without a secure delivery path, `/opt/cto/.env` was restored from the pre-rotation backup and the PWA backend was not restarted with the undelivered token.
+Reason: SMTP out-of-band delivery failed with provider authentication rejection before the PWA backend was restarted. To avoid locking John out without a secure delivery path, `/opt/cto/.env` was restored from the pre-rotation backup, then the backup was moved outside the git workspace under `/home/cto/.cto-secret-backups/` and the PWA backend was not restarted with the undelivered token.
 
 Secret handling: no token values were printed, committed, or written to this evidence file.
 
