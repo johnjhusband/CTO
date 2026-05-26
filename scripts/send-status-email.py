@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import os
 import smtplib
+import ssl
 import sys
 from email.message import EmailMessage
 from pathlib import Path
@@ -44,8 +45,18 @@ def send_message(msg: EmailMessage) -> None:
         raise RuntimeError("missing email credentials: " + ", ".join(missing))
     host = os.environ["CTO_EMAIL_SMTP_HOST"]
     port = int(os.environ.get("CTO_EMAIL_SMTP_PORT", "465"))
-    with smtplib.SMTP_SSL(host, port, timeout=30) as smtp:
-        smtp.login(os.environ["CTO_EMAIL_SMTP_USER"], os.environ["CTO_EMAIL_SMTP_PASSWORD"])
+    user = os.environ["CTO_EMAIL_SMTP_USER"]
+    password = os.environ["CTO_EMAIL_SMTP_PASSWORD"]
+    if port == 465:
+        with smtplib.SMTP_SSL(host, port, timeout=30) as smtp:
+            smtp.login(user, password)
+            smtp.send_message(msg)
+        return
+    with smtplib.SMTP(host, port, timeout=30) as smtp:
+        smtp.ehlo()
+        smtp.starttls(context=ssl.create_default_context())
+        smtp.ehlo()
+        smtp.login(user, password)
         smtp.send_message(msg)
 
 
