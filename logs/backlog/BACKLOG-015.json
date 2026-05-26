@@ -16,11 +16,14 @@
     "Checked repo references \u2014 wiki/communication.md and TOOLS.md say Gmail SMTP fallback was retired by CTO-DECISION-006.",
     "Checked ~/.gmail-mcp \u2014 directory absent; scripts/gmail-mcp/auth.sh configures Gmail MCP credentials for read access, not a confirmed send path."
   ],
-  "proposed_resolution": "Add an authenticated outbound email reporting adapter, preferably as an A2A2H notification channel rather than an ad-hoc shell mailer. Use a secure provider path with credentials stored outside git, support a regular cadence plus major-event sends, and add a dry-run/test mode. Until then, continue PWA reporting and write digest files locally.",
+  "proposed_resolution": "Add an authenticated outbound email reporting adapter. **CONSTRAINT (2026-05-26 from John): John uses 2FA only on his Google accounts and does NOT generate Gmail App Passwords.** The existing scripts/send-status-email.py SMTP-with-App-Password path is therefore a dead end. Pick one of the workable paths and implement it without further John intervention:\n(a) Gmail OAuth 2.0 refresh-token flow — set up a GCP project under cto@husband.llc, store gcp-oauth.keys.json under scripts/gmail-mcp/ (already gitignored), use OAuth to send. One-time consent through the device-code flow.\n(b) Non-Google SMTP provider with free tier — Mailgun, AWS SES, Postmark, Resend. Sign up under cto@husband.llc, store API key in /opt/cto/.env (gitignored), update scripts/send-status-email.py to use the provider's HTTPS API or SMTP-with-API-key (NOT a password).\n(c) Drop email entirely and rely on PWA chat + Web Push + Telegram — if the agents prefer this, document the decision and close BACKLOG-015 as won't-fix.\nAgents pick one, document the choice in logs/decisions/, implement, verify a real test send to john@husband.llc, then close this backlog item.",
   "blast_radius": "Adds third-party email delivery and credential storage back into the communication surface. Mistakes could leak operational status to the wrong address, expose credentials, or spam John. Needs rate limiting and clear content redaction.",
   "rollback_plan": "Disable the email adapter and revert to PWA/digest-only reporting. Revoke email provider credentials if leaked or misconfigured.",
   "john_review_date": "2026-05-25",
-  "resolution_date": "2026-05-26",
-  "resolution_notes": "Added scripts/send-status-email.py: SMTP status sender with dry-run, latest digest/stdin body support, and env-only credential handling. Actual sending remains blocked until SMTP provider credentials are configured outside git.",
-  "related_decision_log": null
+  "resolution_date": null,
+  "resolution_notes": "2026-05-26: SMTP-with-App-Password adapter (scripts/send-status-email.py) is implemented but the App-Password approach is rejected by John (only does 2FA). Adapter is paused pending agent selection between OAuth, alternative provider, or won't-fix.",
+  "related_decision_log": null,
+  "constraints": [
+    "John uses 2FA on Google accounts and does not generate App Passwords — do NOT ask him to. Pick OAuth, alternative provider, or won't-fix instead."
+  ]
 }
