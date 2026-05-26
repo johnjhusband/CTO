@@ -38,7 +38,7 @@ def build_message(subject: str, body: str) -> EmailMessage:
     return msg
 
 
-def send_message(msg: EmailMessage) -> None:
+def smtp_config() -> tuple[str, int, str, str]:
     required = ["CTO_EMAIL_SMTP_HOST", "CTO_EMAIL_SMTP_USER", "CTO_EMAIL_SMTP_PASSWORD"]
     missing = [name for name in required if not os.environ.get(name)]
     if missing:
@@ -47,16 +47,35 @@ def send_message(msg: EmailMessage) -> None:
     port = int(os.environ.get("CTO_EMAIL_SMTP_PORT", "465"))
     user = os.environ["CTO_EMAIL_SMTP_USER"]
     password = os.environ["CTO_EMAIL_SMTP_PASSWORD"]
+    return host, port, user, password
+
+
+def with_authenticated_smtp():
+    host, port, user, password = smtp_config()
     if port == 465:
-        with smtplib.SMTP_SSL(host, port, timeout=30) as smtp:
-            smtp.login(user, password)
-            smtp.send_message(msg)
-        return
-    with smtplib.SMTP(host, port, timeout=30) as smtp:
-        smtp.ehlo()
-        smtp.starttls(context=ssl.create_default_context())
-        smtp.ehlo()
+        smtp = smtplib.SMTP_SSL(host, port, timeout=30)
         smtp.login(user, password)
+        return smtp
+    smtp = smtplib.SMTP(host, port, timeout=30)
+    smtp.ehlo()
+    smtp.starttls(context=ssl.create_default_context())
+    smtp.ehlo()
+    smtp.login(user, password)
+    return smtp
+
+
+def check_credentials() -> None:
+    """Verify SMTP login without sending a message or printing secret values."""
+    with with_authenticated_smtp() as smtp:
+        try:
+            smtp.noop()
+        except Exception:
+            # Some providers reject NOOP after login; successful login is sufficient.
+            pass
+
+
+def send_message(msg: EmailMessage) -> None:
+    with with_authenticated_smtp() as smtp:
         smtp.send_message(msg)
 
 
@@ -65,7 +84,17 @@ def main() -> int:
     parser.add_argument("--subject", default="CTO status update")
     parser.add_argument("--body-file", help="File to send; defaults to latest logs/digest/digest-*.md or stdin")
     parser.add_argument("--dry-run", action="store_true", help="Build and print metadata without sending")
+    parser.add_argument(
+        "--check-credentials",
+        action="store_true",
+        help="Verify SMTP login without sending a message or printing secret values",
+    )
     args = parser.parse_args()
+
+    if args.check_credentials:
+        check_credentials()
+        print("smtp credential check passed: login accepted; no message sent")
+        return 0
 
     if args.body_file:
         body_path = Path(args.body_file)
