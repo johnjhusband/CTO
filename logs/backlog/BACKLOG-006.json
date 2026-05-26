@@ -24,6 +24,6 @@
   "rollback_plan": "Keep old credentials active only during a staged cutover window, update services one at a time, verify each path, then revoke old credentials.",
   "john_review_date": "2026-05-25",
   "resolution_date": null,
-  "resolution_notes": null,
+  "resolution_notes": "2026-05-26: Multiple safe credential-handling substeps completed without rotating live credentials: operational redaction gates, git-history marker scanning, clone env streaming over SSH with restrictive permissions, Hetzner token argv hardening, installer config permission hardening, and a reusable install secret-handling guard added to safe security gates at 2026-05-26T23:25Z. Full staged live credential rotation and broader history/log cleanup remain open.",
   "related_decision_log": null
 }

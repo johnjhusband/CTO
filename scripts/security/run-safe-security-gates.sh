@@ -13,6 +13,9 @@ scripts/security/check-secret-artifacts.sh
 printf '\n== operational secret redaction check ==\n'
 scripts/security/redact-operational-secrets.py --check
 
+printf '\n== install secret-handling guard ==\n'
+scripts/security/check-install-secret-handling.sh
+
 printf '\n== redaction unit tests ==\n'
 python3 -m unittest -v tests/test_redact_operational_secrets.py
 
