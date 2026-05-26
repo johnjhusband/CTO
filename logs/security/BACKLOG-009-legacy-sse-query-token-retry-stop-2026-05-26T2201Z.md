@@ -6,10 +6,10 @@ Timestamp: 2026-05-26T22:01Z
 P0 PWA access-control / human-interface reliability.
 
 ## Why selected
-After the safe token-rotation grace repair, the live PWA backend was active and access control was holding, but runtime logs showed old cached PWA clients repeatedly opening `/api/stream?token=[REDACTED]` and receiving 401. API query tokens must stay rejected, but for Server-Sent Events a 401 causes EventSource to reconnect forever, creating log noise and keeping stale clients in a broken loop.
+After the safe token-rotation grace repair, the live PWA backend was active and access control was holding, but runtime logs showed old cached PWA clients repeatedly opening the SSE endpoint with a legacy query-token parameter and receiving 401. API query tokens must stay rejected, but for Server-Sent Events a 401 causes EventSource to reconnect forever, creating log noise and keeping stale clients in a broken loop.
 
 ## Repair
-- `/api/stream?token=...` now returns HTTP 204 with `Cache-Control: no-store`.
+- Legacy SSE requests carrying a query-token parameter now return HTTP 204 with `Cache-Control: no-store`.
 - 204 preserves the security property that API query-token auth is not accepted, while telling EventSource-capable stale clients to stop retrying.
 - Normal unauthenticated `/api/stream` still returns 401.
 - Current-cookie `/api/stream` remains the supported live message path.

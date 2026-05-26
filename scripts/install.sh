@@ -240,31 +240,39 @@ REMOTE_ROOT
 
 section "7 — Populate /opt/cto/.env on VPS"
 
-# Pipe the env content over SSH; never write to laptop disk or shell history
-{
-  echo "HETZNER_API_TOKEN=${HETZNER_API_TOKEN}"
-  echo "GITHUB_TOKEN=${GITHUB_TOKEN}"
-  echo "HERMES_API_SERVER_KEY=${HERMES_API_SERVER_KEY}"
-  # Fresh VPS installs are clone-test-replace candidates by default. They must
-  # not write into production PWA chat or reuse production chat sessions until
-  # explicit promotion flips these values to production.
-  CLONE_INSTANCE_ID="${CTO_INSTANCE_ID:-candidate-${VPS_NAME}}"
-  echo "CTO_INSTANCE_ID=${CLONE_INSTANCE_ID}"
-  echo "CTO_TEST_MODE=1"
-  echo "CHAT_DB=/opt/cto/.candidate/${CLONE_INSTANCE_ID}/chat.db"
-  echo "OPENCLAW_SESSION_ID=${CLONE_INSTANCE_ID}-pwa-john-openclaw"
-  echo "HERMES_HUMAN_SESSION_ID=${CLONE_INSTANCE_ID}-pwa-john-hermes"
-  echo "HERMES_AGENT_SESSION_ID=${CLONE_INSTANCE_ID}-a2a-openclaw-hermes"
-  # These will be filled in by install-cto.sh on the VPS if absent.
-  # We don't pre-generate them on the laptop so they live on the VPS only.
-  if [ -n "${OPENAI_API_KEY:-}" ]; then
-    echo "OPENAI_API_KEY=${OPENAI_API_KEY}"
-  fi
-  # OPENROUTER_API_KEY intentionally NOT carried — retired in CTO-DECISION-014.
-  if [ -n "${BRAVE_API_KEY:-}" ]; then
-    echo "BRAVE_API_KEY=${BRAVE_API_KEY}"
-  fi
-} | ssh "${SSH_OPTS[@]}" "cto@${VPS_IP}" 'cat > /opt/cto/.env && chmod 0600 /opt/cto/.env'
+# Stream candidate env content over SSH without writing it to local disk,
+# command history, process arguments, or shell debug traces. Keep live secret
+# values inside the Python process environment and print only env-file lines to
+# the SSH stdin pipe.
+CTO_INSTANCE_ID="${CTO_INSTANCE_ID:-candidate-${VPS_NAME}}" \
+CHAT_DB="/opt/cto/.candidate/${CTO_INSTANCE_ID:-candidate-${VPS_NAME}}/chat.db" \
+OPENCLAW_SESSION_ID="${CTO_INSTANCE_ID:-candidate-${VPS_NAME}}-pwa-john-openclaw" \
+HERMES_HUMAN_SESSION_ID="${CTO_INSTANCE_ID:-candidate-${VPS_NAME}}-pwa-john-hermes" \
+HERMES_AGENT_SESSION_ID="${CTO_INSTANCE_ID:-candidate-${VPS_NAME}}-a2a-openclaw-hermes" \
+python3 - <<'PY' | ssh "${SSH_OPTS[@]}" "cto@${VPS_IP}" 'umask 077 && cat > /opt/cto/.env && chmod 0600 /opt/cto/.env'
+import os
+
+required = ["HETZNER_API_TOKEN", "GITHUB_TOKEN", "HERMES_API_SERVER_KEY"]
+optional = ["OPENAI_API_KEY", "BRAVE_API_KEY"]
+clone_defaults = {
+    "CTO_INSTANCE_ID": os.environ["CTO_INSTANCE_ID"],
+    "CTO_TEST_MODE": "1",
+    "CHAT_DB": os.environ["CHAT_DB"],
+    "OPENCLAW_SESSION_ID": os.environ["OPENCLAW_SESSION_ID"],
+    "HERMES_HUMAN_SESSION_ID": os.environ["HERMES_HUMAN_SESSION_ID"],
+    "HERMES_AGENT_SESSION_ID": os.environ["HERMES_AGENT_SESSION_ID"],
+}
+
+for name in required:
+    print(f"{name}={os.environ[name]}")
+for name, value in clone_defaults.items():
+    print(f"{name}={value}")
+for name in optional:
+    value = os.environ.get(name)
+    if value:
+        print(f"{name}={value}")
+# OPENROUTER_API_KEY intentionally NOT carried — retired in CTO-DECISION-014.
+PY
 
 ssh "${SSH_OPTS[@]}" "cto@${VPS_IP}" 'echo "--- .env keys present (values redacted) ---"; sed "s/=.*/=<set>/" /opt/cto/.env'
 
