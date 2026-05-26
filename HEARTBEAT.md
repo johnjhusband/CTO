@@ -41,3 +41,10 @@ Run the full research methodology:
 - Produce a durable artifact, verification result, repair, commit, or explicit blocked note.
 - Do not store secrets, raw tool traces, or transient noise in shared memory.
 - Do not spend money, destroy infrastructure/data, create external risk, or override OpenClaw strategy without the required approval.
+
+## OpenClaw Work Pump (Every 15 Minutes)
+- Wake OpenClaw through `/opt/cto/scripts/openclaw-work-pump.sh` and its `cto-openclaw-work-pump.timer`.
+- Inspect recent John messages in PWA chat, `/opt/cto/BACKLOG.md`, `/opt/cto/HEARTBEAT.md`, `/opt/cto/wiki/continuous-work-policy.md`, git status, service health, and recent failed verification/logs.
+- Select exactly one safe highest-priority item as the left hemisphere: decide, plan, delegate to Hermes when execution fits Hermes, or produce the final-mile artifact directly.
+- Produce a durable artifact, verification result, repair, commit, delegated Hermes task, or explicit blocked note.
+- Do not spend money, destroy infrastructure/data, create external risk, require a non-retrievable John decision, or bypass the two-hemisphere strategy.

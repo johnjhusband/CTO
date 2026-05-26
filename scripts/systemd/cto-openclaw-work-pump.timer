@@ -1,0 +1,13 @@
+[Unit]
+Description=Run CTO OpenClaw continuous safe work pump every 15 minutes
+
+[Timer]
+OnBootSec=6min
+OnActiveSec=1min
+OnUnitActiveSec=15min
+AccuracySec=1min
+Persistent=false
+Unit=cto-openclaw-work-pump.service
+
+[Install]
+WantedBy=timers.target

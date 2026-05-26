@@ -1,0 +1,11 @@
+[Unit]
+Description=CTO OpenClaw continuous safe work pump
+After=openclaw-gateway.service cto-pwa-backend.service cto-hermes-a2a-sidecar.service
+Wants=openclaw-gateway.service cto-pwa-backend.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/cto
+EnvironmentFile=/opt/cto/.env
+ExecStart=/opt/cto/scripts/openclaw-work-pump.sh
+TimeoutStartSec=720

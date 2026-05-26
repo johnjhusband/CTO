@@ -1,6 +1,6 @@
 # Continuous Work Policy
 
-OpenClaw keeps strategic/routing authority. Hermes may initiate safe operational maintenance, repairs, verification, backlog work, and artifact cleanup when no delegated task is active.
+OpenClaw keeps strategic/routing authority. Hermes may initiate safe operational maintenance, repairs, verification, backlog work, and artifact cleanup when no delegated task is active. OpenClaw must also keep itself moving: when no John-facing conversation or delegated task is active, its work pump chooses one safe strategic/coordination item and advances it rather than idling.
 
 Default queue order:
 1. P0 security and access-control issues.
