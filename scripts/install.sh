@@ -323,29 +323,42 @@ fi
 section "8 — Clone CTO repo on VPS"
 
 REPO_URL="${REPO_URL:-https://github.com/johnjhusband/CTO.git}"
-ssh "${SSH_OPTS[@]}" "cto@${VPS_IP}" "
-  set -e
+ssh "${SSH_OPTS[@]}" "cto@${VPS_IP}" 'bash -s' -- "${REPO_URL}" <<'REMOTE_CLONE'
+  set -euo pipefail
+  REPO_URL="$1"
   source /opt/cto/.env
-  # Clone alongside the .env, then merge
+  # Clone alongside the .env, then merge. Use a short-lived GIT_ASKPASS helper
+  # instead of embedding GITHUB_TOKEN in clone URLs, process arguments, logs, or
+  # the persisted origin remote.
   if [ ! -d /opt/cto/.git ]; then
-    git clone https://oauth2:\${GITHUB_TOKEN}@${REPO_URL#https://} /tmp/cto-clone
+    ASKPASS="$(mktemp)"
+    cleanup() { rm -f "$ASKPASS"; }
+    trap cleanup EXIT
+    chmod 700 "$ASKPASS"
+    cat > "$ASKPASS" <<'ASKPASS_SCRIPT'
+#!/bin/sh
+case "$1" in
+  *Username*) printf '%s\n' oauth2 ;;
+  *Password*) . /opt/cto/.env; printf '%s\n' "$GITHUB_TOKEN" ;;
+esac
+ASKPASS_SCRIPT
+    GIT_ASKPASS="$ASKPASS" GIT_TERMINAL_PROMPT=0 git clone "$REPO_URL" /tmp/cto-clone
     mv /tmp/cto-clone/.git /opt/cto/.git
     shopt -s dotglob
     cd /tmp/cto-clone
     for item in *; do
-      [ \"\$item\" = '.git' ] && continue
-      [ \"\$item\" = '.env' ] && continue
-      mv \"\$item\" \"/opt/cto/\$item\"
+      [ "$item" = '.git' ] && continue
+      [ "$item" = '.env' ] && continue
+      mv "$item" "/opt/cto/$item"
     done
     rm -rf /tmp/cto-clone
     cd /opt/cto
-    # Remote stays HTTPS+token so the cto user can push/pull without an SSH deploy key
-    git remote set-url origin \"https://oauth2:\${GITHUB_TOKEN}@${REPO_URL#https://}\"
+    git remote set-url origin "$REPO_URL"
     git config user.name 'CTO'
     git config user.email 'johnjhusband@users.noreply.github.com'
   fi
   cd /opt/cto && git log --oneline -1
-"
+REMOTE_CLONE
 
 # ─── Section 9: Run install-cto.sh on VPS ──────────────────────────────────
 
