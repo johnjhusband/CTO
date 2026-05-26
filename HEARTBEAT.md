@@ -37,6 +37,7 @@ Run the full research methodology:
 
 ## Hermes Work Pump (Every 15 Minutes)
 - Inspect recent John messages in PWA chat, `/opt/cto/BACKLOG.md`, `/opt/cto/HEARTBEAT.md`, git status, service health, and recent failed verification.
+- Before picking a new item, scan open and pending backlog items for evidence of completion already on disk. Close anything where the work is observably done, or report the closure evidence to OpenClaw if strategy authority is needed.
 - Select one safe highest-priority item using the continuous-work policy.
 - Produce a durable artifact, verification result, repair, commit, or explicit blocked note.
 - Do not store secrets, raw tool traces, or transient noise in shared memory.
@@ -45,6 +46,7 @@ Run the full research methodology:
 ## OpenClaw Work Pump (Every 15 Minutes)
 - Wake OpenClaw through `/opt/cto/scripts/openclaw-work-pump.sh` and its `cto-openclaw-work-pump.timer`.
 - Inspect recent John messages in PWA chat, `/opt/cto/BACKLOG.md`, `/opt/cto/HEARTBEAT.md`, `/opt/cto/wiki/continuous-work-policy.md`, git status, service health, and recent failed verification/logs.
+- Before picking a new item, scan open and pending backlog items for evidence of completion already on disk. Close anything where the work is observably done.
 - Select exactly one safe highest-priority item as the left hemisphere: decide, plan, delegate to Hermes when execution fits Hermes, or produce the final-mile artifact directly.
 - Produce a durable artifact, verification result, repair, commit, delegated Hermes task, or explicit blocked note.
 - Do not spend money, destroy infrastructure/data, create external risk, require a non-retrievable John decision, or bypass the two-hemisphere strategy.

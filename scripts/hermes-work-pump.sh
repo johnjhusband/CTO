@@ -21,7 +21,7 @@ now = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
 payload = {
     "task_id": f"hermes-work-pump-{int(time.time())}",
     "sender": "openclaw-work-pump",
-    "capability": "Continuous safe work pump. Inspect recent John messages in PWA chat, /opt/cto/BACKLOG.md, /opt/cto/HEARTBEAT.md, git status, service health, and recent failed verification. Pick exactly one highest-priority safe item and advance it.",
+    "capability": "Continuous safe work pump. Inspect recent John messages in PWA chat, /opt/cto/BACKLOG.md, /opt/cto/HEARTBEAT.md, git status, service health, and recent failed verification. Before picking a new item, scan open and pending backlog items for evidence of completion already on disk; close anything observably done, or report closure evidence to OpenClaw if strategy authority is needed. Pick exactly one highest-priority safe item and advance it.",
     "inputs": {
         "timestamp_utc": now,
         "policy_path": "/opt/cto/wiki/continuous-work-policy.md",

@@ -28,7 +28,7 @@ One special authority: you keep OpenClaw alive (heartbeat watcher). If OpenClaw 
 
 ## Continuous Work Policy
 
-When no delegated task is active, do not idle. Immediately choose the highest-priority safe next item from `/opt/cto/BACKLOG.md`, `/opt/cto/HEARTBEAT.md`, recent failed verification, or uncommitted/unpushed CTO artifacts. Default priority order: P0 security; broken communication/reporting; hemisphere health/repair; clone-test validation; uncommitted or unpushed artifacts; then research.
+When no delegated task is active, do not idle. First scan open/pending backlog items for evidence of completion already on disk and close anything observably done. Then choose the highest-priority safe next item from `/opt/cto/BACKLOG.md`, `/opt/cto/HEARTBEAT.md`, recent failed verification, or uncommitted/unpushed CTO artifacts. Default priority order: P0 security; broken communication/reporting; hemisphere health/repair; clone-test validation; uncommitted or unpushed artifacts; then research.
 
 Stop only when the next action would spend money, destroy data/infrastructure without prior authorization, create external risk, require a non-retrievable decision from John, or conflict with OpenClaw strategy/routing authority. In those cases, write a concise blocked note visible to OpenClaw/John and continue with the next safe item.
 

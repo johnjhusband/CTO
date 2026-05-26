@@ -37,35 +37,32 @@
 
 | ID | Date | Type | Priority | Affects | Capability Needed | Status |
 |---|---|---|---|---|---|---|
-| [BACKLOG-001](logs/backlog/BACKLOG-001.json) | 2026-05-11 | missing-skill | P0 | human-interface | Self-hosted PWA at `cto.husband.llc` — A2A2H chat + web-push, no per-clone config | escalated-to-john |
-| [BACKLOG-002](logs/backlog/BACKLOG-002.json) | 2026-05-24 | fork-trigger | P2 | left-hemisphere (openclaw) | Governed OpenClaw self-repair/edit mechanism to replace temporary direct-edit exception | open |
-| [BACKLOG-003](logs/backlog/BACKLOG-003.json) | 2026-05-25 | security | P1 | whole repo / live deployment | Thorough multi-layer security audit of the public CTO repo and live CTO deployment | open |
-| [BACKLOG-004](logs/backlog/BACKLOG-004.json) | 2026-05-25 | upstream-pr-needed | P0 | human-interface (A2A2H) | Voice mode for A2A2H PWA — audible CTO reports and spoken replies from John | open |
+| [BACKLOG-002](logs/backlog/BACKLOG-002.json) | 2026-05-24 | fork-trigger | P2 | left-hemisphere (openclaw) | Governed OpenClaw self-repair/edit mechanism to replace the temporary direct-edit exception | open |
+| [BACKLOG-003](logs/backlog/BACKLOG-003.json) | 2026-05-25 | security | P1 | whole repo (and the running deployment whose attack surface is now visible to the public) | Thorough multi-layer security audit of the public CTO repo and the live CTO deployment | open |
+| [BACKLOG-004](logs/backlog/BACKLOG-004.json) | 2026-05-25 | upstream-pr-needed | P0 | human-interface (A2A2H) | Voice mode for A2A2H PWA — CTO reports can be heard aloud and John can reply by speaking | open |
 | [BACKLOG-005](logs/backlog/BACKLOG-005.json) | 2026-05-25 | security | P0 | core-cto / public repo / PWA push identity | Rotate and scrub VAPID/Web Push private key leaked into repo history | dry_run_verified_pending_coordinated_history_scrub |
 | [BACKLOG-006](logs/backlog/BACKLOG-006.json) | 2026-05-25 | security | P0 | core-cto / credential hygiene | Rotate live service credentials and remove secret values from operational logs/history | open |
 | [BACKLOG-007](logs/backlog/BACKLOG-007.json) | 2026-05-25 | security | P1 | infrastructure / network perimeter | Add deny-by-default host/cloud firewall policy for CTO servers and clone candidates | open |
 | [BACKLOG-008](logs/backlog/BACKLOG-008.json) | 2026-05-25 | security | P1 | clone-test-replace / attack surface | Quarantine or retire public clone candidates immediately after validation windows | open |
-| [BACKLOG-009](logs/backlog/BACKLOG-009.json) | 2026-05-25 | security | P0 | A2A2H PWA / authentication | Replace URL query-token PWA auth with cookie/session auth and reduce token logging risk | rotation_grace_deployed_pending_safe_delivery |
 | [BACKLOG-010](logs/backlog/BACKLOG-010.json) | 2026-05-25 | security | P1 | availability / recovery | Enable backup/snapshot and deletion-protection policy for production CTO state | open |
 | [BACKLOG-011](logs/backlog/BACKLOG-011.json) | 2026-05-25 | security | P2 | host hardening / SSH | Complete privileged SSH/fail2ban hardening verification | open |
 | [BACKLOG-012](logs/backlog/BACKLOG-012.json) | 2026-05-25 | security | P2 | patch management / dependency hygiene | Patch OpenClaw and add dependency/security scanning gates | open |
-| [BACKLOG-013](logs/backlog/BACKLOG-013.json) | 2026-05-25 | security | P0 | A2A2H PWA / authentication and access control | Close PWA chat access-control bug so knowing the chat URL is not sufficient | rotation_grace_deployed_pending_safe_delivery |
-| [BACKLOG-014](logs/backlog/BACKLOG-014.json) | 2026-05-25 | upstream-pr-needed | P0 | A2A2H PWA / notifications and background delivery | Reliable background notifications so John can context-switch without missing replies | server_push_verified_pending_device_confirmation |
-| [BACKLOG-015](logs/backlog/BACKLOG-015.json) | 2026-05-25 | missing-mcp | P1 | reporting / A2A2H human interface | Outbound email status updates to John at john@husband.llc | adapter_implemented_blocked_on_credentials |
-| [BACKLOG-016](logs/backlog/BACKLOG-016.json) | 2026-05-26 | upstream-pr-needed | P0 | A2A2H PWA / inter-hemisphere transparency | Visible OpenClaw/Hermes coordination transcript or audit view in the PWA | resolved |
-| [BACKLOG-017](logs/backlog/BACKLOG-017.json) | 2026-05-26 | feature | P0 | A2A2H PWA / chat history persistence and review | Durable, human-readable chat log export John can review without needing the PWA foregrounded | implemented_pending_mobile_verification |
+| [BACKLOG-015](logs/backlog/BACKLOG-015.json) | 2026-05-25 | missing-mcp | P1 | reporting / A2A2H human interface | Outbound email status updates to John at john@husband.llc on a regular cadence and major events | adapter_implemented_blocked_on_credentials |
 
 ## Escalated to John (Awaiting Decision)
 
-| ID | Escalated | Type | Capability | What John Needs to Decide |
-|---|---|---|---|---|
-| BACKLOG-001 | 2026-05-11 | missing-skill | Self-hosted PWA (A2A2H chat + push) | When to build (v1.1 scope per CTO-DECISION-006). DNS: husband.llc lives at Namecheap; John creates `cto.husband.llc` A record when ready. |
+None.
 
 ## Resolved / Abandoned
 
 | ID | Resolution Date | Type | Capability | Resolution |
 |---|---|---|---|---|
-| BACKLOG-016 | 2026-05-26 | upstream-pr-needed | Visible OpenClaw/Hermes coordination transcript or audit view in the PWA | Runtime-verified sanitized A2A request/response rows in live PWA API; future work is optional UX deduplication/polish. |
+| BACKLOG-001 | 2026-05-26 | missing-skill | Self-hosted PWA at cto.husband.llc — chat with OpenClaw/Hermes from phone, web-push notifications, A2A wire format | Resolved 2026-05-26: the A2A2H/PWA umbrella build is delivered and in active use. Evidence: John is using the PWA daily; durable chat log exists at logs/pwa-chat/; push enrollme... |
+| BACKLOG-009 | 2026-05-26 | security | Replace URL query-token PWA auth with cookie/session auth and reduce token logging risk | Resolved 2026-05-26: URL/query-token auth was replaced with signed HttpOnly/SameSite cookie sessions; API query-token auth is rejected; unauthenticated shell/API access returns... |
+| BACKLOG-013 | 2026-05-26 | security | Close PWA chat access-control bug so knowing the chat URL is not sufficient to read or use CTO chat | Resolved 2026-05-26: the PWA access-control failure is closed. The chat shell and APIs require authenticated cookie sessions, unauthenticated and query-token API access are reje... |
+| BACKLOG-014 | 2026-05-26 | upstream-pr-needed | Make PWA deliver CTO replies while backgrounded so John can context-switch without missing messages | Resolved 2026-05-26: reliable PWA background notification plumbing is implemented and runtime-verified. Evidence: John re-enrolled browser push at 2026-05-26T21:11Z via system_e... |
+| BACKLOG-016 | 2026-05-26 | upstream-pr-needed | Visible inter-hemisphere coordination transcript or audit view in the PWA | Resolved 2026-05-26: A2A coordination audit transcript logging shipped in commit fea0599 and was runtime-verified by John's Hermes audit-ping at 2026-05-26T20:58Z. Live authenti... |
+| BACKLOG-017 | 2026-05-26 | feature | Durable, human-readable chat log export John can review at any time without needing the PWA in the foreground | Resolved 2026-05-26: durable human-readable PWA chat log is implemented, committed, runtime-verified, and in active use. Evidence: commit 6c948fe plus logs/repairs/BACKLOG-017-r... |
 
 ---
 
