@@ -19,7 +19,7 @@ Summary table and operating rules live in the top-level [BACKLOG.md](../../BACKL
 | [BACKLOG-011](BACKLOG-011.json) | 2026-05-25 | security | P2 | open |
 | [BACKLOG-012](BACKLOG-012.json) | 2026-05-25 | security | P2 | open |
 | [BACKLOG-013](BACKLOG-013.json) | 2026-05-25 | security | P0 | resolved |
-| [BACKLOG-014](BACKLOG-014.json) | 2026-05-25 | upstream-pr-needed | P0 | resolved |
+| [BACKLOG-014](BACKLOG-014.json) | 2026-05-25 | upstream-pr-needed | P0 | open |
 | [BACKLOG-015](BACKLOG-015.json) | 2026-05-25 | missing-mcp | P1 | adapter_implemented_blocked_on_credentials |
-| [BACKLOG-016](BACKLOG-016.json) | 2026-05-26 | upstream-pr-needed | P0 | resolved |
-| [BACKLOG-017](BACKLOG-017.json) | 2026-05-26 | feature | P0 | resolved |
+| [BACKLOG-016](BACKLOG-016.json) | 2026-05-26 | upstream-pr-needed | P0 | open |
+| [BACKLOG-017](BACKLOG-017.json) | 2026-05-26 | feature | P0 | open |

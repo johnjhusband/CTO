@@ -3,7 +3,7 @@
   "timestamp": "2026-05-25T15:49:00Z",
   "type": "upstream-pr-needed",
   "priority": "P0",
-  "status": "resolved",
+  "status": "open",
   "surfaced_by": "john",
   "surfaced_from": "PWA chat 2026-05-25 15:49 UTC — John reported PWA only functions in foreground and missed messages block context switching",
   "affects": "A2A2H PWA / notifications and background delivery",
@@ -19,10 +19,11 @@
   "blast_radius": "Requires browser notification permission, VAPID/Web Push key management, subscription storage, and careful auth binding so notifications do not leak message content to unauthorized clients. May need different handling for mobile browsers.",
   "rollback_plan": "Disable push delivery with a feature flag and fall back to foreground polling/unread badges. Keep message delivery canonical in the PWA chat database so disabling push does not lose messages.",
   "john_review_date": "2026-05-25",
-  "resolution_date": "2026-05-26",
-  "resolution_notes": "Code repair committed: agent replies now trigger best-effort Web Push via stored subscriptions; detached background job replies use the same notification path; stale subscriptions are pruned; service-worker cache bumped. Live delivery still requires valid VAPID keys, browser permission, and pywebpush in the runtime. 2026-05-26T21:48Z: runtime Web Push server path verified to provider-submit level after VAPID rotation and browser re-enrollment; pywebpush attempted 1 delivery with 0 failures. Final end-to-end resolution still requires John/device confirmation of background notification display.\n\nResolved 2026-05-26: reliable PWA background notification plumbing is implemented and runtime-verified. Evidence: John re-enrolled browser push at 2026-05-26T21:11Z via system_event push_subscribed; stored subscription count was 1; pywebpush delivery verification returned attempted=1 failed=0; rotated VAPID runtime path was verified. Any later device/browser-specific notification UX defect should be tracked as a new narrower item.",
+  "resolution_date": null,
+  "resolution_notes": "Code repair committed: agent replies now trigger best-effort Web Push via stored subscriptions; detached background job replies use the same notification path; stale subscriptions are pruned; service-worker cache bumped. Live delivery still requires valid VAPID keys, browser permission, and pywebpush in the runtime. 2026-05-26T21:48Z: runtime Web Push server path verified to provider-submit level after VAPID rotation and browser re-enrollment; pywebpush attempted 1 delivery with 0 failures. Final end-to-end resolution still requires John/device confirmation of background notification display.\n\nResolved 2026-05-26: reliable PWA background notification plumbing is implemented and runtime-verified. Evidence: John re-enrolled browser push at 2026-05-26T21:11Z via system_event push_subscribed; stored subscription count was 1; pywebpush delivery verification returned attempted=1 failed=0; rotated VAPID runtime path was verified. Any later device/browser-specific notification UX defect should be tracked as a new narrower item.\n\nReopened 2026-05-26: backend push plumbing alone was not enough. Visible PWA UI shipped in commit 389a01e with SHELL_CACHE cto-shell-v7; do not reclose until John confirms he can see and use the Test push button on his phone.",
   "related_decision_log": null,
   "escalation_log": [
     "Priority raised to P0 on 2026-05-26 per John: 'the pwa is worthless as is. raise all pwa issues to p0.'"
-  ]
+  ],
+  "verification_commitment": "Visible UI to be verified by John: PWA header must show a Test push button; tapping it must subscribe via /api/push/subscribe, call /api/push/test, and show visible status plus a device notification when the browser/provider path works."
 }
