@@ -39,6 +39,7 @@
 |---|---|---|---|---|---|---|
 | [BACKLOG-001](logs/backlog/BACKLOG-001.json) | 2026-05-11 | missing-skill | P1 | human-interface | Self-hosted PWA at `cto.husband.llc` — A2A2H chat + web-push, no per-clone config | escalated-to-john |
 | [BACKLOG-002](logs/backlog/BACKLOG-002.json) | 2026-05-24 | fork-trigger | P2 | left-hemisphere (openclaw) | Governed OpenClaw self-repair/edit mechanism to replace temporary direct-edit exception | open |
+| [BACKLOG-003](logs/backlog/BACKLOG-003.json) | 2026-05-25 | security | P1 | whole repo / live deployment | Thorough multi-layer security audit of the public CTO repo and live CTO deployment | open |
 | [BACKLOG-004](logs/backlog/BACKLOG-004.json) | 2026-05-25 | upstream-pr-needed | P1 | human-interface (A2A2H) | Voice mode for A2A2H PWA — audible CTO reports and spoken replies from John | open |
 | [BACKLOG-005](logs/backlog/BACKLOG-005.json) | 2026-05-25 | security | P0 | core-cto / public repo / PWA push identity | Rotate and scrub VAPID/Web Push private key leaked into repo history | open |
 | [BACKLOG-006](logs/backlog/BACKLOG-006.json) | 2026-05-25 | security | P0 | core-cto / credential hygiene | Rotate live service credentials and remove secret values from operational logs/history | open |
@@ -52,6 +53,7 @@
 | [BACKLOG-014](logs/backlog/BACKLOG-014.json) | 2026-05-25 | upstream-pr-needed | P1 | A2A2H PWA / notifications and background delivery | Reliable background notifications so John can context-switch without missing replies | implemented_pending_runtime_push_verification |
 | [BACKLOG-015](logs/backlog/BACKLOG-015.json) | 2026-05-25 | missing-mcp | P1 | reporting / A2A2H human interface | Outbound email status updates to John at john@husband.llc | adapter_implemented_blocked_on_credentials |
 | [BACKLOG-016](logs/backlog/BACKLOG-016.json) | 2026-05-26 | upstream-pr-needed | P1 | A2A2H PWA / inter-hemisphere transparency | Visible OpenClaw/Hermes coordination transcript or audit view in the PWA | open |
+| [BACKLOG-017](logs/backlog/BACKLOG-017.json) | 2026-05-26 | feature | P1 | A2A2H PWA / chat history persistence and review | Durable, human-readable chat log export John can review without needing the PWA foregrounded | open |
 
 ## Escalated to John (Awaiting Decision)
 
