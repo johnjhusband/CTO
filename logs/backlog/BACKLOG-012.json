@@ -1,0 +1,29 @@
+{
+  "id": "BACKLOG-012",
+  "timestamp": "2026-05-25T05:25:00Z",
+  "type": "security",
+  "priority": "P2",
+  "status": "open",
+  "surfaced_by": "john",
+  "surfaced_from": "PWA request 2026-05-25 05:19 UTC \u2014 CISSP-like CTO security audit and prioritization",
+  "affects": "patch management / dependency hygiene",
+  "capability_needed": "Patch OpenClaw and add dependency/security scanning gates",
+  "details": "OpenClaw status reports an available update from 2026.5.7 to npm 2026.5.22. The repo contains several package manifests and install scripts that fetch external dependencies. Root npm audit did not run because there is no root package; each subproject and installed global component needs its own dependency/CVE gate.",
+  "search_trail": [
+    "Ran openclaw status and openclaw security audit --deep on cto-v1; result: 0 critical, 1 warn, 1 info; gateway bound to 127.0.0.1 with token auth.",
+    "Ran ss -ltnup on cto-v1; found public SSH plus public HTTP/HTTPS and loopback-only OpenClaw/Hermes/A2A services.",
+    "Queried Hetzner API for servers, primary IPs, and firewalls; found no cloud firewalls and multiple public CTO servers/candidates.",
+    "Inspected /etc/caddy/Caddyfile without secrets; cto.husband.llc reverse-proxies to 127.0.0.1:8088 with security headers and access logging.",
+    "Scanned git history/current tree for secret-shaped patterns and key material; confirmed historical VAPID private key material and multiple documented credential-handling risks.",
+    "Checked file permissions for /opt/cto, ~/.openclaw, ~/.hermes, ~/.codex; sensitive home config dirs are mostly 0600/0700, while project files are group-writable by cto group.",
+    "Checked unattended-upgrades; service is enabled and active.",
+    "Attempted privileged sshd/fail2ban verification; elevated execution is unavailable in this PWA runtime, so privileged SSH posture remains unverified."
+  ],
+  "proposed_resolution": "Schedule a patch review through clone-test-replace, run npm audit/pip-audit or equivalent per subproject, pin or checksum external installers where feasible, and add a recurring update-status/security-audit digest.",
+  "blast_radius": "Updating OpenClaw or dependencies can change runtime behavior and must follow clone-test-replace rather than in-place upgrade.",
+  "rollback_plan": "Keep current production untouched until the candidate passes; rollback by retaining cto-v1 and restoring previous package versions/config.",
+  "john_review_date": "2026-05-25",
+  "resolution_date": null,
+  "resolution_notes": null,
+  "related_decision_log": null
+}

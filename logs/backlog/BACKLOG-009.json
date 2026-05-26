@@ -1,0 +1,29 @@
+{
+  "id": "BACKLOG-009",
+  "timestamp": "2026-05-25T05:25:00Z",
+  "type": "security",
+  "priority": "P1",
+  "status": "open",
+  "surfaced_by": "john",
+  "surfaced_from": "PWA request 2026-05-25 05:19 UTC \u2014 CISSP-like CTO security audit and prioritization",
+  "affects": "A2A2H PWA / authentication",
+  "capability_needed": "Replace URL query-token PWA auth with cookie/session auth and reduce token logging risk",
+  "details": "The PWA accepts the auth token from the URL query string. Query tokens are easy to leak through browser history, screenshots, copied links, Caddy/access logs, and referrer-like surfaces. The Caddy config writes structured access logs; even with sensible headers, query-string auth is not an acceptable long-term control for CTO.",
+  "search_trail": [
+    "Ran openclaw status and openclaw security audit --deep on cto-v1; result: 0 critical, 1 warn, 1 info; gateway bound to 127.0.0.1 with token auth.",
+    "Ran ss -ltnup on cto-v1; found public SSH plus public HTTP/HTTPS and loopback-only OpenClaw/Hermes/A2A services.",
+    "Queried Hetzner API for servers, primary IPs, and firewalls; found no cloud firewalls and multiple public CTO servers/candidates.",
+    "Inspected /etc/caddy/Caddyfile without secrets; cto.husband.llc reverse-proxies to 127.0.0.1:8088 with security headers and access logging.",
+    "Scanned git history/current tree for secret-shaped patterns and key material; confirmed historical VAPID private key material and multiple documented credential-handling risks.",
+    "Checked file permissions for /opt/cto, ~/.openclaw, ~/.hermes, ~/.codex; sensitive home config dirs are mostly 0600/0700, while project files are group-writable by cto group.",
+    "Checked unattended-upgrades; service is enabled and active.",
+    "Attempted privileged sshd/fail2ban verification; elevated execution is unavailable in this PWA runtime, so privileged SSH posture remains unverified."
+  ],
+  "proposed_resolution": "Move PWA auth to an HttpOnly Secure SameSite cookie or equivalent session exchange, redact access logs, expire old query tokens, and add replay/session invalidation.",
+  "blast_radius": "Changing auth can temporarily lock John out of the PWA or break background jobs that still use bearer/query token assumptions.",
+  "rollback_plan": "Keep a temporary one-time bootstrap path, verify login from John\u2019s device, then disable query-token auth.",
+  "john_review_date": "2026-05-25",
+  "resolution_date": null,
+  "resolution_notes": null,
+  "related_decision_log": null
+}

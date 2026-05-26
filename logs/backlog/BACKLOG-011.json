@@ -1,0 +1,29 @@
+{
+  "id": "BACKLOG-011",
+  "timestamp": "2026-05-25T05:25:00Z",
+  "type": "security",
+  "priority": "P2",
+  "status": "open",
+  "surfaced_by": "john",
+  "surfaced_from": "PWA request 2026-05-25 05:19 UTC \u2014 CISSP-like CTO security audit and prioritization",
+  "affects": "host hardening / SSH",
+  "capability_needed": "Complete privileged SSH/fail2ban hardening verification",
+  "details": "Non-root audit could not verify effective sshd settings or fail2ban jail status. Readable config shows X11Forwarding yes; SSH listens publicly on IPv4 and IPv6. Fail2ban is running as a service, but status requires root. Effective PasswordAuthentication, PermitRootLogin, MaxAuthTries, AllowUsers, and forwarding settings need root-level confirmation before claiming the host is hardened.",
+  "search_trail": [
+    "Ran openclaw status and openclaw security audit --deep on cto-v1; result: 0 critical, 1 warn, 1 info; gateway bound to 127.0.0.1 with token auth.",
+    "Ran ss -ltnup on cto-v1; found public SSH plus public HTTP/HTTPS and loopback-only OpenClaw/Hermes/A2A services.",
+    "Queried Hetzner API for servers, primary IPs, and firewalls; found no cloud firewalls and multiple public CTO servers/candidates.",
+    "Inspected /etc/caddy/Caddyfile without secrets; cto.husband.llc reverse-proxies to 127.0.0.1:8088 with security headers and access logging.",
+    "Scanned git history/current tree for secret-shaped patterns and key material; confirmed historical VAPID private key material and multiple documented credential-handling risks.",
+    "Checked file permissions for /opt/cto, ~/.openclaw, ~/.hermes, ~/.codex; sensitive home config dirs are mostly 0600/0700, while project files are group-writable by cto group.",
+    "Checked unattended-upgrades; service is enabled and active.",
+    "Attempted privileged sshd/fail2ban verification; elevated execution is unavailable in this PWA runtime, so privileged SSH posture remains unverified."
+  ],
+  "proposed_resolution": "Run a privileged read-only SSH/fail2ban audit, then harden to key-only, no root login, X11 forwarding off, tight auth retry limits, and source-restricted SSH once firewall/tailnet access is confirmed.",
+  "blast_radius": "SSH changes can lock out administration if applied before alternate access is verified.",
+  "rollback_plan": "Keep console access available; test a second SSH session before closing the first; revert sshd_config.d changes if login fails.",
+  "john_review_date": "2026-05-25",
+  "resolution_date": null,
+  "resolution_notes": null,
+  "related_decision_log": null
+}

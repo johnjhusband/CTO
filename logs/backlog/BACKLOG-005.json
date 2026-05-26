@@ -1,0 +1,29 @@
+{
+  "id": "BACKLOG-005",
+  "timestamp": "2026-05-25T05:25:00Z",
+  "type": "security",
+  "priority": "P0",
+  "status": "open",
+  "surfaced_by": "john",
+  "surfaced_from": "PWA request 2026-05-25 05:19 UTC \u2014 CISSP-like CTO security audit and prioritization",
+  "affects": "core-cto / public repo / PWA push identity",
+  "capability_needed": "Rotate and scrub VAPID/Web Push private key leaked into repo history",
+  "details": "Read-only audit found an EC private key for the PWA VAPID/Web Push identity in git history and a live private.pem present in the working tree. Even if the current file is untracked, the historical private key must be treated as compromised for a public repo. This affects push-message authenticity and is also a marker that binary/runtime artifacts entered source control before the public flip.",
+  "search_trail": [
+    "Ran openclaw status and openclaw security audit --deep on cto-v1; result: 0 critical, 1 warn, 1 info; gateway bound to 127.0.0.1 with token auth.",
+    "Ran ss -ltnup on cto-v1; found public SSH plus public HTTP/HTTPS and loopback-only OpenClaw/Hermes/A2A services.",
+    "Queried Hetzner API for servers, primary IPs, and firewalls; found no cloud firewalls and multiple public CTO servers/candidates.",
+    "Inspected /etc/caddy/Caddyfile without secrets; cto.husband.llc reverse-proxies to 127.0.0.1:8088 with security headers and access logging.",
+    "Scanned git history/current tree for secret-shaped patterns and key material; confirmed historical VAPID private key material and multiple documented credential-handling risks.",
+    "Checked file permissions for /opt/cto, ~/.openclaw, ~/.hermes, ~/.codex; sensitive home config dirs are mostly 0600/0700, while project files are group-writable by cto group.",
+    "Checked unattended-upgrades; service is enabled and active.",
+    "Attempted privileged sshd/fail2ban verification; elevated execution is unavailable in this PWA runtime, so privileged SSH posture remains unverified."
+  ],
+  "proposed_resolution": "Rotate the VAPID keypair, update the deployed PWA, invalidate old subscriptions as needed, and scrub the historical private key with git-filter-repo/BFG if John accepts a public-history rewrite.",
+  "blast_radius": "Existing push subscriptions may need to be re-enrolled; rewriting public history can disrupt clones/forks.",
+  "rollback_plan": "If rotation breaks push, restore the previous server-side key only temporarily while re-enrolling, then rotate again; if history rewrite is too disruptive, leave history but rotate and document compromise acceptance.",
+  "john_review_date": "2026-05-25",
+  "resolution_date": null,
+  "resolution_notes": null,
+  "related_decision_log": null
+}
