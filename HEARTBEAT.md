@@ -34,3 +34,10 @@ Run the full research methodology:
 - Review technology radar — any deferred items due for re-evaluation? [unverified — not implemented]
 - Review MEMORY.md — anything stale that should be updated or removed? [unverified — not implemented]
 - Review scoring calibration — am I filtering too loose or too tight? [unverified — not implemented]
+
+## Hermes Work Pump (Every 15 Minutes)
+- Inspect recent John messages in PWA chat, `/opt/cto/BACKLOG.md`, `/opt/cto/HEARTBEAT.md`, git status, service health, and recent failed verification.
+- Select one safe highest-priority item using the continuous-work policy.
+- Produce a durable artifact, verification result, repair, commit, or explicit blocked note.
+- Do not store secrets, raw tool traces, or transient noise in shared memory.
+- Do not spend money, destroy infrastructure/data, create external risk, or override OpenClaw strategy without the required approval.

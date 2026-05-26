@@ -116,3 +116,9 @@ Review notes: Credential values must never be stored in docs/logs/memory/chat. F
 - [verified] Evidence: `session_a2a-openclaw-hermes-main.json` had grown to ~1.29 MB / 415 messages and Hermes logs showed repeated `Failed to generate context summary: Codex auxiliary Responses stream exceeded 60.0s total timeout` warnings. A fresh Hermes API session returned `OK`.
 - [verified] Repair: OpenClaw rotated the Hermes A2A sidecar to fresh scoped session IDs (`a2a-openclaw-hermes-20260525-repair1`, `pwa-john-hermes-20260525-repair1`) using a systemd user drop-in and restarted only the sidecar. Post-repair A2A delegation returned `OK` with the new session ID.
 - [verified] Lesson: process/HTTP health is insufficient for Hermes. Mutual-health checks must include an actual small A2A delegation, and long-lived Hermes API sessions need session hygiene/rotation before context compression failure makes delegation unreliable.
+
+## 2026-05-26 — Continuous-work memory update for Hermes
+- [verified] John asked how to update Hermes memory files so Hermes is always working.
+- [verified] Hermes recommended turning “always working” into an operational queue: if no delegated task is active, choose the highest-priority safe item from backlog, heartbeat, recent failed verification, or uncommitted artifacts.
+- [verified] OpenClaw updated `HERMES_ROLE.md`, `HEARTBEAT.md`, `USER.md`, and created `/opt/cto/wiki/continuous-work-policy.md`. Hermes may initiate safe operational maintenance/repair/verification/backlog work, but must not override OpenClaw strategy/routing authority.
+- [verified] Stop conditions remain: spending money, destructive action without authorization, external risk, non-retrievable John decision, or conflict with OpenClaw routing authority.
