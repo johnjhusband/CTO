@@ -24,26 +24,53 @@ declare -a checks=(
 hit_count=0
 rev_count=0
 
+is_placeholder_match() {
+  local marker="$1"
+  local line="$2"
+
+  # Shell/template references such as KEY=${KEY}, KEY="$KEY", or
+  # Environment=API_SERVER_KEY=${HERMES_API_SERVER_KEY} are not leaked values.
+  # They are common in installer scripts and should not mask real literal
+  # values elsewhere in history.
+  case "$marker" in
+    *_env)
+      if [[ "$line" =~ =[[:space:]]*[\"\']?\$\{?[A-Za-z_][A-Za-z0-9_]*\}? ]]; then
+        return 0
+      fi
+      ;;
+  esac
+
+  return 1
+}
+
 while IFS= read -r rev; do
   rev_count=$((rev_count + 1))
   short="${rev:0:12}"
   for check in "${checks[@]}"; do
     name="${check%%|*}"
     regex="${check#*|}"
-    # -l prints only file paths, not matching lines/values. Errors are ignored for
-    # binary/encoding edge cases so the scan can continue across all history.
+    # Use -n so we can suppress template-only matches without printing values.
+    # Output below remains path + marker only; matching line content is kept in
+    # process memory and never emitted.
     while IFS= read -r match; do
       [[ -n "$match" ]] || continue
-      path="${match#*:}"
+      rest="${match#*:}"
+      path="${rest%%:*}"
+      content="${rest#*:}"
+      content="${content#*:}"
       case "$path" in
-        tests/test_redact_operational_secrets.py)
-          # Synthetic fixture values deliberately exercise the redactor.
+        tests/test_redact_operational_secrets.py|scripts/security/check-secret-artifacts.sh|scripts/security/check-git-history-secret-markers.sh)
+          # Synthetic fixtures and scanner regex definitions deliberately contain
+          # marker strings but no secret values.
           continue
           ;;
       esac
+      if is_placeholder_match "$name" "$content"; then
+        continue
+      fi
       printf 'HISTORY_SECRET_MARKER rev=%s marker=%s path=%s\n' "$short" "$name" "$path"
       hit_count=$((hit_count + 1))
-    done < <(git grep -I -E -l "$regex" "$rev" -- . 2>/dev/null || true)
+    done < <(git grep -I -E -n -e "$regex" "$rev" -- . 2>/dev/null || true)
   done
 done < <(git rev-list --all)
 
