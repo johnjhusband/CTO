@@ -22,9 +22,9 @@ for p in (str(REPO), str(SERVICES)):
         sys.path.insert(0, p)
 
 
-def fresh_server_module(tmpdir: str):
+def fresh_server_module(tmpdir: str, *, instance_id: str = "test-suite"):
     os.environ["CHAT_DB"] = str(Path(tmpdir) / "chat.db")
-    os.environ["CTO_INSTANCE_ID"] = "test-suite"
+    os.environ["CTO_INSTANCE_ID"] = instance_id
     os.environ["OPENCLAW_SESSION_ID"] = "test-openclaw-session"
     os.environ["PWA_CHAT_LOG_DIR"] = str(Path(tmpdir) / "logs" / "pwa-chat")
     for name in list(sys.modules):
@@ -196,6 +196,28 @@ if __name__ == "__main__":
     unittest.main()
 
 class PwaAccessControlTests(unittest.TestCase):
+    def test_production_without_auth_token_fails_closed(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = ""
+            os.environ.pop("PWA_ALLOW_DEV_NO_AUTH", None)
+            server = fresh_server_module(tmp, instance_id="production")
+            self.assertIn("required", server._pwa_auth_startup_error())
+            handler = object.__new__(server.Handler)
+            handler.path = "/api/messages"
+            handler.headers = {}
+            self.assertFalse(handler._auth_ok())
+
+    def test_non_production_without_auth_token_is_dev_mode_only(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = ""
+            os.environ.pop("PWA_ALLOW_DEV_NO_AUTH", None)
+            server = fresh_server_module(tmp, instance_id="test-suite")
+            self.assertIsNone(server._pwa_auth_startup_error())
+            handler = object.__new__(server.Handler)
+            handler.path = "/api/messages"
+            handler.headers = {}
+            self.assertTrue(handler._auth_ok())
+
     def test_session_cookie_does_not_store_bearer_token(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
