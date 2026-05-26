@@ -20,6 +20,6 @@
   "rollback_plan": "Keep a short-lived localhost/operator bootstrap path during migration, verify John's device can log in, then disable the old URL-token path. If login breaks, restore the previous PWA service from git while keeping public access restricted at Caddy/firewall until fixed.",
   "john_review_date": "2026-05-25",
   "resolution_date": "2026-05-26",
-  "resolution_notes": "Code repair committed: PWA chat shell and APIs now require signed HttpOnly Secure SameSite session cookies; API query-token auth is rejected; unauthenticated root serves a login form. Existing root/index ?token bootstrap is limited to migration and redirects to a clean URL. Live token rotation remains as follow-up after John confirms device access.",
+  "resolution_notes": "Code repair committed: PWA chat shell and APIs now require signed HttpOnly Secure SameSite session cookies; API query-token auth is rejected; unauthenticated root serves a login form. Existing root/index ?token bootstrap is limited to migration and redirects to a clean URL. Live token rotation remains as follow-up after John confirms device access. Follow-up hotfix 2026-05-26 18:56 UTC removed the PWA shell from public GET routes and added query-token access-log redaction; verification artifact: logs/repairs/pwa-shell-access-control-hotfix-2026-05-26.md.",
   "related_decision_log": null
 }
