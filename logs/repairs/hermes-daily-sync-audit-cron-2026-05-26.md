@@ -13,6 +13,7 @@ Updated existing Hermes cron job `66b2675817d2` rather than creating a duplicate
 - Workdir: `/opt/cto`
 - Skill: `systematic-debugging`
 - Enabled toolsets: `terminal,file,skills`
+- Delivery: `all` (set after the first manual run completed but `deliver=origin` had no captured origin target)
 
 ## Behavior
 The cron prompt requires the agent to:
@@ -44,4 +45,8 @@ clean working tree
 Secret-artifact metadata check showed only ignored runtime stores such as `.env`, `.vapid/`, `.vapid-new/`, and PEMs inside ignored venv/certifi locations. No tracked secret contents were printed.
 
 ## Manual cron validation
-After this repair log is committed and pushed, the job is run once manually with Hermes cron. Expected clean result: the job completes with `last_status=ok`, `no_agent=false`, schedule remains `53 17 * * *`, and any local repair commit is already pushed before the audit runs.
+After this repair log was committed and pushed, the job was run once manually with Hermes cron.
+
+- First manual run: completed with `last_status=ok` at `2026-05-26T19:10:38Z`.
+- Delivery finding: `deliver=origin` had no captured origin target, so the job was updated to `deliver=all` for future daily chat-visible reports.
+- Current timer target after repair: next scheduled daily run is `2026-05-27T17:53:00Z`.
