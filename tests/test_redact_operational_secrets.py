@@ -75,6 +75,21 @@ class RedactOperationalSecretsTests(unittest.TestCase):
         self.assertEqual(redacted, "@hermes the pw is REDACTED\n")
         self.assertNotIn("pasted-secret", redacted)
 
+    def test_redacts_http_auth_headers_and_pwa_session_cookies(self):
+        redacted, counts = redactor.redact_text(
+            "Authorization: Bearer live-a2a-token\n"
+            "Authorization=Bearer another-token\n"
+            "Cookie: cto_pwa_session=session-secret; other=1\n"
+        )
+
+        self.assertEqual(counts, {"authorization_bearer": 2, "pwa_session_cookie": 1})
+        self.assertIn("Authorization: Bearer REDACTED", redacted)
+        self.assertIn("Authorization=Bearer REDACTED", redacted)
+        self.assertIn("cto_pwa_session=REDACTED;", redacted)
+        self.assertNotIn("live-a2a-token", redacted)
+        self.assertNotIn("another-token", redacted)
+        self.assertNotIn("session-secret", redacted)
+
 
 if __name__ == "__main__":
     unittest.main()

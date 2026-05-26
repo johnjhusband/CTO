@@ -12,7 +12,7 @@ The original PWA treated the private URL token as an API credential: the fronten
 - `python3 -m py_compile /opt/cto/services/pwa/backend/server.py`
 - `curl -sk -i https://cto.husband.llc/api/messages | head -1` returns `HTTP/2 401` without a session cookie.
 - `curl -sk -i "https://cto.husband.llc/api/messages?token=REDACTED" | head -1` returns `HTTP/2 401`, proving API query-token auth is closed.
-- `curl -sk -i "https://cto.husband.llc/?token=REDACTED"` returns `303` with `Set-Cookie: cto_pwa_session=...; HttpOnly; Secure; SameSite=Strict`.
+- `curl -sk -i "https://cto.husband.llc/?token=REDACTED"` returns `303` with `Set-Cookie: cto_pwa_session=REDACTED; HttpOnly; Secure; SameSite=Strict`.
 
 ## Rollback
 Revert the commit `pwa: replace URL token auth with session cookie gate` and restart `cto-pwa-backend.service` if browser login breaks unexpectedly.

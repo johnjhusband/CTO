@@ -58,6 +58,15 @@ TOKEN_PATTERNS = [
 # appears in operational logs or chat rows.
 URL_QUERY_TOKEN_RE = re.compile(r"(?P<prefix>(?:[?&]|%3[Ff]|%26)token(?:=|%3[Dd]))(?P<value>[^\s&#'\"<>]+)")
 
+# Operational logs may include HTTP headers from debug traces or failed curls.
+# Preserve header names/schemes for diagnosis while removing credential values.
+AUTH_BEARER_RE = re.compile(
+    r"(?P<prefix>\bAuthorization\s*[:=]\s*(?:Bearer|bearer)\s+)(?P<value>[^\s'\";,}]+)"
+)
+COOKIE_SESSION_RE = re.compile(
+    r"(?P<prefix>\bcto_pwa_session=)(?P<value>[^\s;,'\"}]+)"
+)
+
 # John may accidentally paste credentials in natural-language chat. Catch the
 # known dangerous phrasing without logging the value itself.
 CHAT_PASSWORD_RE = re.compile(
@@ -108,6 +117,24 @@ def redact_text(text: str) -> tuple[str, dict[str, int]]:
         return f"{match.group('prefix')}REDACTED"
 
     text = URL_QUERY_TOKEN_RE.sub(repl_url_query_token, text)
+
+    def repl_bearer(match: re.Match[str]) -> str:
+        value = match.group("value") or ""
+        if value == "REDACTED":
+            return match.group(0)
+        counts["authorization_bearer"] = counts.get("authorization_bearer", 0) + 1
+        return f"{match.group('prefix')}REDACTED"
+
+    text = AUTH_BEARER_RE.sub(repl_bearer, text)
+
+    def repl_cookie_session(match: re.Match[str]) -> str:
+        value = match.group("value") or ""
+        if value == "REDACTED":
+            return match.group(0)
+        counts["pwa_session_cookie"] = counts.get("pwa_session_cookie", 0) + 1
+        return f"{match.group('prefix')}REDACTED"
+
+    text = COOKIE_SESSION_RE.sub(repl_cookie_session, text)
 
     def repl_chat_password(match: re.Match[str]) -> str:
         value = (match.group("value") or "").strip()
