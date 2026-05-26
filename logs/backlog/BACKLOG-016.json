@@ -3,7 +3,7 @@
   "timestamp": "2026-05-26T04:36:00Z",
   "type": "upstream-pr-needed",
   "priority": "P0",
-  "status": "open",
+  "status": "implemented_pending_runtime_verification",
   "surfaced_by": "john",
   "surfaced_from": "PWA chat request 2026-05-26 04:35-04:36 UTC — John asked why he cannot read OpenClaw/Hermes conversation text, then said to add it to the backlog",
   "affects": "A2A2H PWA / inter-hemisphere transparency and auditability",
@@ -20,8 +20,8 @@
   "blast_radius": "Touches the PWA backend, chat/event database schema or event writer, frontend rendering, and possibly Hermes sidecar/OpenClaw delegation logging. Main risk is overexposure: the implementation must redact secrets and avoid raw chain-of-thought/private tool traces. Done correctly, it improves observability without changing OpenClaw or Hermes core behavior.",
   "rollback_plan": "Hide or disable the coordination/audit panel and stop writing the optional coordination event type. Keep normal PWA chat and A2A delegation behavior unchanged. If a schema migration is added, include a reversible migration or leave unused audit rows harmlessly inert.",
   "john_review_date": null,
-  "resolution_date": null,
-  "resolution_notes": null,
+  "resolution_date": "2026-05-26",
+  "resolution_notes": "Code repair committed pending runtime verification: PWA-originated Hermes requests/responses now write sanitized a2a_request/a2a_response rows to chat.db for the existing PWA A2A/JSON transcript toggles. Obvious token/secret/password/auth/cookie/private-key shapes and common pasted credential patterns are redacted before audit storage. Regression and safe security gates pass.",
   "related_decision_log": null,
   "escalation_log": [
     "Priority raised to P0 on 2026-05-26 per John: 'the pwa is worthless as is. raise all pwa issues to p0.'"

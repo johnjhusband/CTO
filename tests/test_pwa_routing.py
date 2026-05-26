@@ -9,6 +9,7 @@ import sys
 import tempfile
 import time
 import urllib.parse
+import urllib.request
 import unittest
 from contextlib import redirect_stderr
 from io import StringIO
@@ -139,6 +140,56 @@ class PwaRoutingTests(unittest.TestCase):
         app_js = (REPO / "services" / "pwa" / "frontend" / "app.js").read_text()
         self.assertIn("visibilitychange", app_js)
         self.assertIn("loadHistory({ replace: true })", app_js)
+
+    def test_a2a_audit_sanitizer_redacts_obvious_secrets(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            server = fresh_server_module(tmp)
+            sanitized = server._sanitize_a2a_audit_value({
+                "api_key": "live-secret",
+                "inputs": {
+                    "message": "open https://x.test/?token=legacy-secret and Authorization: Bearer live-token; pw is pasted-secret",
+                },
+            })
+            rendered = json.dumps(sanitized)
+            self.assertIn("[REDACTED]", rendered)
+            self.assertNotIn("live-secret", rendered)
+            self.assertNotIn("legacy-secret", rendered)
+            self.assertNotIn("live-token", rendered)
+            self.assertNotIn("pasted-secret", rendered)
+
+    def test_send_to_hermes_writes_visible_sanitized_a2a_audit_rows(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            server = fresh_server_module(tmp)
+            chat_db = importlib.import_module("chat.db")
+
+            class FakeResponse:
+                def __enter__(self):
+                    return self
+                def __exit__(self, *_args):
+                    return False
+                def read(self):
+                    return json.dumps({"findings": "done; Authorization: Bearer response-secret"}).encode()
+
+            original_urlopen = urllib.request.urlopen
+            try:
+                urllib.request.urlopen = lambda *_args, **_kwargs: FakeResponse()
+                result = server.send_to_hermes(
+                    "the pw is request-secret",
+                    task_id="audit-test-1",
+                    sender="openclaw",
+                    inputs={"message": "the pw is request-secret", "token": "input-secret"},
+                )
+            finally:
+                urllib.request.urlopen = original_urlopen
+
+            self.assertTrue(result["ok"])
+            rows = [row for row in chat_db.tail(0, 20) if row["correlation"] == "audit-test-1"]
+            self.assertEqual([row["kind"] for row in rows], ["a2a_request", "a2a_response"])
+            joined = "\n".join(row["content"] for row in rows)
+            self.assertNotIn("request-secret", joined)
+            self.assertNotIn("input-secret", joined)
+            self.assertNotIn("response-secret", joined)
+            self.assertIn("[REDACTED]", joined)
 
 
 if __name__ == "__main__":
