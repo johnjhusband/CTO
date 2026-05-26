@@ -2,7 +2,7 @@
   "id": "BACKLOG-017",
   "timestamp": "2026-05-26T19:11:00Z",
   "type": "feature",
-  "priority": "P1",
+  "priority": "P0",
   "status": "open",
   "surfaced_by": "john",
   "surfaced_from": "PWA chat 2026-05-26 ~19:10 UTC — John: 'I'm still loosing context on pwa when it's in the background. I need all of the info to be available like a log file so I can review it at a later date.'",
@@ -20,5 +20,8 @@
   "john_review_date": "2026-05-26",
   "resolution_date": null,
   "resolution_notes": null,
-  "related_decision_log": null
+  "related_decision_log": null,
+  "escalation_log": [
+    "Priority raised to P0 on 2026-05-26 per John: 'the pwa is worthless as is. raise all pwa issues to p0.'"
+  ]
 }

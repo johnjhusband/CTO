@@ -2,7 +2,7 @@
   "id": "BACKLOG-004",
   "timestamp": "2026-05-25T05:17:00Z",
   "type": "upstream-pr-needed",
-  "priority": "P1",
+  "priority": "P0",
   "status": "open",
   "surfaced_by": "john",
   "surfaced_from": "PWA chat request 2026-05-25 — A2A2H needs audible reports and audible replies",
@@ -39,5 +39,8 @@
   "resolution_date": null,
   "resolution_notes": null,
   "related_decision_log": "CTO-DECISION-006",
-  "related_backlog": "BACKLOG-001"
+  "related_backlog": "BACKLOG-001",
+  "escalation_log": [
+    "Priority raised to P0 on 2026-05-26 per John: 'the pwa is worthless as is. raise all pwa issues to p0.'"
+  ]
 }

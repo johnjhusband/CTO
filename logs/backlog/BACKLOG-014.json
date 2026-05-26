@@ -2,10 +2,10 @@
   "id": "BACKLOG-014",
   "timestamp": "2026-05-25T15:49:00Z",
   "type": "upstream-pr-needed",
-  "priority": "P1",
+  "priority": "P0",
   "status": "implemented_pending_runtime_push_verification",
   "surfaced_by": "john",
-  "surfaced_from": "PWA chat 2026-05-25 15:49 UTC \u2014 John reported PWA only functions in foreground and missed messages block context switching",
+  "surfaced_from": "PWA chat 2026-05-25 15:49 UTC — John reported PWA only functions in foreground and missed messages block context switching",
   "affects": "A2A2H PWA / notifications and background delivery",
   "capability_needed": "Make PWA deliver CTO replies while backgrounded so John can context-switch without missing messages",
   "details": "John reported the PWA only functions when it is in the foreground: he has to watch the chat or he misses CTO messages, which prevents context switching while waiting for responses. The human-facing control room needs reliable background delivery: service worker push notifications, unread indicators, and/or native notification permission flow. This may overlap BACKLOG-001's web-push scope, but John's live report makes the foreground-only behavior a concrete product blocker.",
@@ -21,5 +21,8 @@
   "john_review_date": "2026-05-25",
   "resolution_date": "2026-05-26",
   "resolution_notes": "Code repair committed: agent replies now trigger best-effort Web Push via stored subscriptions; detached background job replies use the same notification path; stale subscriptions are pruned; service-worker cache bumped. Live delivery still requires valid VAPID keys, browser permission, and pywebpush in the runtime.",
-  "related_decision_log": null
+  "related_decision_log": null,
+  "escalation_log": [
+    "Priority raised to P0 on 2026-05-26 per John: 'the pwa is worthless as is. raise all pwa issues to p0.'"
+  ]
 }

@@ -2,7 +2,7 @@
   "id": "BACKLOG-016",
   "timestamp": "2026-05-26T04:36:00Z",
   "type": "upstream-pr-needed",
-  "priority": "P1",
+  "priority": "P0",
   "status": "open",
   "surfaced_by": "john",
   "surfaced_from": "PWA chat request 2026-05-26 04:35-04:36 UTC — John asked why he cannot read OpenClaw/Hermes conversation text, then said to add it to the backlog",
@@ -22,5 +22,8 @@
   "john_review_date": null,
   "resolution_date": null,
   "resolution_notes": null,
-  "related_decision_log": null
+  "related_decision_log": null,
+  "escalation_log": [
+    "Priority raised to P0 on 2026-05-26 per John: 'the pwa is worthless as is. raise all pwa issues to p0.'"
+  ]
 }
