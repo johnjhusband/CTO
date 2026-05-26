@@ -45,7 +45,7 @@
 | [BACKLOG-006](logs/backlog/BACKLOG-006.json) | 2026-05-25 | security | P0 | core-cto / credential hygiene | Rotate live service credentials and remove secret values from operational logs/history | open |
 | [BACKLOG-007](logs/backlog/BACKLOG-007.json) | 2026-05-25 | security | P1 | infrastructure / network perimeter | Add deny-by-default host/cloud firewall policy for CTO servers and clone candidates | open |
 | [BACKLOG-008](logs/backlog/BACKLOG-008.json) | 2026-05-25 | security | P1 | clone-test-replace / attack surface | Quarantine or retire public clone candidates immediately after validation windows | open |
-| [BACKLOG-009](logs/backlog/BACKLOG-009.json) | 2026-05-25 | security | P0 | A2A2H PWA / authentication | Replace URL query-token PWA auth with cookie/session auth and reduce token logging risk | implemented_pending_token_rotation |
+| [BACKLOG-009](logs/backlog/BACKLOG-009.json) | 2026-05-25 | security | P0 | A2A2H PWA / authentication | Replace URL query-token PWA auth with cookie/session auth and reduce token logging risk | auth_restored_pending_safe_token_rotation |
 | [BACKLOG-010](logs/backlog/BACKLOG-010.json) | 2026-05-25 | security | P1 | availability / recovery | Enable backup/snapshot and deletion-protection policy for production CTO state | open |
 | [BACKLOG-011](logs/backlog/BACKLOG-011.json) | 2026-05-25 | security | P2 | host hardening / SSH | Complete privileged SSH/fail2ban hardening verification | open |
 | [BACKLOG-012](logs/backlog/BACKLOG-012.json) | 2026-05-25 | security | P2 | patch management / dependency hygiene | Patch OpenClaw and add dependency/security scanning gates | open |
