@@ -10,6 +10,8 @@ import tempfile
 import time
 import urllib.parse
 import unittest
+from contextlib import redirect_stderr
+from io import StringIO
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
@@ -127,6 +129,15 @@ class PwaAccessControlTests(unittest.TestCase):
             handler.headers = {}
             self.assertFalse(handler._auth_ok())
 
+    def test_pwa_shell_is_not_public_when_auth_token_configured(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
+            server = fresh_server_module(tmp)
+            handler = object.__new__(server.Handler)
+            self.assertFalse(handler._is_public_get("/"))
+            self.assertFalse(handler._is_public_get("/index.html"))
+            self.assertTrue(handler._is_public_get("/manifest.json"))
+
     def test_api_query_token_no_longer_authenticates(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
@@ -135,6 +146,19 @@ class PwaAccessControlTests(unittest.TestCase):
             handler.path = "/api/messages?token=test-secret-token"
             handler.headers = {}
             self.assertFalse(handler._auth_ok())
+
+    def test_access_log_redacts_legacy_query_token(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
+            server = fresh_server_module(tmp)
+            handler = object.__new__(server.Handler)
+            handler.log_date_time_string = lambda: "date"
+            err = StringIO()
+            with redirect_stderr(err):
+                handler.log_message('"GET /api/stream?token=%s HTTP/1.1" 401 -', "test-secret-token")
+            logged = err.getvalue()
+            self.assertIn("token=[REDACTED]", logged)
+            self.assertNotIn("test-secret-token", logged)
 
     def test_session_cookie_authenticates(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
