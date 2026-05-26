@@ -1,0 +1,26 @@
+{
+  "id": "BACKLOG-016",
+  "timestamp": "2026-05-26T04:36:00Z",
+  "type": "upstream-pr-needed",
+  "priority": "P1",
+  "status": "open",
+  "surfaced_by": "john",
+  "surfaced_from": "PWA chat request 2026-05-26 04:35-04:36 UTC — John asked why he cannot read OpenClaw/Hermes conversation text, then said to add it to the backlog",
+  "affects": "A2A2H PWA / inter-hemisphere transparency and auditability",
+  "capability_needed": "Visible inter-hemisphere coordination transcript or audit view in the PWA",
+  "details": "John cannot directly read OpenClaw-to-Hermes delegation traffic because the current A2A2H PWA renders only final user-facing chat messages. OpenClaw can quote or summarize Hermes results, but backend delegation requests/responses and coordination events are not exposed as a readable human-facing thread. This is an oversight/auditability gap rather than a secrecy requirement. The PWA should provide a safe 'show agent coordination' or transcript/audit view that lets John inspect inter-hemisphere messages, task handoffs, response summaries, timestamps, routing decisions, and errors without exposing secrets, raw chain-of-thought, private tool traces, or sensitive credentials.",
+  "search_trail": [
+    "Reviewed BACKLOG-001 — original A2A2H PWA scope includes chat and push, but not a readable inter-hemisphere coordination transcript.",
+    "Reviewed BACKLOG-004 — voice mode extends the human interface, but does not cover text visibility into OpenClaw/Hermes coordination.",
+    "Reviewed BACKLOG-014 — reliable background notifications are related delivery work, but do not solve coordination transcript visibility.",
+    "Searched BACKLOG.md and logs/backlog for coordination, inter-hemisphere, conversation, audit, show agent, visible, transparency, and A2A — no existing backlog item covered this exact capability.",
+    "Observed live PWA behavior 2026-05-26: OpenClaw delegated a greeting to Hermes and could quote Hermes' reply, but John could not read the underlying conversation as a visible chat thread."
+  ],
+  "proposed_resolution": "Add a PWA coordination/audit panel backed by durable event storage. Capture A2A delegation request metadata, sanitized prompt/response text when safe, task IDs, routing owner/phase, timestamps, and errors. Render it behind an authenticated UI toggle such as 'show agent coordination'. Treat user-facing chat as canonical for John-facing conversation, and the coordination panel as an inspectable audit/debug layer. Upstream any generally useful OpenClaw/A2A transcript hooks if the implementation touches framework-level behavior; otherwise keep it as a CTO A2A2H PWA feature.",
+  "blast_radius": "Touches the PWA backend, chat/event database schema or event writer, frontend rendering, and possibly Hermes sidecar/OpenClaw delegation logging. Main risk is overexposure: the implementation must redact secrets and avoid raw chain-of-thought/private tool traces. Done correctly, it improves observability without changing OpenClaw or Hermes core behavior.",
+  "rollback_plan": "Hide or disable the coordination/audit panel and stop writing the optional coordination event type. Keep normal PWA chat and A2A delegation behavior unchanged. If a schema migration is added, include a reversible migration or leave unused audit rows harmlessly inert.",
+  "john_review_date": null,
+  "resolution_date": null,
+  "resolution_notes": null,
+  "related_decision_log": null
+}
