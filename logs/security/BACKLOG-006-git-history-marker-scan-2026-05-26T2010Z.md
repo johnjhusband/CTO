@@ -12,16 +12,18 @@ The gate intentionally exits non-zero while history still contains credential-pr
 ```text
 $ scripts/security/check-git-history-secret-markers.sh
 rc=1
-Git history secret marker scan found 249 marker(s) across 168 revision(s). Values were not printed.
+Git history secret marker scan found nonzero marker(s) across repository history. Values were not printed.
 ```
 
-Unique marker/path summary:
+Unique marker/path summary from the verification run:
 
 ```text
-92 provider_api_key_env scripts/install.sh
-90 hermes_api_key_env scripts/install.sh
-67 hermes_api_key_env scripts/install-cto.sh
+provider_api_key_env scripts/install.sh
+hermes_api_key_env scripts/install.sh
+hermes_api_key_env scripts/install-cto.sh
 ```
+
+Exact hit counts can increase by three each time a new commit preserves the current install-script propagation markers; the gate remains useful because it exits non-zero until those patterns are remediated or history is scrubbed.
 
 Synthetic redaction-test fixtures are allowlisted so the scan focuses on operational history, not unit-test sample strings.
 
