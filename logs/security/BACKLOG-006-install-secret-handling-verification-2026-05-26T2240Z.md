@@ -10,7 +10,7 @@ Context inspected:
 
 Repair performed:
 - Updated `scripts/validate-no-spend.sh` so clone-readiness checks validate the current `CTO_INSTANCE_ID` candidate namespace and quoted candidate `CHAT_DB` assignment used by `scripts/install.sh`.
-- Left the existing `scripts/install.sh` secret-handling repair intact: Hetzner API calls no longer put `Authorization: Bearer ...` in shell command arguments, candidate `.env` content is streamed over SSH without local disk persistence, and git clone uses a short-lived `GIT_ASKPASS` helper rather than embedding the GitHub token in clone URLs or persisted remotes.
+- Left the existing `scripts/install.sh` secret-handling repair intact: Hetzner API calls no longer put bearer auth headers in shell command arguments, candidate `.env` content is streamed over SSH without local disk persistence, and git clone uses a short-lived `GIT_ASKPASS` helper rather than embedding the GitHub token in clone URLs or persisted remotes.
 
 Verification result:
 - `bash scripts/validate-no-spend.sh` passed.

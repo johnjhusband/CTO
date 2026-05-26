@@ -892,15 +892,16 @@ Two-hemisphere CTO install: SUCCESS
   Shared memory:               engram at ${CTO_ROOT}/.engram/cto.db
 
   Auth: Codex OAuth (ChatGPT Pro/Business) on both hemispheres
-  PWA URL: https://cto.husband.llc/?token=${PWA_AUTH_TOKEN}  ← copy once to your phone
+  PWA bootstrap: token generated in ${ENV_FILE_VPS} (value intentionally not printed)
   Logs: ${LOG_FILE}
   Decision: ${DECISION_FILE}
 
 DNS required (one-time, in your Namecheap dashboard):
   cto.husband.llc.  IN  A  <this VPS public IP>
 
-After DNS propagates (~minutes), visit the PWA URL once from your phone — it
-will save the token to localStorage and install as a home-screen app.
+After DNS propagates (~minutes), construct the one-time PWA bootstrap URL from
+${ENV_FILE_VPS} locally and deliver it only through a secure out-of-band path.
+The installer intentionally does not print the token into terminal scrollback or logs.
 
 Next: run Phase 3 functional tests manually per test-plan.md §3.
 SUMMARY
