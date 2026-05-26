@@ -3,9 +3,9 @@
   "timestamp": "2026-05-25T15:49:00Z",
   "type": "security",
   "priority": "P0",
-  "status": "open",
+  "status": "implemented_pending_token_rotation",
   "surfaced_by": "john",
-  "surfaced_from": "PWA chat 2026-05-25 15:49 UTC — John reported anyone can get to this chat if they know it exists",
+  "surfaced_from": "PWA chat 2026-05-25 15:49 UTC \u2014 John reported anyone can get to this chat if they know it exists",
   "affects": "A2A2H PWA / authentication and access control",
   "capability_needed": "Close PWA chat access-control bug so knowing the chat URL is not sufficient to read or use CTO chat",
   "details": "John reported a live security bug: anyone can get to the PWA chat if they know it exists. This is stronger than the earlier query-token hygiene finding in BACKLOG-009; it is an access-control failure for the human-facing CTO control room. The PWA must require real authenticated sessions, reject unauthenticated chat access, prevent URL-only/shareable-token access, and avoid leaking chat state to unauthorized viewers. Treat as P0 because the PWA is the control surface for John-to-CTO and may expose operational context.",
@@ -19,7 +19,7 @@
   "blast_radius": "May temporarily log John out of the PWA and require a new bootstrap/login path. Could affect PWA background jobs, push subscriptions, and clone candidate PWA access if they assume token-in-URL behavior.",
   "rollback_plan": "Keep a short-lived localhost/operator bootstrap path during migration, verify John's device can log in, then disable the old URL-token path. If login breaks, restore the previous PWA service from git while keeping public access restricted at Caddy/firewall until fixed.",
   "john_review_date": "2026-05-25",
-  "resolution_date": null,
-  "resolution_notes": null,
+  "resolution_date": "2026-05-26",
+  "resolution_notes": "Code repair committed: PWA chat shell and APIs now require signed HttpOnly Secure SameSite session cookies; API query-token auth is rejected; unauthenticated root serves a login form. Existing root/index ?token bootstrap is limited to migration and redirects to a clean URL. Live token rotation remains as follow-up after John confirms device access.",
   "related_decision_log": null
 }

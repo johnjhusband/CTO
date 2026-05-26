@@ -7,6 +7,8 @@ import json
 import os
 import sys
 import tempfile
+import time
+import urllib.parse
 import unittest
 from pathlib import Path
 
@@ -106,3 +108,40 @@ class PwaRoutingTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+class PwaAccessControlTests(unittest.TestCase):
+    def test_session_cookie_does_not_store_bearer_token(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
+            server = fresh_server_module(tmp)
+            value = server.Handler._make_session_value(now=1_000)
+            self.assertNotIn("test-secret-token", value)
+            self.assertTrue(server.Handler._valid_session_value(value, now=1_010))
+
+    def test_auth_rejects_bare_url_without_cookie(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
+            server = fresh_server_module(tmp)
+            handler = object.__new__(server.Handler)
+            handler.path = "/"
+            handler.headers = {}
+            self.assertFalse(handler._auth_ok())
+
+    def test_api_query_token_no_longer_authenticates(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
+            server = fresh_server_module(tmp)
+            handler = object.__new__(server.Handler)
+            handler.path = "/api/messages?token=test-secret-token"
+            handler.headers = {}
+            self.assertFalse(handler._auth_ok())
+
+    def test_session_cookie_authenticates(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
+            server = fresh_server_module(tmp)
+            value = server.Handler._make_session_value(now=int(time.time()))
+            handler = object.__new__(server.Handler)
+            handler.path = "/api/messages"
+            handler.headers = {"Cookie": f"cto_pwa_session={urllib.parse.quote(value)}"}
+            self.assertTrue(handler._auth_ok())
