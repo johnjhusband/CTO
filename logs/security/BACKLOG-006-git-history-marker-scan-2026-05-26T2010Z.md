@@ -12,15 +12,15 @@ The gate intentionally exits non-zero while history still contains credential-pr
 ```text
 $ scripts/security/check-git-history-secret-markers.sh
 rc=1
-Git history secret marker scan found 246 marker(s) across 167 revision(s). Values were not printed.
+Git history secret marker scan found 249 marker(s) across 168 revision(s). Values were not printed.
 ```
 
 Unique marker/path summary:
 
 ```text
-91 provider_api_key_env scripts/install.sh
-89 hermes_api_key_env scripts/install.sh
-66 hermes_api_key_env scripts/install-cto.sh
+92 provider_api_key_env scripts/install.sh
+90 hermes_api_key_env scripts/install.sh
+67 hermes_api_key_env scripts/install-cto.sh
 ```
 
 Synthetic redaction-test fixtures are allowlisted so the scan focuses on operational history, not unit-test sample strings.
