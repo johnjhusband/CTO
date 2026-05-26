@@ -3,7 +3,7 @@
   "timestamp": "2026-05-25T15:49:00Z",
   "type": "security",
   "priority": "P0",
-  "status": "auth_restored_pending_safe_token_rotation",
+  "status": "rotation_grace_deployed_pending_safe_delivery",
   "surfaced_by": "john",
   "surfaced_from": "PWA chat 2026-05-25 15:49 UTC — John reported anyone can get to this chat if they know it exists",
   "affects": "A2A2H PWA / authentication and access control",
@@ -20,10 +20,11 @@
   "rollback_plan": "Keep a short-lived localhost/operator bootstrap path during migration, verify John's device can log in, then disable the old URL-token path. If login breaks, restore the previous PWA service from git while keeping public access restricted at Caddy/firewall until fixed.",
   "john_review_date": "2026-05-25",
   "resolution_date": "2026-05-26",
-  "resolution_notes": "Code repair committed: PWA chat shell and APIs now require signed HttpOnly Secure SameSite session cookies; API query-token auth is rejected; unauthenticated root serves a login form. Existing root/index ?token bootstrap is limited to migration and redirects to a clean URL. Live token rotation remains as follow-up after John confirms device access. Follow-up hotfix 2026-05-26 18:56 UTC removed the PWA shell from public GET routes and added query-token access-log redaction; verification artifact: logs/repairs/pwa-shell-access-control-hotfix-2026-05-26.md. 2026-05-26T21:32Z: live PWA auth was restored after a failed rotation path left PWA_AUTH_TOKEN blank in /opt/cto/.env; unauthenticated root/API/query-token checks returned 401 and safe security gates passed. Token value was not recorded.",
+  "resolution_notes": "Code repair committed: PWA chat shell and APIs now require signed HttpOnly Secure SameSite session cookies; API query-token auth is rejected; unauthenticated root serves a login form. Existing root/index ?token bootstrap is limited to migration and redirects to a clean URL. Live token rotation remains as follow-up after John confirms device access. Follow-up hotfix 2026-05-26 18:56 UTC removed the PWA shell from public GET routes and added query-token access-log redaction; verification artifact: logs/repairs/pwa-shell-access-control-hotfix-2026-05-26.md. 2026-05-26T21:32Z: live PWA auth was restored after a failed rotation path left current-token env var blank in /opt/cto/.env; unauthenticated root/API/query-token checks returned 401 and safe security gates passed. Token value was not recorded. 2026-05-26T21:56Z: PWA backend deployed dual-token rotation grace support: current-token env var signs new sessions, optional previous-token grace env var verifies previous login tokens and existing session cookies during rotation. Live token value was not changed or recorded; safe delivery/John confirmation remains pending.",
   "related_decision_log": null,
   "resolution_log": [
-    "2026-05-26T21:25Z: PWA_AUTH_TOKEN rotated by Claude Code per John's 'Rotate' directive. New bootstrap URL delivered in-conversation. See CTO-DECISION-018.",
-    "2026-05-26T21:32Z: Emergency rollback restored the previous non-empty runtime PWA_AUTH_TOKEN from local secret backup after the attempted rotation left the live backend in no-auth dev mode. Rotation is no longer considered complete; it remains pending a safe delivery path and device confirmation."
+    "2026-05-26T21:25Z: current-token env var rotated by Claude Code per John's 'Rotate' directive. New bootstrap URL delivered in-conversation. See CTO-DECISION-018.",
+    "2026-05-26T21:32Z: Emergency rollback restored the previous non-empty runtime current-token env var from local secret backup after the attempted rotation left the live backend in no-auth dev mode. Rotation is no longer considered complete; it remains pending a safe delivery path and device confirmation.",
+    "2026-05-26T21:56Z: PWA backend deployed dual-token rotation grace support: current-token env var signs new sessions, optional previous-token grace env var verifies previous login tokens and existing session cookies during rotation. Live token value was not changed or recorded; safe delivery/John confirmation remains pending."
   ]
 }

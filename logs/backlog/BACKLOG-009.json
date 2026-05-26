@@ -3,7 +3,7 @@
   "timestamp": "2026-05-25T05:25:00Z",
   "type": "security",
   "priority": "P0",
-  "status": "auth_restored_pending_safe_token_rotation",
+  "status": "rotation_grace_deployed_pending_safe_delivery",
   "surfaced_by": "john",
   "surfaced_from": "PWA request 2026-05-25 05:19 UTC — CISSP-like CTO security audit and prioritization",
   "affects": "A2A2H PWA / authentication",
@@ -24,13 +24,14 @@
   "rollback_plan": "Keep a temporary one-time bootstrap path, verify login from John’s device, then disable query-token auth.",
   "john_review_date": "2026-05-25",
   "resolution_date": "2026-05-26",
-  "resolution_notes": "Code repair is implemented: PWA auth now uses signed HttpOnly/SameSite session cookies; API query-token auth is rejected; the PWA shell is not public when auth is configured; legacy query-token access logs and operational artifacts are redacted. Verification artifact: logs/security/BACKLOG-009-query-token-auth-reconciliation-2026-05-26T2000Z.md. Remaining live token rotation/session invalidation overlaps BACKLOG-013 and BACKLOG-006 and must be coordinated to avoid locking John out. 2026-05-26T21:32Z: live PWA auth was restored after a failed rotation path left PWA_AUTH_TOKEN blank in /opt/cto/.env; unauthenticated root/API/query-token checks returned 401 and safe security gates passed. Token value was not recorded. 2026-05-26T21:32Z: Reconciled after BACKLOG-013 rollback evidence: the attempted live token rotation is not complete; runtime auth is restored with a non-empty token and rejects unauthenticated/query-token requests, but safe rotation remains pending a delivery path and John/device confirmation.",
+  "resolution_notes": "Code repair is implemented: PWA auth now uses signed HttpOnly/SameSite session cookies; API query-token auth is rejected; the PWA shell is not public when auth is configured; legacy query-token access logs and operational artifacts are redacted. Verification artifact: logs/security/BACKLOG-009-query-token-auth-reconciliation-2026-05-26T2000Z.md. Remaining live token rotation/session invalidation overlaps BACKLOG-013 and BACKLOG-006 and must be coordinated to avoid locking John out. 2026-05-26T21:32Z: live PWA auth was restored after a failed rotation path left current-token env var blank in /opt/cto/.env; unauthenticated root/API/query-token checks returned 401 and safe security gates passed. Token value was not recorded. 2026-05-26T21:32Z: Reconciled after BACKLOG-013 rollback evidence: the attempted live token rotation is not complete; runtime auth is restored with a non-empty token and rejects unauthenticated/query-token requests, but safe rotation remains pending a delivery path and John/device confirmation. 2026-05-26T21:56Z: PWA backend deployed dual-token rotation grace support: current-token env var signs new sessions, optional previous-token grace env var verifies previous login tokens and existing session cookies during rotation. Live token value was not changed or recorded; safe delivery/John confirmation remains pending.",
   "related_decision_log": null,
   "escalation_log": [
     "Priority raised to P0 on 2026-05-26 per John: 'the pwa is worthless as is. raise all pwa issues to p0.'"
   ],
   "resolution_log": [
-    "2026-05-26T21:25Z: PWA_AUTH_TOKEN rotated by Claude Code per John's 'Rotate' directive. New bootstrap URL delivered in-conversation. See CTO-DECISION-018.",
-    "2026-05-26T21:37Z: Status reconciled with BACKLOG-013 after emergency rollback evidence; live token rotation reopened as pending safe delivery/device confirmation. No token value recorded."
+    "2026-05-26T21:25Z: current-token env var rotated by Claude Code per John's 'Rotate' directive. New bootstrap URL delivered in-conversation. See CTO-DECISION-018.",
+    "2026-05-26T21:37Z: Status reconciled with BACKLOG-013 after emergency rollback evidence; live token rotation reopened as pending safe delivery/device confirmation. No token value recorded.",
+    "2026-05-26T21:56Z: PWA backend deployed dual-token rotation grace support: current-token env var signs new sessions, optional previous-token grace env var verifies previous login tokens and existing session cookies during rotation. Live token value was not changed or recorded; safe delivery/John confirmation remains pending."
   ]
 }
