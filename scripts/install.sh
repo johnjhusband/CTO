@@ -94,6 +94,36 @@ HERMES_API_SERVER_KEY="${HERMES_API_SERVER_KEY:-$(openssl rand -hex 32)}"
 
 note "Secrets loaded"
 
+hcloud_api() {
+  local method="$1"
+  local path="$2"
+  local body="${3:-}"
+  HCLOUD_METHOD="${method}" HCLOUD_PATH="${path}" HCLOUD_BODY="${body}" python3 - <<'PY'
+import os
+import sys
+import urllib.error
+import urllib.request
+
+base = "https://api.hetzner.cloud/v1"
+token = os.environ["HETZNER_API_TOKEN"]
+method = os.environ["HCLOUD_METHOD"]
+path = os.environ["HCLOUD_PATH"]
+body = os.environ.get("HCLOUD_BODY", "")
+data = body.encode("utf-8") if body else None
+headers = {"Authorization": f"Bearer {token}"}
+if data is not None:
+    headers["Content-Type"] = "application/json"
+req = urllib.request.Request(base + path, data=data, headers=headers, method=method)
+try:
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        sys.stdout.write(resp.read().decode("utf-8"))
+except urllib.error.HTTPError as exc:
+    payload = exc.read().decode("utf-8", errors="replace")
+    sys.stdout.write(payload or f'{{"error":{{"code":"http_{exc.code}"}}}}')
+    sys.exit(22)
+PY
+}
+
 # ─── Section 2: Resolve Hetzner SSH key + locate cto-deploy private key ────
 
 section "2 — SSH key resolution"
@@ -105,8 +135,7 @@ note "Using local SSH key: ${SSH_KEY}"
 
 # Hetzner-side SSH key ID (the public key registered with Hetzner)
 HETZNER_SSH_KEY_NAME="${HETZNER_SSH_KEY_NAME:-cto-agent-deploy}"
-HETZNER_SSH_KEY_ID=$(curl -fsSL -H "Authorization: Bearer ${HETZNER_API_TOKEN}" \
-  https://api.hetzner.cloud/v1/ssh_keys \
+HETZNER_SSH_KEY_ID=$(hcloud_api GET /ssh_keys \
   | python3 -c "import json,sys; d=json.load(sys.stdin); m=[k for k in d['ssh_keys'] if k['name']==\"${HETZNER_SSH_KEY_NAME}\"]; print(m[0]['id'] if m else '')")
 [ -n "${HETZNER_SSH_KEY_ID}" ] || fail "No Hetzner SSH key named '${HETZNER_SSH_KEY_NAME}' — upload via console.hetzner.cloud or set HETZNER_SSH_KEY_NAME"
 note "Hetzner SSH key '${HETZNER_SSH_KEY_NAME}' has ID ${HETZNER_SSH_KEY_ID}"
@@ -116,8 +145,7 @@ note "Hetzner SSH key '${HETZNER_SSH_KEY_NAME}' has ID ${HETZNER_SSH_KEY_ID}"
 section "3 — Pick a new VPS name (auto-increment)"
 
 # Find existing cto-vN servers and pick the next N
-EXISTING_VERSIONS=$(curl -fsSL -H "Authorization: Bearer ${HETZNER_API_TOKEN}" \
-  https://api.hetzner.cloud/v1/servers \
+EXISTING_VERSIONS=$(hcloud_api GET /servers \
   | python3 -c "
 import json,sys,re
 d = json.load(sys.stdin)
@@ -155,9 +183,7 @@ provision_attempt() {
   local server_type="$1"
   local body
   body=$(echo "${PROVISION_BODY}" | python3 -c "import json,sys; d=json.load(sys.stdin); d['server_type']='${server_type}'; print(json.dumps(d))")
-  curl -fsSL -X POST -H "Authorization: Bearer ${HETZNER_API_TOKEN}" \
-    -H "Content-Type: application/json" -d "${body}" \
-    https://api.hetzner.cloud/v1/servers
+  hcloud_api POST /servers "${body}"
 }
 
 # Try cx43 first (Intel, cheaper), fallback to cpx42 (AMD, more disk)
