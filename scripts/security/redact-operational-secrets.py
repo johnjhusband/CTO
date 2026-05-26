@@ -20,8 +20,11 @@ CHAT_DB = ROOT / "chat.db"
 
 SECRET_ENV_NAMES = [
     "GITHUB_TOKEN",
+    "GITHUB_PERSONAL_ACCESS_TOKEN",
     "HETZNER_API_TOKEN",
     "HERMES_API_SERVER_KEY",
+    "API_SERVER_KEY",
+    "HERMES_A2A_TOKEN",
     "OPENAI_API_KEY",
     "OPENROUTER_API_KEY",
     "BRAVE_API_KEY",
@@ -29,6 +32,10 @@ SECRET_ENV_NAMES = [
     "VAPID_PRIVATE_KEY",
     "MAILGUN_API_KEY",
     "SMTP_PASSWORD",
+    "CTO_EMAIL_SMTP_PASSWORD",
+    "NAMECHEAP_PASS",
+    "NAMECHEAP_API_KEY",
+    "GOOGLE_ACCOUNT_PASSWORD_PENDING",
 ]
 
 # Keep assignment syntax and redact only the value. Values in logs may be bare,
