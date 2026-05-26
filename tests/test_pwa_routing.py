@@ -141,6 +141,22 @@ class PwaRoutingTests(unittest.TestCase):
         self.assertIn("visibilitychange", app_js)
         self.assertIn("loadHistory({ replace: true })", app_js)
 
+    def test_frontend_has_visible_a2a_coordination_toggle(self):
+        frontend = REPO / "services" / "pwa" / "frontend"
+        index_html = (frontend / "index.html").read_text()
+        app_js = (frontend / "app.js").read_text()
+        style_css = (frontend / "style.css").read_text()
+        service_worker = (frontend / "service-worker.js").read_text()
+
+        self.assertIn('id="toggle-a2a"', index_html)
+        self.assertIn("Show agent coordination", index_html)
+        self.assertIn("m.kind.startsWith(\"a2a_\")", app_js)
+        self.assertIn("a2a-capability", app_js)
+        self.assertIn("Raw JSON", app_js)
+        self.assertIn("initToggle($toggleA2A, \"a2a\")", app_js)
+        self.assertIn("body:not(.show-a2a) .msg.a2a { display: none; }", style_css)
+        self.assertIn("const SHELL_CACHE = \"cto-shell-v7\"", service_worker)
+
     def test_a2a_audit_sanitizer_redacts_obvious_secrets(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             server = fresh_server_module(tmp)
