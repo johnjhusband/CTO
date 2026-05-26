@@ -41,7 +41,7 @@
 | [BACKLOG-002](logs/backlog/BACKLOG-002.json) | 2026-05-24 | fork-trigger | P2 | left-hemisphere (openclaw) | Governed OpenClaw self-repair/edit mechanism to replace temporary direct-edit exception | open |
 | [BACKLOG-003](logs/backlog/BACKLOG-003.json) | 2026-05-25 | security | P1 | whole repo / live deployment | Thorough multi-layer security audit of the public CTO repo and live CTO deployment | open |
 | [BACKLOG-004](logs/backlog/BACKLOG-004.json) | 2026-05-25 | upstream-pr-needed | P0 | human-interface (A2A2H) | Voice mode for A2A2H PWA — audible CTO reports and spoken replies from John | open |
-| [BACKLOG-005](logs/backlog/BACKLOG-005.json) | 2026-05-25 | security | P0 | core-cto / public repo / PWA push identity | Rotate and scrub VAPID/Web Push private key leaked into repo history | open |
+| [BACKLOG-005](logs/backlog/BACKLOG-005.json) | 2026-05-25 | security | P0 | core-cto / public repo / PWA push identity | Rotate and scrub VAPID/Web Push private key leaked into repo history | rotated_pending_push_verification_and_history_scrub |
 | [BACKLOG-006](logs/backlog/BACKLOG-006.json) | 2026-05-25 | security | P0 | core-cto / credential hygiene | Rotate live service credentials and remove secret values from operational logs/history | open |
 | [BACKLOG-007](logs/backlog/BACKLOG-007.json) | 2026-05-25 | security | P1 | infrastructure / network perimeter | Add deny-by-default host/cloud firewall policy for CTO servers and clone candidates | open |
 | [BACKLOG-008](logs/backlog/BACKLOG-008.json) | 2026-05-25 | security | P1 | clone-test-replace / attack surface | Quarantine or retire public clone candidates immediately after validation windows | open |
