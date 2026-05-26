@@ -3,7 +3,7 @@
   "timestamp": "2026-05-25T05:25:00Z",
   "type": "security",
   "priority": "P0",
-  "status": "rotated_pending_push_verification_and_history_scrub",
+  "status": "runtime_push_verified_pending_history_scrub",
   "surfaced_by": "john",
   "surfaced_from": "PWA request 2026-05-25 05:19 UTC \u2014 CISSP-like CTO security audit and prioritization",
   "affects": "core-cto / public repo / PWA push identity",
@@ -24,6 +24,6 @@
   "rollback_plan": "If rotation breaks push, restore the previous server-side key only temporarily while re-enrolling, then rotate again; if history rewrite is too disruptive, leave history but rotate and document compromise acceptance.",
   "john_review_date": "2026-05-25",
   "resolution_date": null,
-  "resolution_notes": "Runtime VAPID key was rotated on 2026-05-26T20:54Z with old runtime key retained only as an ignored local backup; PWA backend verified serving the new public key. Push re-enrollment/runtime push verification and coordinated public git-history scrub or documented risk acceptance remain open.",
+  "resolution_notes": "Runtime VAPID key was rotated on 2026-05-26T20:54Z with old runtime key retained only as an ignored local backup; PWA backend verified serving the new public key. Runtime push verification completed on 2026-05-26T21:11Z after John re-enrolled a browser subscription: stored subscription count was 1 and a direct pywebpush delivery attempt returned attempted=1 failed=0. Coordinated public git-history scrub or documented risk acceptance remains open.",
   "related_decision_log": null
 }
