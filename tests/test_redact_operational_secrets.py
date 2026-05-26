@@ -68,6 +68,13 @@ class RedactOperationalSecretsTests(unittest.TestCase):
         self.assertNotIn("another-secret", redacted)
         self.assertNotIn("urlencoded-secret", redacted)
 
+    def test_redacts_natural_language_password_pastes(self):
+        redacted, counts = redactor.redact_text("@hermes the pw is pasted-secret\n")
+
+        self.assertEqual(counts, {"chat_password_phrase": 1})
+        self.assertEqual(redacted, "@hermes the pw is REDACTED\n")
+        self.assertNotIn("pasted-secret", redacted)
+
 
 if __name__ == "__main__":
     unittest.main()

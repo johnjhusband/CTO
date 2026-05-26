@@ -58,6 +58,13 @@ TOKEN_PATTERNS = [
 # appears in operational logs or chat rows.
 URL_QUERY_TOKEN_RE = re.compile(r"(?P<prefix>(?:[?&]|%3[Ff]|%26)token(?:=|%3[Dd]))(?P<value>[^\s&#'\"<>]+)")
 
+# John may accidentally paste credentials in natural-language chat. Catch the
+# known dangerous phrasing without logging the value itself.
+CHAT_PASSWORD_RE = re.compile(
+    r"(?P<prefix>\b(?:the\s+)?pw\s+is\s+)(?P<value>[^\r\n]+)",
+    re.IGNORECASE,
+)
+
 TEXT_EXTENSIONS = {
     ".log", ".md", ".json", ".txt", ".env", ".out", ".err", ".yaml", ".yml"
 }
@@ -101,6 +108,15 @@ def redact_text(text: str) -> tuple[str, dict[str, int]]:
         return f"{match.group('prefix')}REDACTED"
 
     text = URL_QUERY_TOKEN_RE.sub(repl_url_query_token, text)
+
+    def repl_chat_password(match: re.Match[str]) -> str:
+        value = (match.group("value") or "").strip()
+        if value.upper() == "REDACTED":
+            return match.group(0)
+        counts["chat_password_phrase"] = counts.get("chat_password_phrase", 0) + 1
+        return f"{match.group('prefix')}REDACTED"
+
+    text = CHAT_PASSWORD_RE.sub(repl_chat_password, text)
 
     for marker, pattern in TOKEN_PATTERNS:
         def repl_token(match: re.Match[str], marker: str = marker) -> str:
