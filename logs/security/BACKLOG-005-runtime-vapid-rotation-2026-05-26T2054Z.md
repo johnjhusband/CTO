@@ -24,7 +24,10 @@ The full public-history scrub remains destructive/coordination-gated, but runtim
 - Returned public key sha256: `6137f8ae75e20ad38a527340d4222a1c57a31c07b32f79521320c429a5834e70`.
 - Returned public key matches `/opt/cto/.vapid/public.b64url`: yes.
 - Returned public key matches any compromised backup public key: no.
+- Current private key mode: `0600`.
+- Push subscription JSON files present during cutover: `0`.
 - Git ignore coverage still includes `.vapid/`, `.vapid-new/`, `.vapid-compromised-*/`, and `.cache/`.
+- 2026-05-26T21:02Z re-check: `scripts/security/run-safe-security-gates.sh` passed after the runtime rotation artifact/status updates.
 
 ## Remaining BACKLOG-005 work
 - John still needs to re-open/refresh the PWA, enable push, and receive a runtime push verification before marking background push fully verified.
