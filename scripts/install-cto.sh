@@ -382,13 +382,14 @@ cat > "${OPENCLAW_DIR}/openclaw.json" <<JSON
         "env": {
           "HERMES_A2A_TOKEN": "${HERMES_A2A_TOKEN}",
           "HERMES_A2A_URL": "http://127.0.0.1:8643/a2a/",
-          "CHAT_DB": "${CTO_ROOT}/chat.db"
+          "CHAT_DB": "${CTO_ROOT}/chat.db",
+          "DELEGATE_TIMEOUT_S": "600"
         }
       },
       "engram":     { "command": "engram", "args": ["mcp", "--tools=agent"], "env": { "ENGRAM_DATA_DIR": "${CTO_ROOT}/.engram", "ENGRAM_PROJECT": "cto" } },
       "vault":      { "command": "npx", "args": ["-y", "@bitbonsai/mcpvault@latest", "${CTO_ROOT}/wiki"] },
       "filesystem": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-filesystem", "${CTO_ROOT}"] },
-      "github":     { "command": "/usr/local/bin/github-mcp-server", "args": [], "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" } },
+      "github":     { "command": "/usr/local/bin/github-mcp-server", "args": ["stdio"], "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}" } },
       "brave-search": { "command": "npx", "args": ["-y", "@brave/brave-search-mcp-server"], "env": { "BRAVE_API_KEY": "${BRAVE_API_KEY:-}" } },
       "fetch":      { "command": "uvx", "args": ["mcp-server-fetch"] },
       "hetzner":    { "command": "npx", "args": ["-y", "@lazyants/hetzner-mcp-server"], "env": { "HETZNER_API_TOKEN": "${HETZNER_API_TOKEN}" } },

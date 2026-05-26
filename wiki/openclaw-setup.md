@@ -273,7 +273,7 @@ Heartbeat uses cheap model with `lightContext: true` (only HEARTBEAT.md loaded) 
 
 ## MCP Server Configuration
 
-MCP servers go under `mcpServers` in openclaw.json.
+MCP servers go under `mcp.servers` in `~/.openclaw/openclaw.json`.
 
 ### Config Syntax (stdio transport)
 ```json
@@ -295,10 +295,10 @@ MCP servers go under `mcpServers` in openclaw.json.
 ### CLI Management
 ```bash
 openclaw mcp list                    # List configured servers
+openclaw mcp show name               # Show one server config
 openclaw mcp set name '{"command":"npx","args":[...]}'  # Add/update
-openclaw mcp test name               # Test a server
-openclaw mcp restart name            # Restart
-openclaw logs --mcp --server name    # View logs
+openclaw mcp unset name              # Remove one server
+# Note: OpenClaw 2026.5.7 does not provide `openclaw mcp test` or `openclaw mcp restart`; smoke-test stdio servers directly and restart the gateway if config must be reloaded.
 ```
 
 ### MCP Servers for CTO
@@ -350,7 +350,7 @@ Then in openclaw.json:
 ```json
 "github": {
   "command": "/usr/local/bin/github-mcp-server",
-  "args": [],
+  "args": ["stdio"],
   "env": {
     "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
   }
@@ -366,7 +366,8 @@ Key servers:
 | **brave-search** | `@brave/brave-search-mcp-server` (npm) | Brave API key | $5/mo free credit, 1 req/sec |
 | **fetch** | `mcp-server-fetch` (PyPI, via uvx) | None | Needs Python. No API key. |
 | **hetzner** | `@lazyants/hetzner-mcp-server` (npm) | Hetzner API token | 104 tools across 13 domains |
-| **github** | `github-mcp-server` (Go binary) | GitHub PAT | Not npm — download binary |
+| **github** | `github/github-mcp-server` (Go binary) | GitHub PAT | Not npm — download binary; must be launched with `stdio` subcommand. |
+| **engram** | `Gentleman-Programming/engram` (Go binary) | None | Current CLI uses `engram mcp --tools=agent`; use `ENGRAM_DATA_DIR=/opt/cto/.engram`, not stale `mcp-server --db ...`. |
 
 ## Hetzner Cloud API (for Upgrade Cycle)
 

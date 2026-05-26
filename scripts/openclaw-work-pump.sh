@@ -41,6 +41,13 @@ Stop conditions: do not spend money, destroy data/infrastructure without authori
 
 Success criteria: produce one durable artifact, verification result, repair, commit, delegated Hermes task, or explicit blocked note. Do not store secrets, raw tool traces, chain-of-thought, or transient noise in shared memory. Keep any John-facing text concise and conversational."
 
+tmp_output="$(mktemp /tmp/cto-openclaw-work-pump.XXXXXX.json)"
+cleanup() {
+  rm -f "$tmp_output"
+}
+trap cleanup EXIT
+
+set +e
 openclaw agent \
   --local \
   --agent main \
@@ -48,4 +55,37 @@ openclaw agent \
   --session-id openclaw-work-pump \
   --timeout 660 \
   --json \
-  --message "$prompt"
+  --message "$prompt" | tee "$tmp_output"
+rc=${PIPESTATUS[0]}
+set -e
+
+if [[ "$rc" -eq 0 ]]; then
+  exit 0
+fi
+
+# OpenClaw 2026.5.7 can return a non-zero process status after producing a
+# complete JSON response with a normal stop reason. Treat that shape as a
+# successful pump tick so systemd does not mark completed work as failed.
+if python3 - "$tmp_output" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text())
+except Exception:
+    sys.exit(1)
+
+visible = data.get("finalAssistantVisibleText") or data.get("finalAssistantRawText")
+stop_reason = data.get("stopReason") or data.get("completion", {}).get("stopReason")
+if visible and stop_reason == "stop":
+    sys.exit(0)
+sys.exit(1)
+PY
+then
+  echo "openclaw work pump returned status $rc after a complete stop response; treating tick as successful"
+  exit 0
+fi
+
+exit "$rc"
