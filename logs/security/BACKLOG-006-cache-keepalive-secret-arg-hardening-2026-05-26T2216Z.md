@@ -6,7 +6,7 @@ Timestamp: 2026-05-26T22:16Z
 P0 credential hygiene / BACKLOG-006.
 
 ## Why selected
-Full live credential rotation remains unsafe in an unattended pump tick, but inspection found a safe credential-hygiene issue: `scripts/cache-keepalive.sh` sent the Hermes A2A bearer token through a `curl -H "Authorization: Bearer ..."` command argument. That can expose the token through process listings while the command runs.
+Full live credential rotation remains unsafe in an unattended pump tick, but inspection found a safe credential-hygiene issue: `scripts/cache-keepalive.sh` sent the Hermes A2A token through a curl header command argument. That can expose the token through process listings while the command runs.
 
 ## Repair
 - Removed the unused PWA token read from `scripts/cache-keepalive.sh`.
