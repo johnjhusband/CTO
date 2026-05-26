@@ -3,9 +3,9 @@
   "timestamp": "2026-05-25T05:25:00Z",
   "type": "security",
   "priority": "P0",
-  "status": "runtime_push_verified_pending_history_scrub",
+  "status": "dry_run_verified_pending_coordinated_history_scrub",
   "surfaced_by": "john",
-  "surfaced_from": "PWA request 2026-05-25 05:19 UTC \u2014 CISSP-like CTO security audit and prioritization",
+  "surfaced_from": "PWA request 2026-05-25 05:19 UTC — CISSP-like CTO security audit and prioritization",
   "affects": "core-cto / public repo / PWA push identity",
   "capability_needed": "Rotate and scrub VAPID/Web Push private key leaked into repo history",
   "details": "Read-only audit found an EC private key for the PWA VAPID/Web Push identity in git history and a live private.pem present in the working tree. Even if the current file is untracked, the historical private key must be treated as compromised for a public repo. This affects push-message authenticity and is also a marker that binary/runtime artifacts entered source control before the public flip.",
@@ -24,6 +24,6 @@
   "rollback_plan": "If rotation breaks push, restore the previous server-side key only temporarily while re-enrolling, then rotate again; if history rewrite is too disruptive, leave history but rotate and document compromise acceptance.",
   "john_review_date": "2026-05-25",
   "resolution_date": null,
-  "resolution_notes": "Runtime VAPID key was rotated on 2026-05-26T20:54Z with old runtime key retained only as an ignored local backup; PWA backend verified serving the new public key. Runtime push verification completed on 2026-05-26T21:11Z after John re-enrolled a browser subscription: stored subscription count was 1 and a direct pywebpush delivery attempt returned attempted=1 failed=0. Coordinated public git-history scrub or documented risk acceptance remains open.",
+  "resolution_notes": "Runtime VAPID key was rotated on 2026-05-26T20:54Z with old runtime key retained only as an ignored local backup; PWA backend verified serving the new public key. Runtime push verification completed on 2026-05-26T21:11Z after John re-enrolled a browser subscription: stored subscription count was 1 and a direct pywebpush delivery attempt returned attempted=1 failed=0. Coordinated public git-history scrub or documented risk acceptance remains open. 2026-05-26T22:31Z: disposable local history-scrub dry run verified that rewriting only `.vapid/private.pem` removes the historical path and leaves the metadata-only history scanner clean. Runtime rotation/push remain verified; final remediation is still blocked on a coordinated destructive public-history rewrite/force-push window.",
   "related_decision_log": null
 }
