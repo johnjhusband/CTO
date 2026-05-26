@@ -120,6 +120,11 @@ note "A2A SDK install skipped — v1.0 minimal registry uses only Python stdlib"
 # stdlib, so no extra packages needed. When we move to v1.1, install via
 # `pipx install a2a-sdk` or a dedicated venv at /opt/cto/a2a/.venv.
 
+note "Installing PWA backend Python dependencies"
+python3 -m venv "${CTO_ROOT}/.venv"
+"${CTO_ROOT}/.venv/bin/python" -m pip install --upgrade pip
+"${CTO_ROOT}/.venv/bin/python" -m pip install pywebpush
+
 note "OS tweaks (IPv6 off, systemd lingering on)"
 if [ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" != "1" ]; then
   sudo sysctl -w net.ipv6.conf.all.disable_ipv6=1
@@ -698,7 +703,7 @@ Environment=HERMES_A2A_URL=http://127.0.0.1:8643/a2a/
 Environment=OPENCLAW_CHAT_URL=http://127.0.0.1:18789/v1/chat/completions
 Environment=VAPID_PUBLIC_KEY_FILE=${CTO_ROOT}/.vapid/public.b64url
 Environment=VAPID_PRIVATE_KEY_FILE=${CTO_ROOT}/.vapid/private.pem
-ExecStart=/usr/bin/python3 ${CTO_ROOT}/services/pwa/backend/server.py
+ExecStart=${CTO_ROOT}/.venv/bin/python ${CTO_ROOT}/services/pwa/backend/server.py
 Restart=on-failure
 RestartSec=3
 
