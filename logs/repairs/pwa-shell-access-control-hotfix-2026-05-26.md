@@ -6,7 +6,7 @@ BACKLOG-013 / BACKLOG-006 overlap: P0 PWA access control and token-log hygiene.
 ## Finding
 The earlier PWA repair protected chat APIs, but live verification showed `/` and `/index.html` were still listed as public GET routes. That meant an unauthenticated browser could still receive the chat shell HTML, even though API calls were rejected.
 
-During restart verification, legacy clients still attempted `/api/stream?token=...`; the backend access logger was capable of writing query tokens into systemd journal output. No secret values are recorded in this artifact.
+During restart verification, legacy clients still attempted `/api/stream?token=REDACTED the backend access logger was capable of writing query tokens into systemd journal output. No secret values are recorded in this artifact.
 
 ## Repair
 - Removed `/` and `/index.html` from public GET routes.

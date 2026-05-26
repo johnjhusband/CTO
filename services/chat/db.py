@@ -18,13 +18,18 @@ import os
 import sqlite3
 import time
 import json
+import re
 from typing import Optional, Iterable
 from contextlib import contextmanager
+from datetime import datetime, timezone
+from pathlib import Path
 
 CHAT_DB_PATH = os.environ.get("CHAT_DB", "/opt/cto/chat.db")
 CTO_ROOT = os.environ.get("CTO_ROOT", "/opt/cto")
 CTO_INSTANCE_ID = os.environ.get("CTO_INSTANCE_ID", "production")
 PRODUCTION_INSTANCE_IDS = {"production", "prod", "live"}
+CHAT_LOG_DIR = Path(os.environ.get("PWA_CHAT_LOG_DIR", "/opt/cto/logs/pwa-chat"))
+CHAT_LOG_ENABLED = os.environ.get("PWA_CHAT_LOG_ENABLED", "1").lower() not in {"0", "false", "no"}
 
 
 def clone_chat_isolation_error(
@@ -107,11 +112,96 @@ def append(
 ) -> int:
     """Append one message. Returns inserted row id."""
     with connection(path) as conn:
+        ts = time.time()
         cur = conn.execute(
             "INSERT INTO messages (ts, sender, recipient, kind, correlation, content) VALUES (?, ?, ?, ?, ?, ?)",
-            (time.time(), sender, recipient, kind, correlation, content),
+            (ts, sender, recipient, kind, correlation, content),
         )
-        return int(cur.lastrowid or 0)
+        row_id = int(cur.lastrowid or 0)
+    _mirror_human_chat_log(
+        row_id=row_id,
+        ts=ts,
+        sender=sender,
+        recipient=recipient,
+        kind=kind,
+        correlation=correlation,
+        content=content,
+    )
+    return row_id
+
+
+def _chat_log_path_for_ts(ts: float) -> Path:
+    day = datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%d")
+    return CHAT_LOG_DIR / f"{day}.md"
+
+
+def _markdown_escape_line(text: str) -> str:
+    # Keep the file readable markdown while preserving exact user/agent text.
+    return (text or "").replace("\r\n", "\n").replace("\r", "\n")
+
+
+def _human_log_content(kind: str, content: str) -> str | None:
+    if kind.startswith("a2a_"):
+        return None
+    if kind == "system_event":
+        try:
+            payload = json.loads(content)
+        except Exception:
+            return content
+        if isinstance(payload, dict):
+            event = payload.get("event")
+            if event:
+                details = []
+                for key in ("job_id", "error", "status", "endpoint_host"):
+                    if payload.get(key):
+                        details.append(f"{key}={payload[key]}")
+                suffix = f" ({', '.join(details)})" if details else ""
+                return f"system_event: {event}{suffix}"
+        return "system_event"
+    return content
+
+
+def _mirror_human_chat_log(
+    *,
+    row_id: int,
+    ts: float,
+    sender: str,
+    recipient: Optional[str],
+    kind: str,
+    correlation: Optional[str],
+    content: str,
+) -> None:
+    """Append a human-readable daily markdown mirror for PWA review.
+
+    chat.db remains the source of truth. This best-effort mirror intentionally
+    skips structured A2A JSON rows so John gets a durable readable transcript
+    rather than protocol envelopes.
+    """
+    if not CHAT_LOG_ENABLED:
+        return
+    human_content = _human_log_content(kind, content)
+    if human_content is None:
+        return
+    try:
+        path = _chat_log_path_for_ts(ts)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        dt = datetime.fromtimestamp(ts, tz=timezone.utc)
+        if not path.exists():
+            path.write_text(
+                f"# CTO PWA chat log — {dt.strftime('%Y-%m-%d')}\n\n"
+                "Timezone: UTC. This is a human-readable mirror of chat.db; "
+                "structured A2A JSON rows are omitted by default.\n\n",
+                encoding="utf-8",
+            )
+        route = f" → {recipient}" if recipient else ""
+        corr = f" [{correlation}]" if correlation else ""
+        body = _markdown_escape_line(human_content)
+        with path.open("a", encoding="utf-8") as fh:
+            fh.write(f"## {dt.strftime('%H:%M:%S')}Z — {sender}{route} — {kind} — #{row_id}{corr}\n\n")
+            fh.write(body.rstrip() + "\n\n")
+    except Exception:
+        # Logging must never break chat delivery.
+        return
 
 def tail(since_id: int = 0, limit: int = 200, path: str = CHAT_DB_PATH) -> list[dict]:
     """Return messages with id > since_id, oldest first. Caller polls or uses WS."""

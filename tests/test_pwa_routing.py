@@ -25,6 +25,7 @@ def fresh_server_module(tmpdir: str):
     os.environ["CHAT_DB"] = str(Path(tmpdir) / "chat.db")
     os.environ["CTO_INSTANCE_ID"] = "test-suite"
     os.environ["OPENCLAW_SESSION_ID"] = "test-openclaw-session"
+    os.environ["PWA_CHAT_LOG_DIR"] = str(Path(tmpdir) / "logs" / "pwa-chat")
     for name in list(sys.modules):
         if name == "services.pwa.backend.server" or name == "chat.db":
             sys.modules.pop(name, None)
@@ -102,10 +103,42 @@ class PwaRoutingTests(unittest.TestCase):
             sys.modules.pop("chat.db", None)
             os.environ["CTO_INSTANCE_ID"] = "candidate-db-test"
             os.environ["CHAT_DB"] = str(Path(tmp) / "nested" / "candidate" / "chat.db")
+            os.environ["PWA_CHAT_LOG_DIR"] = str(Path(tmp) / "logs" / "pwa-chat")
             chat_db = importlib.import_module("chat.db")
             row_id = chat_db.append(sender="system", recipient="john", kind="system_event", content="ok")
             self.assertGreater(row_id, 0)
             self.assertTrue(Path(os.environ["CHAT_DB"]).exists())
+
+    def test_chat_append_writes_human_markdown_log_and_skips_a2a_json(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            sys.modules.pop("chat.db", None)
+            os.environ["CTO_INSTANCE_ID"] = "test-suite"
+            os.environ["CHAT_DB"] = str(Path(tmp) / "chat.db")
+            log_dir = Path(tmp) / "logs" / "pwa-chat"
+            os.environ["PWA_CHAT_LOG_DIR"] = str(log_dir)
+            chat_db = importlib.import_module("chat.db")
+            row_id = chat_db.append(sender="openclaw", recipient="john", kind="chat", content="Readable answer")
+            chat_db.log_a2a_request(task_id="task-1", sender="openclaw", recipient="hermes", payload={"secret_shape": "json"})
+            files = list(log_dir.glob("*.md"))
+            self.assertEqual(len(files), 1)
+            text = files[0].read_text()
+            self.assertIn("Readable answer", text)
+            self.assertIn(f"#{row_id}", text)
+            self.assertNotIn("secret_shape", text)
+
+    def test_chat_log_helpers_reject_traversal_and_limit_export_range(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            server = fresh_server_module(tmp)
+            self.assertIsNone(server._safe_chat_log_path("../../etc/passwd"))
+            self.assertIsNotNone(server._safe_chat_log_path("2026-05-26"))
+            self.assertEqual(server._chat_log_dates_between("2026-05-26", "2026-05-27"), ["2026-05-26", "2026-05-27"])
+            self.assertEqual(server._chat_log_dates_between("2026-05-27", "2026-05-26"), [])
+            self.assertEqual(server._chat_log_dates_between("2026-01-01", "2026-03-01"), [])
+
+    def test_frontend_resyncs_history_on_foreground(self):
+        app_js = (REPO / "services" / "pwa" / "frontend" / "app.js").read_text()
+        self.assertIn("visibilitychange", app_js)
+        self.assertIn("loadHistory({ replace: true })", app_js)
 
 
 if __name__ == "__main__":
