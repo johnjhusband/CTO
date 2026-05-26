@@ -1,0 +1,25 @@
+{
+  "id": "BACKLOG-018",
+  "timestamp": "2026-05-27T00:00:00Z",
+  "type": "missing-mcp",
+  "priority": "P1",
+  "status": "open",
+  "surfaced_by": "john",
+  "surfaced_from": "PWA chat 2026-05-26 ~23:50 UTC — John asked 'are we maintaining the a2a2h repo?'. Answer was no — between 2026-05-25 and 2026-05-26 CTO shipped ~15 chat-bridge improvements, none ported to A2A2H. John: 'setup a maintenance process and direct cto to keep it up to date'.",
+  "affects": "Public A2A2H extraction (https://github.com/johnjhusband/a2a2h) and its credibility as a reference implementation",
+  "capability_needed": "Per-tick automated check and porting of CTO chat-bridge improvements to A2A2H, plus one-time backfill of all post-extraction CTO commits that touch upstream files",
+  "details": "A2A2H was extracted from CTO on 2026-05-25 04:31 UTC and frozen ever since. CTO's chat-bridge layer (services/pwa, services/hermes_a2a_sidecar, services/a2a_delegate, scripts/cache-keepalive.sh, chat/db.py) has had ~15 commits worth of improvements since: HttpOnly cookie auth, access-control hardening, fail-closed mode, /reset route, durable /chat-log/, A2A audit transcript backend, token rotation grace mechanism, URL-credential log redaction, push notification end-to-end, A2A delegation session-per-call fix, and others. None of these flowed back to A2A2H.\n\nThe maintenance protocol is documented in wiki/A2A2H_MAINTENANCE.md and the last-synced SHA tracker is wiki/A2A2H_LAST_SYNC.md. The protocol requires:\n1) On every Hermes work-pump and OpenClaw continuous-work tick, check for unported commits in /opt/cto against the last-synced SHA before selecting a backlog item.\n2) For each unported commit touching the upstream file set, apply the genericization rules (rename cto-* → a2a2h-*, /opt/cto/ → /opt/a2a2h/, etc.) and commit to /opt/a2a2h/ then push to origin/master.\n3) Update wiki/A2A2H_LAST_SYNC.md with the new SHA.\n4) Log the port in a tick repair artifact.\n5) Agents must add this check to HERMES_ROLE.md, OPENCLAW_ROLE.md, and wiki/continuous-work-policy.md so it's durable.\n\nOne-time backfill: estimated 10–15 commits from 1f71f58 to current HEAD that need porting. Track in logs/repairs/a2a2h-backfill-2026-05-26.md.\n\nVPS clone in place at /opt/a2a2h/ with working push credentials (verified 2026-05-26 ~23:55 UTC). Agents can immediately start the backfill.",
+  "search_trail": [
+    "Verified A2A2H repo state: 2 commits ever (1f71f58 initial extraction, f1bd7b2 BACKLOG-001 security audit). Last push 2026-05-25T04:42Z. Zero activity since.",
+    "Verified CTO chat-bridge layer has ~15+ commits since extraction touching upstream files.",
+    "Verified GitHub token on VPS has admin/push permissions on johnjhusband/a2a2h.",
+    "Cloned A2A2H to /opt/a2a2h on VPS so agents can pull/edit/push directly."
+  ],
+  "proposed_resolution": "Agents (Hermes + OpenClaw) execute the wiki/A2A2H_MAINTENANCE.md protocol: (1) add the per-tick check to their role docs and continuous-work-policy; (2) run the one-time backfill to bring A2A2H up to current CTO HEAD; (3) maintain ongoing per-tick ports for all future commits. Claude Code's monitor includes A2A2H drift in every sweep header so regressions are visible immediately.",
+  "blast_radius": "If a port introduces CTO-specific paths/strings that leak through the rename rules, the A2A2H repo becomes confusing or broken as a standalone extraction. If the per-tick check is too aggressive, agents waste time on no-op port cycles. Mitigation: the protocol's grep verification step catches CTO-string leakage; the last-synced SHA makes no-op cycles cheap.",
+  "rollback_plan": "If the protocol creates churn or breaks A2A2H, revert the protocol docs (wiki/A2A2H_MAINTENANCE.md + wiki/A2A2H_LAST_SYNC.md + role doc changes), and either (a) freeze A2A2H back as historical or (b) flip it private until the protocol is fixed.",
+  "john_review_date": "2026-05-26",
+  "resolution_date": null,
+  "resolution_notes": null,
+  "related_decision_log": null
+}
