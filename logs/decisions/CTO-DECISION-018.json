@@ -1,0 +1,19 @@
+{
+  "id": "CTO-DECISION-018",
+  "timestamp": "2026-05-26T21:25:00Z",
+  "title": "Rotate PWA_AUTH_TOKEN via in-conversation Claude Code delivery channel",
+  "decided_by": "john",
+  "decided_via": "PWA chat directive 'Rotate' (msg 1169) + Claude Code session as secure out-of-band token-delivery channel",
+  "context": "BACKLOG-013 (PWA access-control) and BACKLOG-009 (cookie/session auth) were status=implemented_pending_token_rotation. OpenClaw attempted rotation at 21:14 UTC but blocked because (a) the SMTP out-of-band delivery channel was rejected (BACKLOG-015 SMTP-with-App-Password path is dead per John 2026-05-26), and (b) writing the new token to PWA chat history would persist it in the durable chat log forever. OpenClaw correctly restored the pre-rotation env and did not restart the backend.",
+  "decision": "Claude Code performed the rotation directly from John's active session: generated a new 64-hex-char PWA_AUTH_TOKEN via secrets.token_hex(32), backed up the pre-rotation env to /home/cto/.cto-secret-backups/, swapped the token in /opt/cto/.env, restarted cto-pwa-backend, and delivered the new bootstrap URL to John in-conversation. The Claude Code TLS session is the secure out-of-band channel the agents needed.",
+  "consequences": "All existing PWA sessions (including John's) are invalidated because the HMAC cookie signature is derived from PWA_AUTH_TOKEN. John must bootstrap with the new URL once per device. The new token is NOT recorded in this decision log, NOT in chat.db, NOT in /chat-log/. Backup of pre-rotation env retained at /home/cto/.cto-secret-backups/ for one-time recovery; should be shredded after John confirms access.",
+  "alternatives_considered": [
+    "Wait for BACKLOG-015 OAuth/alternative-provider work before rotating — rejected because John explicitly said 'Rotate' and the agents' constraint can't gate his direct directive.",
+    "Add a /api/pending-token one-shot endpoint to deliver the new token in-session — rejected as over-engineering for a one-time rotation; the Claude Code channel already exists and is encrypted.",
+    "Write the new bootstrap URL to chat.db so John could see it via PWA — rejected because the durable chat log would persist it, defeating the rotation's security purpose."
+  ],
+  "open_questions": [
+    "Should this in-conversation pattern be formalized for future rotations, or is it one-off? (The agents' blocked-rotation log specifically asked for 'an interactive session where John can receive the new token directly' — Claude Code is that channel.)"
+  ],
+  "related_backlog": ["BACKLOG-009", "BACKLOG-013", "BACKLOG-015"]
+}
