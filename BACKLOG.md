@@ -37,7 +37,7 @@
 
 | ID | Date | Type | Priority | Affects | Capability Needed | Status |
 |---|---|---|---|---|---|---|
-| [BACKLOG-001](logs/backlog/BACKLOG-001.json) | 2026-05-11 | missing-skill | P0 | human-interface | Self-hosted PWA at `cto.husband.llc` — A2A2H chat + web-push, no per-clone config | resolved |
+| [BACKLOG-001](logs/backlog/BACKLOG-001.json) | 2026-05-11 | missing-skill | P0 | human-interface | Self-hosted PWA at `cto.husband.llc` — A2A2H chat + web-push, no per-clone config | escalated-to-john |
 | [BACKLOG-002](logs/backlog/BACKLOG-002.json) | 2026-05-24 | fork-trigger | P2 | left-hemisphere (openclaw) | Governed OpenClaw self-repair/edit mechanism to replace temporary direct-edit exception | open |
 | [BACKLOG-003](logs/backlog/BACKLOG-003.json) | 2026-05-25 | security | P1 | whole repo / live deployment | Thorough multi-layer security audit of the public CTO repo and live CTO deployment | open |
 | [BACKLOG-004](logs/backlog/BACKLOG-004.json) | 2026-05-25 | upstream-pr-needed | P0 | human-interface (A2A2H) | Voice mode for A2A2H PWA — audible CTO reports and spoken replies from John | open |
@@ -59,7 +59,7 @@
 
 | ID | Escalated | Type | Capability | What John Needs to Decide |
 |---|---|---|---|---|
-| _none_ | | | | |
+| BACKLOG-001 | 2026-05-11 | missing-skill | Self-hosted PWA (A2A2H chat + push) | When to build (v1.1 scope per CTO-DECISION-006). DNS: husband.llc lives at Namecheap; John creates `cto.husband.llc` A record when ready. |
 
 ## Resolved / Abandoned
 
