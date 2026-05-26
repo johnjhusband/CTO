@@ -199,6 +199,7 @@ class PwaAccessControlTests(unittest.TestCase):
     def test_production_without_auth_token_fails_closed(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             os.environ["PWA_AUTH_TOKEN"] = ""
+            os.environ.pop("PWA_AUTH_TOKEN_PREVIOUS", None)
             os.environ.pop("PWA_ALLOW_DEV_NO_AUTH", None)
             server = fresh_server_module(tmp, instance_id="production")
             self.assertIn("required", server._pwa_auth_startup_error())
@@ -210,6 +211,7 @@ class PwaAccessControlTests(unittest.TestCase):
     def test_non_production_without_auth_token_is_dev_mode_only(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             os.environ["PWA_AUTH_TOKEN"] = ""
+            os.environ.pop("PWA_AUTH_TOKEN_PREVIOUS", None)
             os.environ.pop("PWA_ALLOW_DEV_NO_AUTH", None)
             server = fresh_server_module(tmp, instance_id="test-suite")
             self.assertIsNone(server._pwa_auth_startup_error())
@@ -269,12 +271,54 @@ class PwaAccessControlTests(unittest.TestCase):
     def test_session_cookie_authenticates(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
+            os.environ.pop("PWA_AUTH_TOKEN_PREVIOUS", None)
             server = fresh_server_module(tmp)
             value = server.Handler._make_session_value(now=int(time.time()))
             handler = object.__new__(server.Handler)
             handler.path = "/api/messages"
             handler.headers = {"Cookie": f"cto_pwa_session={urllib.parse.quote(value)}"}
             self.assertTrue(handler._auth_ok())
+
+    def test_previous_pwa_token_keeps_existing_session_valid_during_rotation(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = "old-token"
+            os.environ.pop("PWA_AUTH_TOKEN_PREVIOUS", None)
+            server = fresh_server_module(tmp)
+            issued_at = int(time.time())
+            old_cookie = server.Handler._make_session_value(now=issued_at)
+
+            os.environ["PWA_AUTH_TOKEN"] = "new-token"
+            os.environ["PWA_AUTH_TOKEN_PREVIOUS"] = "old-token"
+            server = fresh_server_module(tmp)
+            self.assertTrue(server.Handler._valid_session_value(old_cookie, now=issued_at + 10))
+            self.assertTrue(server._pwa_auth_token_matches("old-token"))
+            self.assertTrue(server._pwa_auth_token_matches("new-token"))
+
+            handler = object.__new__(server.Handler)
+            handler.path = "/api/messages"
+            handler.headers = {"Cookie": f"cto_pwa_session={urllib.parse.quote(old_cookie)}"}
+            self.assertTrue(handler._auth_ok())
+
+    def test_previous_pwa_token_does_not_authenticate_api_query_token(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = "new-token"
+            os.environ["PWA_AUTH_TOKEN_PREVIOUS"] = "old-token, older-token"
+            server = fresh_server_module(tmp)
+
+            self.assertTrue(server._pwa_auth_token_matches("old-token"))
+            handler = object.__new__(server.Handler)
+            handler.path = "/api/messages?token=old-token"
+            handler.headers = {}
+            self.assertFalse(handler._auth_ok())
+
+    def test_previous_pwa_token_alone_does_not_satisfy_production_startup(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = ""
+            os.environ["PWA_AUTH_TOKEN_PREVIOUS"] = "old-token"
+            os.environ.pop("PWA_ALLOW_DEV_NO_AUTH", None)
+            server = fresh_server_module(tmp, instance_id="production")
+
+            self.assertIn("required", server._pwa_auth_startup_error())
 
 class PwaPushNotificationTests(unittest.TestCase):
     def test_push_payload_truncates_reply_body(self):
