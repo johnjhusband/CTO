@@ -41,9 +41,12 @@ PY
 
 Observed: `hermes_daily_sync_audit_config_ok`.
 
-## Manual run expectation
-After this repair artifact is committed and pushed, run job `66b2675817d2` once manually and verify:
+## Manual run verification
+After this repair artifact was committed and pushed, job `66b2675817d2` was run once manually.
 
-- cron `last_status=ok`
-- `/opt/cto/chat.db` contains the one-line sync-audit status from Hermes
-- `/opt/cto` returns to clean `master...origin/master`
+Observed:
+
+- cron `last_status=ok` at `2026-05-26T19:24:13Z`
+- cron `last_delivery_error=null` with scheduler delivery set to `local`
+- `/opt/cto/chat.db` row `1121` contains: `sync-audit clean: /opt/cto clean and HEAD matches origin/master; no untracked secret artifacts requiring action`
+- `/opt/cto` returned to clean `master...origin/master` with divergence `0 0`
