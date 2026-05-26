@@ -29,10 +29,13 @@ The minimal v1.0 registry serves Cards over HTTP. Full a2a-sdk integration with 
 
 ## v1.1: Human Interface on Top of A2A
 
-The human-facing interface — web UI accessible from John's phone or laptop, speaking A2A back to CTO — is the next planned build phase. Options under consideration (not yet decided):
+The human-facing interface — web UI accessible from John's phone or laptop, speaking A2A back to CTO — is the next planned build phase. It now includes a voice-mode requirement: CTO reports should be playable aloud, and John should be able to reply by speaking. This is tracked as BACKLOG-004 and extends the PWA/chat/push requirement in BACKLOG-001.
+
+Options under consideration (not yet decided):
 
 - A small self-hosted web app on the VPS, reachable over HTTPS through a reverse proxy
 - An existing community A2A client (e.g., a2a-explorer or equivalent) wrapped for John's specific use
+- A maintained open-source voice stack adapted into the PWA rather than built from scratch; current candidates are Purple-Horizons/openclaw-voice for the browser/FastAPI/WebSocket shape, and KoljaB/RealtimeSTT + KoljaB/RealtimeTTS as component libraries
 - Direct A2A calls from John's laptop's Claude Code session via Remote Control (already in place)
 
 Decision on which approach happens after v1.0 install validates and the team has hands-on A2A experience.

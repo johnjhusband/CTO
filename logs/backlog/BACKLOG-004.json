@@ -1,0 +1,43 @@
+{
+  "id": "BACKLOG-004",
+  "timestamp": "2026-05-25T05:17:00Z",
+  "type": "upstream-pr-needed",
+  "priority": "P1",
+  "status": "open",
+  "surfaced_by": "john",
+  "surfaced_from": "PWA chat request 2026-05-25 — A2A2H needs audible reports and audible replies",
+  "affects": "human-interface (A2A2H)",
+  "capability_needed": "Voice mode for A2A2H PWA — CTO reports can be heard aloud and John can reply by speaking",
+  "details": "John wants the A2A2H chat interface to support phone-app-style voice interaction similar to ChatGPT and Claude mobile apps: CTO reports should be speakable/audible to John, and John should be able to reply audibly by recording or live speech. This extends BACKLOG-001 rather than replacing it. Strategy is not to build voice from scratch: first adapt a maintained open-source voice stack, preserve A2A as the routing protocol, and keep OpenClaw/Hermes internals behind loopback. Browser captures John's microphone, STT converts audio to text, A2A2H routes the text into OpenClaw/Hermes as normal, agent replies remain canonical text/events, and TTS renders selected reports/replies as audio for playback. Voice artifacts are UI-layer derivatives, not the durable source of truth.",
+  "search_trail": [
+    "Read BACKLOG-001 and wiki/communication.md — A2A2H PWA is already the planned human interface; voice should be an extension of that item, not a replacement for A2A.",
+    "Web search 'open source voice chat push to talk web app speech to text text to speech maintained GitHub WebRTC 2026' — found openclawvoice.com, OpenWhispr, Handy, and generic push-to-talk projects; OpenClaw Voice looked closest to the browser voice-chat need.",
+    "Web search 'open source realtime voice assistant web app speech to text TTS GitHub maintained' — found KoljaB/RealtimeSTT, OpenAI voice-agent docs, and OpenVoiceUI; RealtimeSTT is a maintained STT library suited to assistants and browser streaming servers.",
+    "Fetched GitHub KoljaB/RealtimeSTT — primary source says it is a Python STT library for assistants, dictation tools, browser streaming servers, and prototypes; supports VAD, realtime text updates, wake words, external audio chunks, and includes a FastAPI browser streaming server example.",
+    "Fetched GitHub KoljaB/RealtimeTTS — primary source says it is a Python TTS library for low-latency speech from strings/generators/LLM token streams, supports WAV output and fallback across multiple engines including local and cloud options.",
+    "Fetched openclawvoice.com — primary source presents a self-hosted browser voice chat stack built with Python, FastAPI, WebSockets, faster-whisper, ElevenLabs/local Chatterbox, and claims browser/mobile support plus OpenClaw gateway integration.",
+    "GitHub API search 'voice assistant websocket fastapi whisper tts' — found Purple-Horizons/openclaw-voice, MIT-licensed, Python, self-hosted browser voice chat for AI assistants, 116 stars, 25 forks, updated 2026-05-24, pushed 2026-02-01, 16 open issues.",
+    "GitHub API search 'a2a protocol web client chat' — returned 0 repositories; no ready maintained A2A web chat client with voice found in this pass.",
+    "GitHub API search 'PWA voice chat speech recognition text to speech' — returned 0 repositories; no complete PWA+A2A+voice project found in this pass. Closest path is adapt OpenClaw Voice or compose RealtimeSTT/RealtimeTTS into the A2A2H PWA."
+  ],
+  "proposed_resolution": "Adopt/adapt maintained voice components into the A2A2H PWA. First candidate: Purple-Horizons/openclaw-voice as a reference implementation for browser microphone capture, websocket audio transport, FastAPI service shape, Whisper/faster-whisper STT, and TTS playback. Second candidate components: KoljaB/RealtimeSTT for robust STT and KoljaB/RealtimeTTS for low-latency/fallback TTS if OpenClaw Voice is too small or stale. Implement as a thin voice adapter around the A2A2H service, not a fork of OpenClaw or Hermes. Upstream any generally useful OpenClaw/A2A integration patches where possible.",
+  "blast_radius": "Adds microphone permissions and audio playback to the PWA; adds a voice adapter service or dependencies to the public A2A2H web service; may add CPU/RAM load for local STT/TTS depending on chosen engines; may optionally use paid/cloud TTS/STT only with explicit approval. Loopback-bound OpenClaw/Hermes gateways remain unchanged; A2A remains the canonical transport and audit layer.",
+  "rollback_plan": "Disable the voice adapter and hide voice controls in the PWA; keep text chat and push notifications from BACKLOG-001 intact. Remove added STT/TTS dependencies and any voice service unit. Since voice is a UI-layer adapter, rollback should not affect A2A registry, OpenClaw, Hermes, or durable logs.",
+  "hermes_review": {
+    "timestamp": "2026-05-25T05:20:00Z",
+    "artifact": "/opt/cto/logs/research/a2a2h-voice-open-source-recommendation-2026-05-25.md",
+    "recommendation": "Use Purple-Horizons/openclaw-voice as the first UI/WebSocket reference, but implement CTO voice as a thin A2A2H PWA adapter. Prefer KoljaB/RealtimeSTT for robust STT and KoljaB/RealtimeTTS for TTS abstraction if OpenClaw Voice components are too small or stale. Keep A2A2H text/event/audit as canonical; raw audio should not be durable state.",
+    "required_conditions": [
+      "Voice endpoints behind a feature flag and PWA auth",
+      "No raw audio persistence by default",
+      "No cloud STT/TTS spend without explicit approval",
+      "OpenClaw and Hermes internals remain unchanged behind loopback",
+      "Push-to-talk default before continuous voice mode"
+    ]
+  },
+  "john_review_date": null,
+  "resolution_date": null,
+  "resolution_notes": null,
+  "related_decision_log": "CTO-DECISION-006",
+  "related_backlog": "BACKLOG-001"
+}
