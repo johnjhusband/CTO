@@ -25,6 +25,13 @@ python3 -m pytest -q tests/test_governed_self_repair.py tests/test_openclaw_gove
 section "dependency security scan"
 scripts/security/dependency-security-scan.sh
 
+section "OpenClaw upgrade candidate promotion readiness"
+if [ -d .cache/openclaw-upgrade-candidate ]; then
+  scripts/security/openclaw-upgrade-promotion-check.py
+else
+  echo "SKIP: no cached OpenClaw upgrade candidate summary"
+fi
+
 section "clone chat isolation defaults"
 grep -q 'CTO_INSTANCE_ID=.*candidate-' scripts/install.sh || fail "scripts/install.sh must namespace fresh VPS installs as candidates"
 grep -q 'CTO_TEST_MODE=1' scripts/install.sh || fail "scripts/install.sh must put fresh candidates in test mode"
