@@ -20,6 +20,9 @@ if ! flock -n 9; then
 fi
 
 now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+artifact_stamp="$(date -u +%Y-%m-%dT%H%M%SZ)"
+artifact_dir="/opt/cto/logs/repairs"
+degraded_artifact="${artifact_dir}/openclaw-work-pump-degraded-${artifact_stamp}.md"
 
 prompt="Continuous safe work pump fired at ${now}.
 
@@ -64,17 +67,30 @@ rc=$?
 set -e
 
 summarize_json() {
-  python3 - "$tmp_output" <<'PY'
+  python3 - "$tmp_output" "$degraded_artifact" "$now" "$rc" <<'PY'
 import json
 import re
 import sys
 from pathlib import Path
 
 path = Path(sys.argv[1])
+artifact_path = Path(sys.argv[2])
+started_at = sys.argv[3]
+process_status = sys.argv[4]
 try:
     data = json.loads(path.read_text())
 except Exception:
-    print("openclaw work pump produced non-JSON output; raw output kept only in the temporary file")
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path.write_text(
+        "# OpenClaw work pump degraded output\n\n"
+        f"- Timestamp: {started_at}\n"
+        f"- Process status: {process_status}\n"
+        "- Finding: OpenClaw work pump produced non-JSON output.\n"
+        "- Handling: Raw output stayed only in the temporary file and was deleted by the cleanup trap.\n"
+        "- Next safe action: inspect OpenClaw Gateway/session health if this repeats.\n",
+        encoding="utf-8",
+    )
+    print(f"openclaw work pump degraded: produced non-JSON output; sanitized artifact written to {artifact_path}")
     sys.exit(1)
 
 visible = data.get("finalAssistantVisibleText") or data.get("finalAssistantRawText") or ""
@@ -90,7 +106,19 @@ else:
     one_line = re.sub(r"\s+", " ", str(err)).strip()
     if len(one_line) > 500:
         one_line = one_line[:497].rstrip() + "..."
-    print(f"openclaw work pump returned no visible final text (stopReason={stop_reason}): {one_line}")
+    artifact_path.parent.mkdir(parents=True, exist_ok=True)
+    artifact_path.write_text(
+        "# OpenClaw work pump degraded output\n\n"
+        f"- Timestamp: {started_at}\n"
+        f"- Process status: {process_status}\n"
+        f"- Stop reason: {stop_reason}\n"
+        f"- Sanitized status: {one_line}\n"
+        "- Finding: The scheduled work pump returned without visible final text, so journald alone would not prove a durable tick result.\n"
+        "- Handling: Raw JSON stayed only in the temporary file and was deleted by the cleanup trap.\n"
+        "- Next safe action: if repeated, inspect OpenClaw Gateway/session transport errors and the persistent `openclaw-work-pump` session.\n",
+        encoding="utf-8",
+    )
+    print(f"openclaw work pump degraded (stopReason={stop_reason}): {one_line}; sanitized artifact written to {artifact_path}")
 PY
 }
 
