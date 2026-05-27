@@ -14,10 +14,89 @@ fi
 : "${HERMES_A2A_TOKEN:?HERMES_A2A_TOKEN is required}"
 
 python3 - <<'PY'
-import json, os, subprocess, time, urllib.request, urllib.error
+import glob, json, os, subprocess, time, urllib.request, urllib.error
 
 token = os.environ['HERMES_A2A_TOKEN']
 now = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+STATE_DIR = '/opt/cto/.cache'
+PROVIDER_FAILURE_STATE = os.path.join(STATE_DIR, 'hermes-work-pump-provider-failure.json')
+
+
+def _load_provider_failure_state() -> dict:
+    try:
+        with open(PROVIDER_FAILURE_STATE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def _save_provider_failure_state(state: dict) -> None:
+    try:
+        os.makedirs(STATE_DIR, exist_ok=True)
+        tmp = f"{PROVIDER_FAILURE_STATE}.tmp"
+        with open(tmp, 'w', encoding='utf-8') as f:
+            json.dump(state, f, sort_keys=True)
+        os.replace(tmp, PROVIDER_FAILURE_STATE)
+    except Exception:
+        pass
+
+
+def clear_provider_failure_state() -> None:
+    try:
+        os.remove(PROVIDER_FAILURE_STATE)
+    except FileNotFoundError:
+        pass
+    except Exception:
+        pass
+
+
+def record_provider_failure(artifact: str, recovery_note: str) -> dict:
+    state = _load_provider_failure_state()
+    last_failure_epoch = float(state.get('last_failure_epoch') or 0)
+    now_epoch = time.time()
+    # Keep the consecutive count only while failures are part of the same outage.
+    if last_failure_epoch and now_epoch - last_failure_epoch < 3600:
+        count = int(state.get('consecutive_failures') or 0) + 1
+    else:
+        recent_artifacts = [
+            p for p in glob.glob('/opt/cto/logs/repairs/hermes-work-pump-agent-incomplete-*.md')
+            if now_epoch - os.path.getmtime(p) < 3600
+        ]
+        count = max(1, len(recent_artifacts))
+    state = {
+        'consecutive_failures': count,
+        'last_failure_epoch': now_epoch,
+        'last_failure_utc': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(now_epoch)),
+        'last_artifact': artifact,
+        'last_recovery': recovery_note,
+        'reason': 'agent_incomplete_provider_NoneType',
+    }
+    _save_provider_failure_state(state)
+    return state
+
+
+def provider_outage_circuit_breaker() -> tuple[bool, str, dict]:
+    """Avoid hammering Hermes/Codex when the same provider-side bug repeats.
+
+    The work pump already performs a fresh-session retry and a bounded service
+    restart. When the provider keeps returning the same non-retryable Codex
+    `NoneType`/agent_incomplete error, more calls in the next few ticks only
+    spam John and consume provider/runtime budget. After three consecutive
+    failures within an hour, pause semantic Hermes delegation briefly while
+    leaving services/timers up and OpenClaw free to continue safe work.
+    """
+    state = _load_provider_failure_state()
+    count = int(state.get('consecutive_failures') or 0)
+    last = float(state.get('last_failure_epoch') or 0)
+    cooldown = int(os.environ.get('HERMES_WORK_PUMP_PROVIDER_FAILURE_COOLDOWN_SECONDS', '2700'))
+    if count < 3 or not last or cooldown <= 0:
+        return False, '', state
+    elapsed = time.time() - last
+    if elapsed >= cooldown:
+        return False, '', state
+    remaining = int(cooldown - elapsed)
+    return True, f'known provider-side agent_incomplete outage; semantic Hermes delegation paused for another {remaining}s after {count} consecutive failures', state
 
 
 def build_payload(attempt: int) -> dict:
@@ -174,7 +253,18 @@ def write_blocked_note(error_text: str, recovery_note: str = '') -> str:
         f.write(error_text[:800].replace(os.environ.get('HERMES_A2A_TOKEN', ''), '[REDACTED]'))
         f.write("\n")
     notify_blocked_note(path, recovery_note)
+    record_provider_failure(path, recovery_note)
     return path
+
+
+skip, skip_note, skip_state = provider_outage_circuit_breaker()
+if skip:
+    print(json.dumps({
+        "status": "blocked_degraded_circuit_open",
+        "artifact": skip_state.get('last_artifact'),
+        "recovery": skip_note,
+    }))
+    raise SystemExit(0)
 
 
 last_error = ""
@@ -183,6 +273,7 @@ recovery_note = ""
 for attempt in (1, 2, 3):
     try:
         body = post(build_payload(attempt))
+        clear_provider_failure_state()
         if attempt > 1:
             print(f"Hermes work pump retry {attempt} succeeded after transient agent_incomplete")
         print(body[:2000])
