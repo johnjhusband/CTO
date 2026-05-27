@@ -24,6 +24,6 @@
   "rollback_plan": "If backups cause issues, disable future backup jobs but keep the last known-good snapshot until a replacement protection plan exists.",
   "john_review_date": "2026-05-25",
   "resolution_date": null,
-  "resolution_notes": null,
+  "resolution_notes": "2026-05-27T15:40Z OpenClaw pump: advanced BACKLOG-010 with a fresh read-only Hetzner recovery/protection inventory and an approval-ready staged plan. Observed production `cto-v1` still has no backup window, no delete/rebuild protection, no volumes, no snapshots, and CTO primary IPs remain auto_delete=true/delete_protection=false. No infrastructure, backup, snapshot, IP, credential, or cost-affecting change was made. Artifact: logs/security/BACKLOG-010-recovery-protection-approval-packet-2026-05-27T1540Z.md. Status remains open pending John-approved recovery/protection stage and cost/retention semantics.",
   "related_decision_log": null
 }
