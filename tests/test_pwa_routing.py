@@ -155,7 +155,7 @@ class PwaRoutingTests(unittest.TestCase):
         self.assertIn("Raw JSON", app_js)
         self.assertIn("initToggle($toggleA2A, \"a2a\")", app_js)
         self.assertIn("body:not(.show-a2a) .msg.a2a { display: none; }", style_css)
-        self.assertIn("const SHELL_CACHE = \"cto-shell-v7\"", service_worker)
+        self.assertIn("const SHELL_CACHE = \"cto-shell-v8\"", service_worker)
 
     def test_a2a_audit_sanitizer_redacts_obvious_secrets(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

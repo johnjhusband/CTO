@@ -22,4 +22,7 @@ python3 -m unittest -v tests/test_redact_operational_secrets.py
 printf '\n== PWA auth/routing regression tests ==\n'
 python3 -m unittest -v tests/test_pwa_routing.py
 
+printf '\n== PWA voice UI regression tests ==\n'
+python3 -m unittest -v tests/test_pwa_voice_ui.py
+
 printf '\nSafe security gates passed.\n'
