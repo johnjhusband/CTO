@@ -19,6 +19,9 @@ scripts/security/check-install-secret-handling.sh
 printf '\n== credential rotation preflight syntax ==\n'
 bash -n scripts/security/rotation-preflight.sh
 
+printf '\n== credential rotation smoke syntax ==\n'
+bash -n scripts/security/rotation-smoke.sh
+
 printf '\n== credential rotation preflight (names only) ==\n'
 scripts/security/rotation-preflight.sh
 
