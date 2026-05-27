@@ -13,6 +13,7 @@ fi
 
 : "${HERMES_A2A_TOKEN:?HERMES_A2A_TOKEN is required}"
 
+export HERMES_WORK_PUMP_START_EPOCH="$(date -u +%s)"
 /opt/cto/scripts/pwa-chat-first-gate.sh
 
 python3 - <<'PY'
@@ -22,6 +23,38 @@ token = os.environ['HERMES_A2A_TOKEN']
 now = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
 STATE_DIR = '/opt/cto/.cache'
 PROVIDER_FAILURE_STATE = os.path.join(STATE_DIR, 'hermes-work-pump-provider-failure.json')
+START_EPOCH = os.environ.get('HERMES_WORK_PUMP_START_EPOCH', str(int(time.time())))
+
+
+def run_frontend_touch_gate_if_needed() -> None:
+    frontend_paths = [
+        'services/pwa/frontend/index.html',
+        'services/pwa/frontend/app.js',
+        'services/pwa/frontend/style.css',
+        'services/pwa/frontend/service-worker.js',
+    ]
+    cmd = ['git', '-C', '/opt/cto', 'log', f'--since=@{START_EPOCH}', '--name-only', '--format=', '--', *frontend_paths]
+    completed = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True, timeout=30)
+    touched = sorted({line.strip() for line in completed.stdout.splitlines() if line.strip()})
+    if not touched:
+        return
+    token_value = os.environ.get('PWA_AUTH_TOKEN', '')
+    if not token_value:
+        raise SystemExit('PWA frontend gate failed: PWA_AUTH_TOKEN is not set while frontend commits landed in this Hermes tick')
+    pytest_bin = '/home/cto/.local/bin/pytest'
+    if not os.path.exists(pytest_bin):
+        raise SystemExit(f'PWA frontend gate failed: {pytest_bin} is missing')
+    env = os.environ.copy()
+    env['PWA_BASE_URL'] = env.get('PWA_BASE_URL') or 'https://cto.husband.llc'
+    env['PWA_AUTH_TOKEN'] = token_value
+    result = subprocess.run(
+        [pytest_bin, 'tests/test_pwa_chat_first_layout.py', '-v'],
+        cwd='/opt/cto', env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        text=True, timeout=120,
+    )
+    print(result.stdout[:4000])
+    if result.returncode != 0 or 'skipped' in result.stdout.lower():
+        raise SystemExit(f'PWA frontend gate failed or skipped after frontend touch: {", ".join(touched)}')
 
 
 def _load_provider_failure_state() -> dict:
@@ -330,6 +363,7 @@ for attempt in (1, 2, 3):
         if attempt > 1:
             print(f"Hermes work pump retry {attempt} succeeded after transient agent_incomplete")
         print(body[:2000])
+        run_frontend_touch_gate_if_needed()
         raise SystemExit(0)
     except urllib.error.HTTPError as e:
         text = e.read().decode('utf-8', 'replace')[:1000]
