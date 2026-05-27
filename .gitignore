@@ -13,6 +13,7 @@ chat.db-*
 logs/*.log
 logs/install/
 logs/pwa-chat/
+logs/openclaw-patches/
 a2a/registry/audit.log
 versions/*/docker-image.tar
 *.tar
