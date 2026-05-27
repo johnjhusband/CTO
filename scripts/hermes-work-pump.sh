@@ -122,6 +122,37 @@ def is_transient_agent_incomplete(status: int, text: str) -> bool:
     return "agent_incomplete" in text or "'NoneType' object is not iterable" in text
 
 
+def notify_blocked_note(path: str, recovery_note: str = '') -> None:
+    """Best-effort human-visible alert for semantic Hermes work-pump failures.
+
+    The HTTP health endpoint can be green while delegated work is still failing with
+    agent_incomplete. Emit a sanitized system_event so the PWA/chat log shows the
+    degraded work-pump state instead of hiding it in filesystem artifacts only.
+    """
+    try:
+        import sys
+        sys.path.insert(0, '/opt/cto/services')
+        from chat.db import append
+        event = {
+            "event": "hermes_work_pump_blocked",
+            "status": "blocked_degraded",
+            "reason": "agent_incomplete",
+            "artifact": path,
+        }
+        if recovery_note:
+            event["recovery"] = recovery_note
+        append(
+            sender="system",
+            recipient="john",
+            kind="system_event",
+            correlation="hermes-work-pump",
+            content=json.dumps(event),
+        )
+    except Exception:
+        # Failure reporting must never make the scheduled pump fail harder.
+        return
+
+
 def write_blocked_note(error_text: str, recovery_note: str = '') -> str:
     """Record a durable, sanitized blocked note for strategy follow-up."""
     log_dir = "/opt/cto/logs/repairs"
@@ -135,12 +166,14 @@ def write_blocked_note(error_text: str, recovery_note: str = '') -> str:
         f.write("- Status: blocked_degraded\n")
         f.write("- Evidence: Hermes A2A sidecar returned HTTP 502 with `agent_incomplete` / provider-side `NoneType` error after a fresh task-scoped retry.\n")
         f.write("- Action taken: retried with a fresh task-scoped session; after repeat failure, attempted the configured existing-service recovery restart once unless cooldown was active, then recorded this explicit blocked note and allowed the systemd pump unit to complete cleanly.\n")
+        f.write("- Human-visible reporting: wrote a sanitized `hermes_work_pump_blocked` system_event to the PWA chat log when possible.\n")
         if recovery_note:
             f.write(f"- Recovery attempt: {recovery_note}\n")
         f.write("- Secret handling: no request headers, bearer tokens, environment values, or raw tool traces recorded.\n")
         f.write("\n## Sanitized error preview\n\n")
         f.write(error_text[:800].replace(os.environ.get('HERMES_A2A_TOKEN', ''), '[REDACTED]'))
         f.write("\n")
+    notify_blocked_note(path, recovery_note)
     return path
 
 
