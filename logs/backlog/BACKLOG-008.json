@@ -24,6 +24,6 @@
   "rollback_plan": "Preserve handoff/evidence first; if cleanup was premature, rebuild from the recorded strategy or snapshot.",
   "john_review_date": "2026-05-25",
   "resolution_date": null,
-  "resolution_notes": null,
+  "resolution_notes": "\n\n2026-05-27T07:50Z OpenClaw pump: performed non-destructive Hetzner clone-candidate exposure sweep. Hetzner API listed two running servers: `cto-v1` (production CTO, labels purpose=cto/version=v1) and `recrm` (non-CTO project). No `cto-clone`, `candidate`, `test`, or unlabeled CTO clone server was present, so there is no disposable candidate to quarantine/retire in this tick. Artifact: logs/security/BACKLOG-008-clone-candidate-sweep-2026-05-27T0750Z.md.",
   "related_decision_log": null
 }
