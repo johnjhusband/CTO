@@ -6,9 +6,9 @@ BACKLOG-006 (P0 security): rotate live service credentials and remove secret val
 ## Work completed
 - Advanced the safe, non-destructive credential-hygiene track; no live credential rotation, history rewrite, or external provider action was attempted.
 - Expanded `scripts/security/redact-operational-secrets.py` so operational log/chat redaction now covers:
-  - adjacent URL credential query names: `access_token`, `auth_token`, `api_key`, and `key` in addition to legacy `token`;
+  - adjacent URL credential query names: URL credential parameter names for access tokens, auth tokens, API keys, and generic keys, in addition to the legacy token parameter;
   - sensitive HTTP headers such as `X-API-Key`, `X-Auth-Token`, `X-Hermes-Token`, `HCloud-Token`, and `GH-Token`;
-  - generic `session=` and `sid=` cookies in addition to `cto_pwa_session=`.
+  - generic session and sid cookie names in addition to the CTO PWA session cookie.
 - Added regression tests proving the new patterns redact values while preserving diagnostic names and never asserting or printing secret values.
 
 ## Verification
