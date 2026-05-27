@@ -38,3 +38,8 @@ Result: 30/30 PWA routing+voice tests passed; 8/8 operational secret redaction t
 ## Status
 
 This does not close BACKLOG-014 because actual background notification display still needs John's phone/browser confirmation. It does make the PWA's shipped feature requests explicit and visible in the app shell.
+
+## A2A2H port
+
+Ported CTO `07c3efa` PWA feature-status shell changes to A2A2H through `8156811db9b23dddf10807752bb37b7222db439e` and updated `wiki/A2A2H_LAST_SYNC.md` in follow-up sync commits.
+A2A2H verification: backend syntax sanity passed, static feature-summary/cache assertions passed, and grep for `cto`, `/opt/cto`, and `husband.llc` across upstream service/script/frontend paths returned no hits.
