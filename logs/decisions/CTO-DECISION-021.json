@@ -1,0 +1,41 @@
+{
+  "id": "CTO-DECISION-021",
+  "timestamp": "2026-05-27T06:20:00Z",
+  "version_before": "cto-v1",
+  "technology": "Microsoft Agent Framework 1.6.0",
+  "source": "https://github.com/microsoft/agent-framework and releases page",
+  "category": "framework",
+  "architecture_layer": "brain",
+  "action": "deferred",
+  "summary": "Defer migration; monitor and harvest patterns such as A2A v1.0 support, OpenTelemetry-by-default, DevUI access controls, and background A2A ops.",
+  "community_evidence": {
+    "production_deployments": "Unknown from this tick unless noted; source evidence was official changelog/docs or GitHub metadata.",
+    "practitioner_sentiment": "Limited scan only; no broad Reddit/YouTube validation completed in this short pump tick.",
+    "github_stars": "10,771 at 2026-05-27T06:12Z via GitHub API",
+    "maturity": "early"
+  },
+  "evaluation": {
+    "what_it_makes_obsolete": "None immediately; may reduce reliance on long-lived secrets or inform future agent infrastructure.",
+    "cost_of_switching": "Non-trivial; must be tested in clone/rotation context before production use.",
+    "cost_of_staying": "Continue current known constraints; no immediate regression.",
+    "can_test_on_vps": true,
+    "material_change": true
+  },
+  "rationale": "[verified] Microsoft Agent Framework is MIT-licensed, Microsoft-owned, active, and positions itself for production-grade Python/.NET agents with A2A/MCP, workflows, human-in-loop, observability, and Foundry hosting. [verified] It is strategically aligned but does not make OpenClaw/Hermes/A2A2H obsolete today; migration during open P0 PWA/security work would be high blast radius. Monitor rather than adopt.",
+  "test_results": {
+    "tested": false,
+    "vps_provisioned": false,
+    "passed": null,
+    "total_tests": null,
+    "failed_tests": null,
+    "iterations": null,
+    "notes": "Research-only decision; no install, spend, external mutation, or credential change performed."
+  },
+  "rollback": {
+    "snapshot_id": "",
+    "git_tag": "",
+    "instructions": "No runtime change to roll back."
+  },
+  "version_after": null,
+  "re_evaluate_date": "2026-06-24"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "CTO-DECISION-020",
+  "timestamp": "2026-05-27T06:20:00Z",
+  "version_before": "cto-v1",
+  "technology": "OpenAI Secure MCP Tunnel + Anthropic MCP tunnels",
+  "source": "OpenAI changelog May 19, 2026; Anthropic release notes May 19, 2026",
+  "category": "mcp",
+  "architecture_layer": "spine",
+  "action": "deferred",
+  "summary": "Defer private MCP tunnel adoption; treat tunnel/relay patterns as validated direction for any future non-loopback MCP exposure.",
+  "community_evidence": {
+    "production_deployments": "Unknown from this tick unless noted; source evidence was official changelog/docs or GitHub metadata.",
+    "practitioner_sentiment": "Limited scan only; no broad Reddit/YouTube validation completed in this short pump tick.",
+    "github_stars": "n/a",
+    "maturity": "early"
+  },
+  "evaluation": {
+    "what_it_makes_obsolete": "None immediately; may reduce reliance on long-lived secrets or inform future agent infrastructure.",
+    "cost_of_switching": "Non-trivial; must be tested in clone/rotation context before production use.",
+    "cost_of_staying": "Continue current known constraints; no immediate regression.",
+    "can_test_on_vps": true,
+    "material_change": true
+  },
+  "rationale": "[verified] Both OpenAI and Anthropic now offer or preview private MCP tunnel patterns. This validates CTO's loopback-only stance and is relevant for future external agent integrations. [verified] OpenAI says initial GA is account-led enterprise and Anthropic labels MCP tunnels Research Preview, so immediate adoption would add access/cost uncertainty without solving today's P0s.",
+  "test_results": {
+    "tested": false,
+    "vps_provisioned": false,
+    "passed": null,
+    "total_tests": null,
+    "failed_tests": null,
+    "iterations": null,
+    "notes": "Research-only decision; no install, spend, external mutation, or credential change performed."
+  },
+  "rollback": {
+    "snapshot_id": "",
+    "git_tag": "",
+    "instructions": "No runtime change to roll back."
+  },
+  "version_after": null,
+  "re_evaluate_date": "2026-06-24"
+}

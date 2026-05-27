@@ -1,0 +1,41 @@
+{
+  "id": "CTO-DECISION-019",
+  "timestamp": "2026-05-27T06:20:00Z",
+  "version_before": "cto-v1",
+  "technology": "OpenAI workload identity federation",
+  "source": "https://developers.openai.com/api/docs/changelog (May 26, 2026)",
+  "category": "infrastructure",
+  "architecture_layer": "guardrails",
+  "action": "deferred",
+  "summary": "Defer WIF adoption until the coordinated credential-rotation window; use it as the preferred research path for replacing long-lived OpenAI API keys if supported.",
+  "community_evidence": {
+    "production_deployments": "Unknown from this tick unless noted; source evidence was official changelog/docs or GitHub metadata.",
+    "practitioner_sentiment": "Limited scan only; no broad Reddit/YouTube validation completed in this short pump tick.",
+    "github_stars": "n/a",
+    "maturity": "early"
+  },
+  "evaluation": {
+    "what_it_makes_obsolete": "None immediately; may reduce reliance on long-lived secrets or inform future agent infrastructure.",
+    "cost_of_switching": "Non-trivial; must be tested in clone/rotation context before production use.",
+    "cost_of_staying": "Continue current known constraints; no immediate regression.",
+    "can_test_on_vps": true,
+    "material_change": true
+  },
+  "rationale": "[verified] OpenAI says WIF exchanges externally issued workload identity tokens for short-lived OpenAI access tokens without storing long-lived API keys. This directly maps to BACKLOG-006, but [unverified] provider-stack support for CTO/OpenClaw/Codex OAuth is unknown and cannot be changed safely outside the coordinated credential rotation window.",
+  "test_results": {
+    "tested": false,
+    "vps_provisioned": false,
+    "passed": null,
+    "total_tests": null,
+    "failed_tests": null,
+    "iterations": null,
+    "notes": "Research-only decision; no install, spend, external mutation, or credential change performed."
+  },
+  "rollback": {
+    "snapshot_id": "",
+    "git_tag": "",
+    "instructions": "No runtime change to roll back."
+  },
+  "version_after": null,
+  "re_evaluate_date": "2026-06-10"
+}
