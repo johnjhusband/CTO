@@ -40,4 +40,4 @@ The PWA now gives John a visible answer for the background-alerts path before an
 
 ## A2A2H port result
 
-Pending commit at artifact creation time; update after A2A2H commit and CTO tracker update.
+Ported CTO 12539b7 to A2A2H as 14112ae and pushed A2A2H origin/master. Updated `wiki/A2A2H_LAST_SYNC.md` in CTO in a follow-up tracker commit.
