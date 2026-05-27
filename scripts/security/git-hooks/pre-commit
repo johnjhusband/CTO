@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# CTO repo pre-commit guard: catch source-visible secret artifacts and
+# unredacted operational logs before they enter local history. Value-silent by
+# design: scanners print paths/marker names/status only, never secret values.
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+cd "$ROOT"
+
+printf 'pre-commit security guard: source-visible secret artifact scan\n'
+scripts/security/check-secret-artifacts.sh "$ROOT"
+
+printf '\npre-commit security guard: operational redaction check\n'
+scripts/security/redact-operational-secrets.py --check
+
+printf '\npre-commit security guard passed.\n'
