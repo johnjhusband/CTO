@@ -301,6 +301,7 @@ class PwaAccessControlTests(unittest.TestCase):
 
             self.assertEqual(statuses, [204])
             self.assertIn(("Cache-Control", "no-store"), headers)
+            self.assertIn(("Clear-Site-Data", '"cache"'), headers)
 
     def test_session_cookie_authenticates(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
