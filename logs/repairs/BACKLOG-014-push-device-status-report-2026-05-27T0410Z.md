@@ -36,3 +36,6 @@ BACKLOG-014 advanced from visible readiness display to retrievable phone/device 
 
 ## A2A2H port result
 Ported CTO `a98940f` to A2A2H as `a189f2538736a600fd1d7db542de7f6c07f7984c` and pushed `origin/master`. Updated `wiki/A2A2H_LAST_SYNC.md` to track the new synced CTO SHA. A2A2H verification passed: backend AST parse, frontend `node --check`, and genericization grep for `cto|/opt/cto|husband.llc` returned no hits under services/scripts/frontend.
+
+## Live deployment verification
+Restarted `cto-pwa-backend.service` so the new backend endpoint is live. Initial local auth verification using a standard cookie jar failed because the production cookie is `Secure` and loopback HTTP does not resend it; reran with the issued cookie explicitly attached for local-only verification. Live checks then passed: authenticated `/` contains `id="report-push-status"`, `/static/app.js` contains `/api/push/device_status`, `/service-worker.js` serves `cto-shell-v14`, and `POST /api/push/device_status` returned `ok` and wrote a sanitized `push_device_status` row to `logs/pwa-chat/2026-05-27.md`.
