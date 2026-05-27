@@ -12,7 +12,7 @@ import urllib.parse
 import urllib.request
 import unittest
 from contextlib import redirect_stderr
-from io import StringIO
+from io import BytesIO, StringIO
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
@@ -422,6 +422,26 @@ class PwaAccessControlTests(unittest.TestCase):
             self.assertEqual(statuses, [204])
             self.assertIn(("Cache-Control", "no-store"), headers)
             self.assertIn(("Clear-Site-Data", '"cache"'), headers)
+
+
+    def test_unauthorized_json_responses_are_no_store(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
+            server = fresh_server_module(tmp)
+            handler = object.__new__(server.Handler)
+            statuses = []
+            headers = []
+            body = BytesIO()
+            handler.send_response = lambda code: statuses.append(code)
+            handler.send_header = lambda name, value: headers.append((name, value))
+            handler.end_headers = lambda: None
+            handler.wfile = body
+
+            handler._json(401, {"error": "unauthorized"})
+
+            self.assertEqual(statuses, [401])
+            self.assertIn(("Cache-Control", "no-store"), headers)
+            self.assertIn(b"unauthorized", body.getvalue())
 
     def test_session_cookie_authenticates(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
