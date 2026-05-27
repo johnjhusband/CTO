@@ -123,12 +123,19 @@ else:
         encoding="utf-8",
     )
     print(f"openclaw work pump degraded (stopReason={stop_reason}): {one_line}; sanitized artifact written to {artifact_path}")
+    sys.exit(2)
 PY
 }
 
 if [[ "$rc" -eq 0 ]]; then
-  summarize_json || true
-  exit 0
+  if summarize_json; then
+    exit 0
+  fi
+  # A JSON response with no visible final assistant text means the scheduled
+  # tick did not prove that any work was completed. Preserve the sanitized
+  # artifact and mark the unit failed so service health catches the degraded
+  # pump instead of treating it as a clean run.
+  exit 1
 fi
 
 # OpenClaw 2026.5.7 can return a non-zero process status after producing a
