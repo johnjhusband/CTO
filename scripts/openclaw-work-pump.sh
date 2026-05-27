@@ -25,9 +25,13 @@ prompt="Continuous safe work pump fired at ${now}.
 
 You are OpenClaw, CTO's left hemisphere. Pick exactly one highest-priority safe item and advance it now.
 
-Before choosing, inspect the relevant current state: recent John/PWA chat messages if available, /opt/cto/BACKLOG.md, /opt/cto/HEARTBEAT.md, /opt/cto/wiki/continuous-work-policy.md, git status, service health, and recent failed verification/logs.
+Before choosing, inspect the relevant current state: recent John/PWA chat messages if available, /opt/cto/BACKLOG.md, /opt/cto/HEARTBEAT.md, /opt/cto/wiki/continuous-work-policy.md, /opt/cto/wiki/A2A2H_MAINTENANCE.md, /opt/cto/wiki/A2A2H_LAST_SYNC.md, git status, service health, and recent failed verification/logs.
+
+Before selecting any backlog item, execute the A2A2H per-tick upstream-port check from /opt/cto/wiki/A2A2H_MAINTENANCE.md. If upstream-eligible drift exists, port it, update the tracker, commit/push, and write the tick artifact before doing anything else.
 
 Before picking a new item, scan open and pending backlog items for evidence of completion already on disk. Close anything where the work is observably done.
+
+If /opt/cto/.cache/hermes-work-pump-provider-failure.json shows the Hermes provider circuit is open, do not delegate semantic work to Hermes this tick; record the degraded state if relevant and advance the highest-priority safe OpenClaw-owned item directly.
 
 Default priority order:
 1. P0 security/access-control.
