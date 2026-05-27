@@ -70,14 +70,28 @@ def sidecar_health(timeout: int = 5) -> bool:
 
 
 def recover_hermes_runtime() -> tuple[bool, str]:
-    """Restart the existing Hermes user services after repeated provider-side agent_incomplete.
+    """Restart existing Hermes services, with cooldown, after repeated agent_incomplete.
 
     This is intentionally narrow: it does not touch credentials, data, cloud resources,
-    or create a new scheduler. It clears the Hermes API process state that can wedge
-    after provider-side agent_incomplete while preserving the existing work-pump path.
+    or create a new scheduler. A cooldown prevents provider-side failures from causing
+    repeated service restarts every work-pump tick when restart is not changing outcome.
     """
     if os.environ.get('HERMES_WORK_PUMP_RECOVERY_RESTART', '1') == '0':
         return False, 'recovery restart disabled by HERMES_WORK_PUMP_RECOVERY_RESTART=0'
+    cooldown_seconds = int(os.environ.get('HERMES_WORK_PUMP_RECOVERY_COOLDOWN_SECONDS', '3600'))
+    state_dir = '/opt/cto/.cache'
+    state_path = os.path.join(state_dir, 'hermes-work-pump-recovery-restart.ts')
+    try:
+        with open(state_path, 'r', encoding='utf-8') as f:
+            last_restart = float(f.read().strip() or '0')
+    except FileNotFoundError:
+        last_restart = 0.0
+    except Exception:
+        last_restart = 0.0
+    now_epoch = time.time()
+    if cooldown_seconds > 0 and last_restart and now_epoch - last_restart < cooldown_seconds:
+        remaining = int(cooldown_seconds - (now_epoch - last_restart))
+        return False, f'recovery restart skipped; cooldown active for another {remaining}s'
     cmd = [
         'systemctl', '--user', 'restart',
         'hermes-gateway.service',
@@ -89,6 +103,12 @@ def recover_hermes_runtime() -> tuple[bool, str]:
         return False, f'restart command failed: {type(e).__name__}'
     if completed.returncode != 0:
         return False, f'restart command exited {completed.returncode}'
+    try:
+        os.makedirs(state_dir, exist_ok=True)
+        with open(state_path, 'w', encoding='utf-8') as f:
+            f.write(str(now_epoch))
+    except Exception:
+        pass
     for _ in range(30):
         if sidecar_health(timeout=2):
             return True, 'restarted hermes-gateway and cto-hermes-a2a-sidecar; sidecar health is ok'
@@ -114,7 +134,7 @@ def write_blocked_note(error_text: str, recovery_note: str = '') -> str:
         f.write("- Selected item: hemisphere health / Hermes continuous work pump reliability\n")
         f.write("- Status: blocked_degraded\n")
         f.write("- Evidence: Hermes A2A sidecar returned HTTP 502 with `agent_incomplete` / provider-side `NoneType` error after a fresh task-scoped retry.\n")
-        f.write("- Action taken: retried with a fresh task-scoped session; after repeat failure, attempted the configured existing-service recovery restart once, then recorded this explicit blocked note and allowed the systemd pump unit to complete cleanly.\n")
+        f.write("- Action taken: retried with a fresh task-scoped session; after repeat failure, attempted the configured existing-service recovery restart once unless cooldown was active, then recorded this explicit blocked note and allowed the systemd pump unit to complete cleanly.\n")
         if recovery_note:
             f.write(f"- Recovery attempt: {recovery_note}\n")
         f.write("- Secret handling: no request headers, bearer tokens, environment values, or raw tool traces recorded.\n")
