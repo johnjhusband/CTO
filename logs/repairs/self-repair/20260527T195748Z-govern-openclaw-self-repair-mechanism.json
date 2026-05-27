@@ -1,0 +1,77 @@
+{
+  "allowed_prefixes": [
+    "/usr/lib/node_modules/openclaw",
+    "/home/cto/.openclaw",
+    "/opt/cto"
+  ],
+  "backups": [
+    {
+      "backup": "logs/repairs/self-repair/backups/20260527T195748Z-govern-openclaw-self-repair-mechanism/opt_cto_AGENTS.md",
+      "exists": true,
+      "path": "/opt/cto/AGENTS.md",
+      "sha256_before": "f5da99675f2488b4cc6569e6b98b6f036e19dc73c85b952116fe7b6fda2a4cff"
+    },
+    {
+      "backup": "logs/repairs/self-repair/backups/20260527T195748Z-govern-openclaw-self-repair-mechanism/opt_cto_BACKLOG.md",
+      "exists": true,
+      "path": "/opt/cto/BACKLOG.md",
+      "sha256_before": "b21d0770acdf617d1213efada539697546c5de4f718cf3732648b57449f26716"
+    },
+    {
+      "backup": "logs/repairs/self-repair/backups/20260527T195748Z-govern-openclaw-self-repair-mechanism/opt_cto_logs_backlog_BACKLOG-002.json",
+      "exists": true,
+      "path": "/opt/cto/logs/backlog/BACKLOG-002.json",
+      "sha256_before": "5668c7e5b48615e4d5b2913cc8a4069a1d35ded0be80031d887616c761f362c8"
+    },
+    {
+      "backup": "logs/repairs/self-repair/backups/20260527T195748Z-govern-openclaw-self-repair-mechanism/opt_cto_wiki_governed-openclaw-self-repair.md",
+      "exists": true,
+      "path": "/opt/cto/wiki/governed-openclaw-self-repair.md",
+      "sha256_before": "95e564ade9c65777352e12c1253362207cbda3b8f33e2cc6a94dc4521ccf5625"
+    },
+    {
+      "backup": "logs/repairs/self-repair/backups/20260527T195748Z-govern-openclaw-self-repair-mechanism/opt_cto_scripts_repair_governed-self-repair.py",
+      "exists": true,
+      "path": "/opt/cto/scripts/repair/governed-self-repair.py",
+      "sha256_before": "5906320e2e6265fcd7af66c32c040c824cc7d0d5c5505bbd0f5654ac755d7264"
+    },
+    {
+      "backup": "logs/repairs/self-repair/backups/20260527T195748Z-govern-openclaw-self-repair-mechanism/opt_cto_tests_test_governed_self_repair.py",
+      "exists": true,
+      "path": "/opt/cto/tests/test_governed_self_repair.py",
+      "sha256_before": "82f433a6f0c16c315734f541b84b10f40020b272c50c23f52af89606373e2c4c"
+    }
+  ],
+  "close_notes": "BACKLOG-002 governed self-repair mechanism implemented and policy wired into AGENTS.md.",
+  "closed_at": "2026-05-27T19:58:29Z",
+  "git_status_after": "M AGENTS.md\n M BACKLOG.md\n M logs/backlog/BACKLOG-002.json\n?? logs/repairs/hermes-work-pump-agent-incomplete-2026-05-27T195439Z.md\n?? logs/repairs/self-repair/\n?? scripts/openclaw-governed-repair.py\n?? scripts/repair/governed-self-repair.py\n?? tests/test_governed_self_repair.py\n?? tests/test_openclaw_governed_repair.py\n?? wiki/governed-openclaw-self-repair.md",
+  "git_status_before": "?? logs/repairs/hermes-work-pump-agent-incomplete-2026-05-27T195439Z.md\n?? logs/repairs/self-repair/\n?? scripts/repair/governed-self-repair.py\n?? tests/test_governed_self_repair.py\n?? wiki/governed-openclaw-self-repair.md",
+  "id": "20260527T195748Z-govern-openclaw-self-repair-mechanism",
+  "manifest": {
+    "owner": "openclaw",
+    "paths": [
+      "/opt/cto/AGENTS.md",
+      "/opt/cto/BACKLOG.md",
+      "/opt/cto/logs/backlog/BACKLOG-002.json",
+      "/opt/cto/wiki/governed-openclaw-self-repair.md",
+      "/opt/cto/scripts/repair/governed-self-repair.py",
+      "/opt/cto/tests/test_governed_self_repair.py"
+    ],
+    "reason": "Replace the temporary direct-edit exception with a scoped manifest, backup, audit, and verification workflow for future self-repair edits.",
+    "rollback_plan": "Revert the commit and restore any affected file from logs/repairs/self-repair backups if needed.",
+    "title": "Govern OpenClaw self repair mechanism",
+    "verification": [
+      "python3 -m pytest -q tests/test_governed_self_repair.py",
+      "python3 -m compileall -q scripts/repair/governed-self-repair.py tests/test_governed_self_repair.py",
+      "bash scripts/validate-no-spend.sh"
+    ]
+  },
+  "opened_at": "2026-05-27T19:57:48Z",
+  "scope": "openclaw-governed-self-repair",
+  "state": "closed",
+  "verification_results": [
+    "python3 -m pytest -q tests/test_governed_self_repair.py -> 3 passed",
+    "python3 -m compileall -q scripts/repair/governed-self-repair.py tests/test_governed_self_repair.py -> passed",
+    "bash scripts/validate-no-spend.sh -> PASS: no-spend validation complete"
+  ]
+}

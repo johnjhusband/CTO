@@ -37,6 +37,7 @@
 
 | ID | Date | Type | Priority | Affects | Capability Needed | Status |
 |---|---|---|---|---|---|---|
+| [BACKLOG-002](logs/backlog/BACKLOG-002.json) | 2026-05-24 | fork-trigger | P2 | left-hemisphere (openclaw) | Governed OpenClaw self-repair/edit mechanism to replace the temporary direct-edit exception | open |
 | [BACKLOG-003](logs/backlog/BACKLOG-003.json) | 2026-05-25 | security | P1 | whole repo (and the running deployment whose attack surface is now visible to the public) | Thorough multi-layer security audit of the public CTO repo and the live CTO deployment | open |
 | [BACKLOG-004](logs/backlog/BACKLOG-004.json) | 2026-05-25 | upstream-pr-needed | P0 | human-interface (A2A2H) | Voice mode for A2A2H PWA — CTO reports can be heard aloud and John can reply by speaking | open |
 | [BACKLOG-005](logs/backlog/BACKLOG-005.json) | 2026-05-25 | security | P0 | core-cto / public repo / PWA push identity | Rotate and scrub VAPID/Web Push private key leaked into repo history | dry_run_verified_pending_coordinated_history_scrub |
@@ -59,7 +60,6 @@ None.
 
 | ID | Resolution Date | Type | Capability | Resolution |
 |---|---|---|---|---|
-| BACKLOG-002 | 2026-05-27 | fork-trigger | Governed OpenClaw self-repair/edit mechanism to replace the temporary direct-edit exception | Resolved 2026-05-27: added governed self-repair wrapper, policy doc, tests, and AGENTS.md guardrail requiring manifest/backups/verification/rollback records for future direct OpenClaw install/state edits. Evidence: scripts/repair/governed-self-repair.py, scripts/openclaw-governed-repair.py, wiki/governed-openclaw-self-repair.md, tests/test_governed_self_repair.py, tests/test_openclaw_governed_repair.py, logs/repairs/self-repair/. |
 | BACKLOG-001 | 2026-05-26 | missing-skill | Self-hosted PWA at cto.husband.llc — chat with OpenClaw/Hermes from phone, web-push notifications, A2A wire format | Resolved 2026-05-26: the A2A2H/PWA umbrella build is delivered and in active use. Evidence: John is using the PWA daily; durable chat log exists at logs/pwa-chat/; push enrollme... |
 | BACKLOG-009 | 2026-05-26 | security | Replace URL query-token PWA auth with cookie/session auth and reduce token logging risk | Resolved 2026-05-26: URL/query-token auth was replaced with signed HttpOnly/SameSite cookie sessions; API query-token auth is rejected; unauthenticated shell/API access returns... |
 | BACKLOG-013 | 2026-05-26 | security | Close PWA chat access-control bug so knowing the chat URL is not sufficient to read or use CTO chat | Resolved 2026-05-26: the PWA access-control failure is closed. The chat shell and APIs require authenticated cookie sessions, unauthenticated and query-token API access are reje... |

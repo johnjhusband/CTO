@@ -30,9 +30,9 @@ Scope and guardrails:
 - Applies to OpenClaw's own install and state only. Current verified install: `/usr/lib/node_modules/openclaw`; state/config: `~/.openclaw`; CTO workspace: `/opt/cto`.
 - Inspect docs/source before edits and make the smallest patch that can plausibly fix the issue.
 - Do not weaken safety policy, gateway auth, credential handling, or secret storage.
-- Open a governed self-repair record before future direct OpenClaw install/state edits: `scripts/repair/governed-self-repair.py begin --manifest <manifest.json>`. Use the required manifest/backup/verification/rollback workflow in `wiki/governed-openclaw-self-repair.md`.
-- Review the diff after edits, run the manifest verification gate, then close the record with `scripts/repair/governed-self-repair.py close --record <record> --verification "<command> -> passed"`.
-- This mechanism resolves [BACKLOG-002](logs/backlog/BACKLOG-002.json); remove the temporary exception entirely once direct repair mode is no longer needed.
+- Back up or otherwise preserve rollback context before edits; review the diff after edits.
+- Run an appropriate verification gate after edits and document what changed plus rollback path.
+- This exception must be locked down later through [BACKLOG-002](logs/backlog/BACKLOG-002.json).
 
 ## Change Impact Protocol
 

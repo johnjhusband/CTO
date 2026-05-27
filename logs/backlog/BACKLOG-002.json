@@ -1,24 +1,24 @@
 {
-  "id": "BACKLOG-002",
-  "timestamp": "2026-05-24T18:41:27Z",
-  "type": "fork-trigger",
-  "priority": "P2",
-  "status": "open",
-  "surfaced_by": "john",
-  "surfaced_from": "PWA chat 2026-05-24 — John authorized temporary direct OpenClaw self-editing for repair speed and explicitly requested a backlog item to lock it down later",
   "affects": "left-hemisphere (openclaw)",
+  "blast_radius": "Changes OpenClaw repair workflow and possibly file-system/tool permissions for /usr/lib/node_modules/openclaw and related state under ~/.openclaw. It should reduce accidental self-modification risk without blocking urgent repair work.",
   "capability_needed": "Governed OpenClaw self-repair/edit mechanism to replace the temporary direct-edit exception",
   "details": "While OpenClaw is being fixed, John authorized OpenClaw to directly edit its own files for speed. This is allowed as a temporary repair/debugging exception, not a normal operating mode. The future capability should lock this down with a safer governed mechanism: scoped write permissions, approvals or policy gates, backups/diffs, audit trail, and verification before restart or promotion.",
+  "id": "BACKLOG-002",
+  "john_review_date": "2026-05-24",
+  "priority": "P2",
+  "proposed_resolution": "Design and implement a governed OpenClaw self-repair mode or policy layer that allows direct source/config edits only under explicit scope, records every edit, creates rollback artifacts, and can be disabled once the repair phase is over.",
+  "related_decision_log": null,
+  "resolution_date": "2026-05-27",
+  "resolution_notes": "2026-05-27T19:58Z OpenClaw pump: implemented a governed direct-edit/self-repair mechanism to replace the temporary ungoverned exception. Added scripts/repair/governed-self-repair.py, scripts/openclaw-governed-repair.py, tests/test_governed_self_repair.py, tests/test_openclaw_governed_repair.py, and wiki/governed-openclaw-self-repair.md. Updated AGENTS.md so future direct OpenClaw install/state edits must open a manifest-backed repair record, capture backups/rollback evidence, run verification, and close the record. Verification passed: governed-self-repair tests, compileall, and no-spend validation. Self-repair record: logs/repairs/self-repair/20260527T195748Z-govern-openclaw-self-repair-mechanism.json.",
+  "rollback_plan": "Disable the governed self-repair mode or restore previous permissions/policy, revert any OpenClaw source changes from backup or package reinstall, and keep the temporary AGENTS.md exception only until a better replacement is proven.",
   "search_trail": [
     "Asked OpenClaw on 2026-05-24 which document should record the temporary policy and what guardrails should apply; OpenClaw answered AGENTS.md plus BACKLOG.md/logs/backlog, with backup/diff/verification guardrails.",
     "Verified OpenClaw global install with command -v/npm root/test -d: /usr/bin/openclaw points to global install under /usr/lib/node_modules/openclaw.",
     "Read /opt/cto/AGENTS.md and /opt/cto/BACKLOG.md; backlog schema supports a fork-trigger entry for source/governance changes outside normal Hermes Phase 1-4 scope."
   ],
-  "proposed_resolution": "Design and implement a governed OpenClaw self-repair mode or policy layer that allows direct source/config edits only under explicit scope, records every edit, creates rollback artifacts, and can be disabled once the repair phase is over.",
-  "blast_radius": "Changes OpenClaw repair workflow and possibly file-system/tool permissions for /usr/lib/node_modules/openclaw and related state under ~/.openclaw. It should reduce accidental self-modification risk without blocking urgent repair work.",
-  "rollback_plan": "Disable the governed self-repair mode or restore previous permissions/policy, revert any OpenClaw source changes from backup or package reinstall, and keep the temporary AGENTS.md exception only until a better replacement is proven.",
-  "john_review_date": "2026-05-24",
-  "resolution_date": null,
-  "resolution_notes": null,
-  "related_decision_log": null
+  "status": "resolved",
+  "surfaced_by": "john",
+  "surfaced_from": "PWA chat 2026-05-24 \u2014 John authorized temporary direct OpenClaw self-editing for repair speed and explicitly requested a backlog item to lock it down later",
+  "timestamp": "2026-05-24T18:41:27Z",
+  "type": "fork-trigger"
 }
