@@ -60,13 +60,27 @@ class RedactOperationalSecretsTests(unittest.TestCase):
             "encoded=%2F%3Ftoken%3Durlencoded-secret\n"
         )
 
-        self.assertEqual(counts, {"url_query_token": 3})
+        self.assertEqual(counts, {"url_query_secret": 3})
         self.assertIn("?token=REDACTED&since_id=1", redacted)
         self.assertIn("&token=REDACTED#frag", redacted)
         self.assertIn("%3Ftoken%3DREDACTED", redacted)
         self.assertNotIn("legacy-secret", redacted)
         self.assertNotIn("another-secret", redacted)
         self.assertNotIn("urlencoded-secret", redacted)
+
+    def test_redacts_adjacent_url_query_secret_names(self):
+        redacted, counts = redactor.redact_text(
+            "/callback?access_token=access-secret&api_key=api-secret&ok=1\n"
+            "encoded=%26auth_token%3Dauth-secret\n"
+        )
+
+        self.assertEqual(counts, {"url_query_secret": 3})
+        self.assertIn("access_token=REDACTED", redacted)
+        self.assertIn("api_key=REDACTED", redacted)
+        self.assertIn("%26auth_token%3DREDACTED", redacted)
+        self.assertNotIn("access-secret", redacted)
+        self.assertNotIn("api-secret", redacted)
+        self.assertNotIn("auth-secret", redacted)
 
     def test_redacts_natural_language_password_pastes(self):
         redacted, counts = redactor.redact_text("@hermes the pw is pasted-secret\n")
@@ -82,13 +96,30 @@ class RedactOperationalSecretsTests(unittest.TestCase):
             "Cookie: cto_pwa_session=session-secret; other=1\n"
         )
 
-        self.assertEqual(counts, {"authorization_bearer": 2, "pwa_session_cookie": 1})
+        self.assertEqual(counts, {"authorization_bearer": 2, "session_cookie": 1})
         self.assertIn("Authorization: Bearer REDACTED", redacted)
         self.assertIn("Authorization=Bearer REDACTED", redacted)
         self.assertIn("cto_pwa_session=REDACTED;", redacted)
         self.assertNotIn("live-a2a-token", redacted)
         self.assertNotIn("another-token", redacted)
         self.assertNotIn("session-secret", redacted)
+
+    def test_redacts_sensitive_http_headers_and_generic_session_cookies(self):
+        redacted, counts = redactor.redact_text(
+            "X-API-Key: api-secret\n"
+            "x-auth-token=auth-secret\n"
+            "Cookie: session=generic-session; sid=short-session\n"
+        )
+
+        self.assertEqual(counts, {"sensitive_header": 2, "session_cookie": 2})
+        self.assertIn("X-API-Key: REDACTED", redacted)
+        self.assertIn("x-auth-token=REDACTED", redacted)
+        self.assertIn("session=REDACTED;", redacted)
+        self.assertIn("sid=REDACTED", redacted)
+        self.assertNotIn("api-secret", redacted)
+        self.assertNotIn("auth-secret", redacted)
+        self.assertNotIn("generic-session", redacted)
+        self.assertNotIn("short-session", redacted)
 
 
 if __name__ == "__main__":

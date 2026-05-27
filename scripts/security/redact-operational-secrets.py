@@ -55,16 +55,28 @@ TOKEN_PATTERNS = [
 
 # Legacy PWA bootstrap URLs used ?token=... before cookie/session auth landed.
 # Keep the parameter name for auditability, but redact the value anywhere it
-# appears in operational logs or chat rows.
-URL_QUERY_TOKEN_RE = re.compile(r"(?P<prefix>(?:[?&]|%3[Ff]|%26)token(?:=|%3[Dd]))(?P<value>[^\s&#'\"<>]+)")
+# appears in operational logs or chat rows. Cover adjacent API-key/access-token
+# query names because failed curl/browser traces often serialize credentials in
+# URLs even after the app itself no longer accepts query-token auth.
+URL_QUERY_SECRET_RE = re.compile(
+    r"(?P<prefix>(?:[?&]|%3[Ff]|%26)(?:token|access_token|auth_token|api_key|key)(?:=|%3[Dd]))"
+    r"(?P<value>[^\s&#'\"<>]+)",
+    re.IGNORECASE,
+)
 
 # Operational logs may include HTTP headers from debug traces or failed curls.
 # Preserve header names/schemes for diagnosis while removing credential values.
 AUTH_BEARER_RE = re.compile(
     r"(?P<prefix>\bAuthorization\s*[:=]\s*(?:Bearer|bearer)\s+)(?P<value>[^\s'\";,}]+)"
 )
+SENSITIVE_HEADER_RE = re.compile(
+    r"(?P<prefix>\b(?:X-API-Key|X-Auth-Token|X-Hermes-Token|HCloud-Token|GH-Token)\s*[:=]\s*)"
+    r"(?P<value>[^\s'\";,}]+)",
+    re.IGNORECASE,
+)
 COOKIE_SESSION_RE = re.compile(
-    r"(?P<prefix>\bcto_pwa_session=)(?P<value>[^\s;,'\"}]+)"
+    r"(?P<prefix>\b(?:cto_pwa_session|session|sid)=)(?P<value>[^\s;,'\"}]+)",
+    re.IGNORECASE,
 )
 
 # John may accidentally paste credentials in natural-language chat. Catch the
@@ -109,14 +121,14 @@ def redact_text(text: str) -> tuple[str, dict[str, int]]:
 
     text = ENV_ASSIGNMENT_RE.sub(repl_env, text)
 
-    def repl_url_query_token(match: re.Match[str]) -> str:
+    def repl_url_query_secret(match: re.Match[str]) -> str:
         value = match.group("value") or ""
         if value in {"REDACTED", "%5BREDACTED%5D"}:
             return match.group(0)
-        counts["url_query_token"] = counts.get("url_query_token", 0) + 1
+        counts["url_query_secret"] = counts.get("url_query_secret", 0) + 1
         return f"{match.group('prefix')}REDACTED"
 
-    text = URL_QUERY_TOKEN_RE.sub(repl_url_query_token, text)
+    text = URL_QUERY_SECRET_RE.sub(repl_url_query_secret, text)
 
     def repl_bearer(match: re.Match[str]) -> str:
         value = match.group("value") or ""
@@ -127,11 +139,20 @@ def redact_text(text: str) -> tuple[str, dict[str, int]]:
 
     text = AUTH_BEARER_RE.sub(repl_bearer, text)
 
+    def repl_sensitive_header(match: re.Match[str]) -> str:
+        value = match.group("value") or ""
+        if value == "REDACTED":
+            return match.group(0)
+        counts["sensitive_header"] = counts.get("sensitive_header", 0) + 1
+        return f"{match.group('prefix')}REDACTED"
+
+    text = SENSITIVE_HEADER_RE.sub(repl_sensitive_header, text)
+
     def repl_cookie_session(match: re.Match[str]) -> str:
         value = match.group("value") or ""
         if value == "REDACTED":
             return match.group(0)
-        counts["pwa_session_cookie"] = counts.get("pwa_session_cookie", 0) + 1
+        counts["session_cookie"] = counts.get("session_cookie", 0) + 1
         return f"{match.group('prefix')}REDACTED"
 
     text = COOKIE_SESSION_RE.sub(repl_cookie_session, text)
