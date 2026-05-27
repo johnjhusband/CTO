@@ -117,18 +117,28 @@ def provider_outage_circuit_breaker() -> tuple[bool, str, dict]:
     The work pump already performs a fresh-session retry and a bounded service
     restart. When the provider keeps returning the same non-retryable Codex
     `NoneType`/agent_incomplete error, more calls in the next few ticks only
-    spam John and consume provider/runtime budget. After three consecutive
-    failures within an hour, pause semantic Hermes delegation briefly while
-    leaving services/timers up and OpenClaw free to continue safe work.
+    spam John and consume provider/runtime budget. After a small number of
+    consecutive failures within an hour, pause semantic Hermes delegation
+    briefly while leaving services/timers up and OpenClaw free to continue safe
+    work.
     """
     state = _load_provider_failure_state()
     count = int(state.get('consecutive_failures') or 0)
+    recent_artifacts = [
+        p for p in glob.glob('/opt/cto/logs/repairs/hermes-work-pump-agent-incomplete-*.md')
+        if time.time() - os.path.getmtime(p) < 3600
+    ]
+    count = max(count, len(recent_artifacts))
     last = float(state.get('last_failure_epoch') or 0)
+    if recent_artifacts:
+        last = max(last, max(os.path.getmtime(p) for p in recent_artifacts))
     base_cooldown = int(os.environ.get('HERMES_WORK_PUMP_PROVIDER_FAILURE_COOLDOWN_SECONDS', '2700'))
     max_cooldown = int(os.environ.get('HERMES_WORK_PUMP_PROVIDER_FAILURE_MAX_COOLDOWN_SECONDS', '21600'))
-    if count < 3 or not last or base_cooldown <= 0:
+    threshold = int(os.environ.get('HERMES_WORK_PUMP_PROVIDER_FAILURE_THRESHOLD', '2'))
+    threshold = max(1, threshold)
+    if count < threshold or not last or base_cooldown <= 0:
         return False, '', state
-    multiplier = 2 ** max(0, count - 3)
+    multiplier = 2 ** max(0, count - threshold)
     cooldown = min(max_cooldown if max_cooldown > 0 else base_cooldown * multiplier, base_cooldown * multiplier)
     elapsed = time.time() - last
     if elapsed >= cooldown:
