@@ -33,3 +33,11 @@ Results: 41 targeted tests passed; frontend JavaScript syntax passed; backend Py
 
 ## Result
 PWA improvements should now be self-evident in the app shell instead of only buried in repair logs. BACKLOG-014 remains open pending actual phone notification display evidence, but the visibility gap John reported has a concrete UI repair and regression coverage.
+
+## A2A2H port
+After the CTO commit introduced upstream-eligible `services/pwa/frontend` changes, ported the genericized release-notes shell update to A2A2H and pushed origin/master.
+
+- CTO commit: `91343b453ea64984a8f68b9bb9b43e5d86b6a3a1`
+- A2A2H commit: `8eeb87f77de200f0acc857908e2da34ce09997f1`
+- A2A2H verification: backend Python AST parse passed; frontend `node --check` passed; required `grep -RIn "cto\|/opt/cto\|husband.llc" services scripts frontend` returned no CTO-specific strings.
+- Updated `wiki/A2A2H_LAST_SYNC.md` to the CTO commit above.
