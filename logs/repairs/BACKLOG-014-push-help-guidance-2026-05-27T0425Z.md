@@ -13,7 +13,7 @@ OpenClaw continuous work pump selected BACKLOG-014 because John explicitly prior
 ## A2A2H per-tick check
 Command scope: `git log a98940f84b3351fa76a6a70ee86a31735f92f4c9..HEAD -- services/pwa services/hermes_a2a_sidecar services/a2a_delegate scripts/cache-keepalive.sh chat/db.py`.
 
-Result at selection time: no upstream-eligible CTO commits after the last synced SHA. No pre-work port was required.
+Result at selection time: no upstream-eligible CTO commits after the last synced SHA. No pre-work port was required. This tick then created upstream-eligible CTO commit `4726caebc00da6575152bacd6e80a11baf910ecb` and ported it to A2A2H commit `6c4384ea8a99fc27075a4db921071cf71cd3f455`.
 
 ## Repair
 The PWA Background alerts card now gives John actionable next-step guidance instead of only reporting "unsupported" or "permission denied" states:
@@ -22,7 +22,7 @@ The PWA Background alerts card now gives John actionable next-step guidance inst
 - `describePushCapability()` now explains what to do for unsupported notifications, unsupported Web Push, permission denial, subscribed/ready state, and post-provider-test state.
 - Kept the existing `Report status` path so John can write the phone/browser readiness snapshot into chat for later pumps.
 - Bumped the service-worker shell cache from `cto-shell-v14` to `cto-shell-v15` so the installed PWA refreshes.
-- Ported the same genericized UI/help change to `/opt/a2a2h/` with `a2a2h-shell-v15`.
+- Ported the same genericized UI/help change to `/opt/a2a2h/` with `a2a2h-shell-v15` as A2A2H commit `6c4384ea8a99fc27075a4db921071cf71cd3f455`.
 
 ## Verification
 - `python3 -m unittest -v tests.test_pwa_routing tests.test_pwa_voice_ui tests.test_redact_operational_secrets` — 39/39 passed.
