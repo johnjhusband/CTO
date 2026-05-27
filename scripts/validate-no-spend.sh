@@ -19,6 +19,7 @@ python3 -m compileall -q services scripts/index_wiki.py tests
 
 section "PWA routing + clone isolation unit tests"
 python3 tests/test_pwa_routing.py
+python3 -m pytest -q tests/test_clone_candidate_watchdog.py
 
 section "clone chat isolation defaults"
 grep -q 'CTO_INSTANCE_ID=.*candidate-' scripts/install.sh || fail "scripts/install.sh must namespace fresh VPS installs as candidates"

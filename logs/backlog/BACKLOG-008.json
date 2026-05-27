@@ -5,7 +5,7 @@
   "priority": "P1",
   "status": "open",
   "surfaced_by": "john",
-  "surfaced_from": "PWA request 2026-05-25 05:19 UTC \u2014 CISSP-like CTO security audit and prioritization",
+  "surfaced_from": "PWA request 2026-05-25 05:19 UTC — CISSP-like CTO security audit and prioritization",
   "affects": "clone-test-replace / attack surface",
   "capability_needed": "Quarantine or retire public clone candidates immediately after validation windows",
   "details": "Hetzner currently shows multiple CTO-related public servers, including two clone-candidate/v2 servers created today with public IPv4/IPv6 addresses, no cloud firewall, no backup window, and no delete/rebuild protection. Test-mode labels reduce self-replacement risk but not network exposure.",
@@ -24,6 +24,6 @@
   "rollback_plan": "Preserve handoff/evidence first; if cleanup was premature, rebuild from the recorded strategy or snapshot.",
   "john_review_date": "2026-05-25",
   "resolution_date": null,
-  "resolution_notes": "\n\n2026-05-27T07:50Z OpenClaw pump: performed non-destructive Hetzner clone-candidate exposure sweep. Hetzner API listed two running servers: `cto-v1` (production CTO, labels purpose=cto/version=v1) and `recrm` (non-CTO project). No `cto-clone`, `candidate`, `test`, or unlabeled CTO clone server was present, so there is no disposable candidate to quarantine/retire in this tick. Artifact: logs/security/BACKLOG-008-clone-candidate-sweep-2026-05-27T0750Z.md.",
+  "resolution_notes": "\n\n2026-05-27T07:50Z OpenClaw pump: performed non-destructive Hetzner clone-candidate exposure sweep. Hetzner API listed two running servers: `cto-v1` (production CTO, labels purpose=cto/version=v1) and `recrm` (non-CTO project). No `cto-clone`, `candidate`, `test`, or unlabeled CTO clone server was present, so there is no disposable candidate to quarantine/retire in this tick. Artifact: logs/security/BACKLOG-008-clone-candidate-sweep-2026-05-27T0750Z.md.\n\n2026-05-27T19:35Z OpenClaw pump: added a guarded failed clone-candidate retirement watchdog after the required A2A2H no-drift check. `scripts/security/clone-candidate-watchdog.py` reads preserved clone failure summaries and live Hetzner inventory, defaults to dry-run, and will only delete with `--destroy` when the server has the exact safe labels `purpose=cto`, `role=clone-candidate`, `test_mode=true`; production-label mismatches block deletion. Live dry-run showed the previously reported failed candidate `132825157` is already absent from Hetzner inventory, so nothing was destroyed. Added regression coverage in `tests/test_clone_candidate_watchdog.py` and wired it into `scripts/validate-no-spend.sh`. Artifact: logs/security/BACKLOG-008-clone-candidate-watchdog-2026-05-27T1935Z.md.",
   "related_decision_log": null
 }
