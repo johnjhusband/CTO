@@ -17,12 +17,18 @@ class PwaVoiceUiTests(unittest.TestCase):
         self.assertIn('id="voice-toggle"', index)
         self.assertIn('aria-pressed="false"', index)
         self.assertIn('id="voice-input"', index)
+        self.assertIn('id="voice-status"', index)
+        self.assertIn('id="voice-help"', index)
+        self.assertIn('id="report-voice-status"', index)
         self.assertIn("SpeechSynthesisUtterance", app)
         self.assertIn("SpeechRecognition", app)
         self.assertIn("pwa-voice-enabled", app)
+        self.assertIn("voiceSupportSnapshot", app)
+        self.assertIn("reportVoiceDeviceStatus", app)
+        self.assertIn('/api/voice/device_status', app)
         self.assertIn("appendMessage(m, { speak: true })", app)
         self.assertIn("#voice-input.listening", style)
-        self.assertIn('SHELL_CACHE = "cto-shell-v15"', worker)
+        self.assertIn('SHELL_CACHE = "cto-shell-v16"', worker)
 
 
 if __name__ == "__main__":

@@ -195,6 +195,29 @@ def _summarize_push_device_status(body: dict[str, Any]) -> dict[str, Any]:
         "user_agent_family": user_agent.split(" ", 1)[0] if user_agent else "",
     }
 
+
+def _summarize_voice_device_status(body: dict[str, Any]) -> dict[str, Any]:
+    """Return a bounded, non-secret snapshot of browser voice readiness."""
+    def boolish(name: str) -> bool:
+        return bool(body.get(name))
+    status_text = str(body.get("status_text") or "")[:240]
+    platform = str(body.get("platform") or "")[:80]
+    language = str(body.get("language") or "")[:40]
+    user_agent = str(body.get("user_agent") or "")[:240]
+    return {
+        "event": "voice_device_status",
+        "speech_synthesis_supported": boolish("speech_synthesis_supported"),
+        "speech_recognition_supported": boolish("speech_recognition_supported"),
+        "voice_enabled": boolish("voice_enabled"),
+        "standalone": boolish("standalone"),
+        "manual": boolish("manual"),
+        "after_toggle": boolish("after_toggle"),
+        "language": language,
+        "platform": platform,
+        "status_text": status_text,
+        "user_agent_family": user_agent.split(" ", 1)[0] if user_agent else "",
+    }
+
 # ─── SSE broadcaster ────────────────────────────────────────────────────────
 
 class SSEBroadcaster:
@@ -1125,6 +1148,10 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, {"ok": True, "attempted": attempted, "failed": failed})
         if path == "/api/push/device_status":
             summary = _summarize_push_device_status(body)
+            append(sender="system", recipient="john", kind="system_event", content=json.dumps(summary))
+            return self._json(200, {"ok": True, "status": summary})
+        if path == "/api/voice/device_status":
+            summary = _summarize_voice_device_status(body)
             append(sender="system", recipient="john", kind="system_event", content=json.dumps(summary))
             return self._json(200, {"ok": True, "status": summary})
         return self._json(404, {"error": "not_found"})
