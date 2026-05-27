@@ -154,7 +154,7 @@ class PwaRoutingTests(unittest.TestCase):
         service_worker = (frontend / "service-worker.js").read_text()
         self.assertIn('"/static/icon-192.png"', service_worker)
         self.assertIn('"/static/icon-512.png"', service_worker)
-        self.assertIn('const SHELL_CACHE = "cto-shell-v16"', service_worker)
+        self.assertIn('const SHELL_CACHE = "cto-shell-v17"', service_worker)
 
     def test_frontend_has_visible_a2a_coordination_toggle(self):
         frontend = REPO / "services" / "pwa" / "frontend"
@@ -178,6 +178,9 @@ class PwaRoutingTests(unittest.TestCase):
         self.assertIn("feature-status live", index_html)
         self.assertIn("describePushCapability()", app_js)
         self.assertIn("reportPushDeviceStatus", app_js)
+        self.assertIn("currentPushSubscriptionState", app_js)
+        self.assertIn("autoReportDailyDeviceReadiness", app_js)
+        self.assertIn("pwa-device-readiness-auto-report-day", app_js)
         self.assertIn('/api/push/device_status', app_js)
         self.assertIn("reportVoiceDeviceStatus", app_js)
         self.assertIn('/api/voice/device_status', app_js)
@@ -191,7 +194,7 @@ class PwaRoutingTests(unittest.TestCase):
         self.assertIn("Raw JSON", app_js)
         self.assertIn("initToggle($toggleA2A, \"a2a\")", app_js)
         self.assertIn("body:not(.show-a2a) .msg.a2a { display: none; }", style_css)
-        self.assertIn("const SHELL_CACHE = \"cto-shell-v16\"", service_worker)
+        self.assertIn("const SHELL_CACHE = \"cto-shell-v17\"", service_worker)
         self.assertIn('event.request.mode === "navigate" || SHELL_PATHS.has(url.pathname)', service_worker)
         self.assertIn('url.pathname.startsWith("/chat-log/")', service_worker)
         self.assertIn('fetch(event.request).then((resp) => {', service_worker)
@@ -215,6 +218,7 @@ class PwaRoutingTests(unittest.TestCase):
             })
             self.assertEqual(summary["event"], "push_device_status")
             self.assertTrue(summary["subscribed"])
+            self.assertFalse(summary["auto_daily"])
             self.assertEqual(summary["permission"], "granted")
             self.assertEqual(summary["user_agent_family"], "Mozilla/5.0")
             self.assertNotIn("secret-token", json.dumps(summary))
@@ -234,6 +238,7 @@ class PwaRoutingTests(unittest.TestCase):
             self.assertEqual(summary["event"], "voice_device_status")
             self.assertTrue(summary["speech_synthesis_supported"])
             self.assertFalse(summary["speech_recognition_supported"])
+            self.assertFalse(summary["auto_daily"])
             self.assertEqual(summary["user_agent_family"], "Mozilla/5.0")
             self.assertNotIn("secret-token", json.dumps(summary))
 
