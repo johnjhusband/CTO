@@ -50,7 +50,6 @@
 | [BACKLOG-015](logs/backlog/BACKLOG-015.json) | 2026-05-25 | missing-mcp | P1 | reporting / A2A2H human interface | Outbound email status updates to John at john@husband.llc on a regular cadence and major events | adapter_implemented_blocked_on_credentials |
 | [BACKLOG-014](logs/backlog/BACKLOG-014.json) | 2026-05-25 | upstream-pr-needed | P0 | A2A2H PWA / notifications and background delivery | Make PWA deliver CTO replies while backgrounded so John can context-switch without missing messages | open |
 | [BACKLOG-016](logs/backlog/BACKLOG-016.json) | 2026-05-26 | upstream-pr-needed | P0 | A2A2H PWA / inter-hemisphere transparency and auditability | Visible inter-hemisphere coordination transcript or audit view in the PWA | open |
-| [BACKLOG-017](logs/backlog/BACKLOG-017.json) | 2026-05-26 | feature | P0 | A2A2H PWA / chat history persistence and review | Durable, human-readable chat log export John can review at any time without needing the PWA in the foreground | open |
 
 ## Escalated to John (Awaiting Decision)
 
@@ -63,6 +62,7 @@ None.
 | BACKLOG-001 | 2026-05-26 | missing-skill | Self-hosted PWA at cto.husband.llc — chat with OpenClaw/Hermes from phone, web-push notifications, A2A wire format | Resolved 2026-05-26: the A2A2H/PWA umbrella build is delivered and in active use. Evidence: John is using the PWA daily; durable chat log exists at logs/pwa-chat/; push enrollme... |
 | BACKLOG-009 | 2026-05-26 | security | Replace URL query-token PWA auth with cookie/session auth and reduce token logging risk | Resolved 2026-05-26: URL/query-token auth was replaced with signed HttpOnly/SameSite cookie sessions; API query-token auth is rejected; unauthenticated shell/API access returns... |
 | BACKLOG-013 | 2026-05-26 | security | Close PWA chat access-control bug so knowing the chat URL is not sufficient to read or use CTO chat | Resolved 2026-05-26: the PWA access-control failure is closed. The chat shell and APIs require authenticated cookie sessions, unauthenticated and query-token API access are reje... |
+| BACKLOG-017 | 2026-05-27 | feature | Durable, human-readable chat log export John can review at any time without needing the PWA in the foreground | Resolved 2026-05-27: durable markdown chat logs, authenticated /chat-log/ and /api/chat/export, visible Chat history/Review full logs links, and foreground full-history resync are implemented and verified. Evidence: logs/pwa-chat/, logs/repairs/BACKLOG-017-runtime-chat-log-verification-2026-05-26T2040Z.md, services/pwa/frontend/index.html, services/pwa/frontend/app.js, service-worker cto-shell-v12. |
 | BACKLOG-018 | 2026-05-27 | missing-mcp | Per-tick automated check and porting of CTO chat-bridge improvements to A2A2H, plus one-time backfill | Resolved 2026-05-27: maintenance protocol, role docs, per-tick policy, one-time backfill, pushed A2A2H origin, last-sync tracker, and no-drift check are complete. Evidence: wiki/A2A2H_MAINTENANCE.md, wiki/A2A2H_LAST_SYNC.md, logs/repairs/a2a2h-backfill-2026-05-26.md, A2A2H origin/master a72c2cdc. |
 
 ---
