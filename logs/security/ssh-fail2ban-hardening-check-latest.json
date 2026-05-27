@@ -1,0 +1,45 @@
+{
+  "config_sources": [
+    "/etc/ssh/sshd_config"
+  ],
+  "effective_sshd_config_observed": false,
+  "fail2ban": {
+    "sshd_excerpt": "",
+    "sshd_returncode": 255,
+    "state": "needs_privileged_verification",
+    "status_excerpt": "",
+    "status_returncode": 255,
+    "stderr_excerpt": "2026-05-27 21:28:43,988 fail2ban                [2653744]: ERROR   Permission denied to socket: /var/run/fail2ban/fail2ban.sock, (you must be root)\n\n2026-05-27 21:28:44,057 fail2ban                [2653745]: ERROR   Permission denied to socket: /var/run/fail2ban/fail2ban.sock, (you must be root)"
+  },
+  "failures": [
+    "x11forwarding=yes (expected one of ['no'])"
+  ],
+  "next_required_step": "If status is not hardened_observed, run this checker with sudo or apply an approved sshd_config.d hardening drop-in only with an active rollback session/console path. Do not tighten SSH before BACKLOG-007 confirms a safe perimeter/SSH source.",
+  "production_mutated_by_this_check": false,
+  "secret_values_printed": false,
+  "settings_checked": {
+    "allowgroups": null,
+    "allowusers": null,
+    "authenticationmethods": null,
+    "challengeresponseauthentication": null,
+    "kbdinteractiveauthentication": "no",
+    "maxauthtries": null,
+    "passwordauthentication": null,
+    "permitrootlogin": null,
+    "port": null,
+    "pubkeyauthentication": null,
+    "x11forwarding": "yes"
+  },
+  "source": "visible_config",
+  "spend_or_infrastructure_change": false,
+  "sshd_T_error_excerpt": "sshd: no hostkeys available -- exiting.\n",
+  "status": "hardening_required",
+  "uid": 1000,
+  "warnings": [
+    "passwordauthentication not observed",
+    "challengeresponseauthentication not observed",
+    "permitrootlogin not observed",
+    "pubkeyauthentication not observed",
+    "maxauthtries not observed"
+  ]
+}
