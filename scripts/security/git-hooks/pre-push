@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# CTO repo pre-push guard: block source-visible secret artifacts and unredacted
+# operational logs before anything leaves the VPS. Keep this non-destructive and
+# value-silent; scanners must print paths/marker names only, never secret values.
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+cd "$ROOT"
+
+printf 'pre-push security guard: source-visible secret artifact scan\n'
+scripts/security/check-secret-artifacts.sh "$ROOT"
+
+printf '\npre-push security guard: operational redaction check\n'
+scripts/security/redact-operational-secrets.py --check
+
+printf '\npre-push security guard passed.\n'
