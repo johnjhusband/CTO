@@ -284,6 +284,17 @@ class PwaAccessControlTests(unittest.TestCase):
             self.assertIn("token=[REDACTED]", logged)
             self.assertNotIn("test-secret-token", logged)
 
+    def test_legacy_stream_query_token_204_access_log_is_suppressed(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
+            server = fresh_server_module(tmp)
+            handler = object.__new__(server.Handler)
+            handler.log_date_time_string = lambda: "date"
+            err = StringIO()
+            with redirect_stderr(err):
+                handler.log_message('"GET /api/stream?token=%s HTTP/1.1" 204 -', "test-secret-token")
+            self.assertEqual(err.getvalue(), "")
+
     def test_legacy_stream_query_token_stops_eventsource_retry_storm(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
