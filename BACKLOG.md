@@ -48,7 +48,7 @@
 | [BACKLOG-011](logs/backlog/BACKLOG-011.json) | 2026-05-25 | security | P2 | host hardening / SSH | Complete privileged SSH/fail2ban hardening verification | open |
 | [BACKLOG-012](logs/backlog/BACKLOG-012.json) | 2026-05-25 | security | P2 | patch management / dependency hygiene | Patch OpenClaw and add dependency/security scanning gates | open |
 | [BACKLOG-015](logs/backlog/BACKLOG-015.json) | 2026-05-25 | missing-mcp | P1 | reporting / A2A2H human interface | Outbound email status updates to John at john@husband.llc on a regular cadence and major events | adapter_implemented_blocked_on_credentials |
-| [BACKLOG-014](logs/backlog/BACKLOG-014.json) | 2026-05-25 | upstream-pr-needed | P0 | A2A2H PWA / notifications and background delivery | Make PWA deliver CTO replies while backgrounded so John can context-switch without missing messages | open |
+| [BACKLOG-014](logs/backlog/BACKLOG-014.json) | open_visible_ui_pending_john_verification | upstream-pr-needed | P0 | A2A2H PWA / notifications and background delivery | Make PWA deliver CTO replies while backgrounded so John can context-switch without missing messages | open |
 
 ## Escalated to John (Awaiting Decision)
 
