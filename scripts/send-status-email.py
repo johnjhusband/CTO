@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
-"""Send CTO status updates by SMTP when credentials are configured.
+"""Send CTO status updates by email when credentials are configured.
 
-Secrets are read only from environment variables and never from repo files:
+Secrets are read only from environment variables and never from repo files.
+
+Preferred no-Google path for regular status mail:
+  CTO_EMAIL_PROVIDER=resend, CTO_EMAIL_API_KEY, CTO_EMAIL_FROM, CTO_EMAIL_TO
+
+Legacy SMTP fallback:
   CTO_EMAIL_SMTP_HOST, CTO_EMAIL_SMTP_PORT, CTO_EMAIL_SMTP_USER,
   CTO_EMAIL_SMTP_PASSWORD, CTO_EMAIL_FROM, CTO_EMAIL_TO
 
@@ -10,14 +15,17 @@ Use --dry-run to validate message construction without sending.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import smtplib
 import ssl
 import sys
 from email.message import EmailMessage
 from pathlib import Path
+from urllib import request
 
 DEFAULT_TO = "john@husband.llc"
+DEFAULT_RESEND_API_URL = "https://api.resend.com/emails"
 
 
 def latest_digest(root: Path = Path("/opt/cto/logs/digest")) -> Path | None:
@@ -50,6 +58,16 @@ def smtp_config() -> tuple[str, int, str, str]:
     return host, port, user, password
 
 
+def configured_provider() -> str:
+    """Return the selected outbound provider without reading secret values."""
+    provider = os.environ.get("CTO_EMAIL_PROVIDER", "").strip().lower()
+    if provider:
+        return provider
+    if os.environ.get("CTO_EMAIL_API_KEY"):
+        return "resend"
+    return "smtp"
+
+
 def with_authenticated_smtp():
     host, port, user, password = smtp_config()
     if port == 465:
@@ -65,7 +83,10 @@ def with_authenticated_smtp():
 
 
 def check_credentials() -> None:
-    """Verify SMTP login without sending a message or printing secret values."""
+    """Verify provider credentials without sending a message or printing secret values."""
+    if configured_provider() == "resend":
+        resend_config()
+        return
     with with_authenticated_smtp() as smtp:
         try:
             smtp.noop()
@@ -75,8 +96,41 @@ def check_credentials() -> None:
 
 
 def send_message(msg: EmailMessage) -> None:
+    if configured_provider() == "resend":
+        send_message_resend(msg)
+        return
     with with_authenticated_smtp() as smtp:
         smtp.send_message(msg)
+
+
+def resend_config() -> tuple[str, str]:
+    api_key = os.environ.get("CTO_EMAIL_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("missing email credentials: CTO_EMAIL_API_KEY")
+    return os.environ.get("CTO_EMAIL_API_URL", DEFAULT_RESEND_API_URL), api_key
+
+
+def send_message_resend(msg: EmailMessage) -> None:
+    """Send a plaintext status email through Resend's HTTP API."""
+    url, api_key = resend_config()
+    payload = {
+        "from": msg["From"],
+        "to": [addr.strip() for addr in str(msg["To"]).split(",") if addr.strip()],
+        "subject": msg["Subject"],
+        "text": msg.get_content(),
+    }
+    req = request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    with request.urlopen(req, timeout=30) as resp:
+        if getattr(resp, "status", 200) >= 400:
+            raise RuntimeError(f"email provider returned HTTP {resp.status}")
 
 
 def main() -> int:
@@ -93,7 +147,11 @@ def main() -> int:
 
     if args.check_credentials:
         check_credentials()
-        print("smtp credential check passed: login accepted; no message sent")
+        provider = configured_provider()
+        if provider == "resend":
+            print("email credential check passed: Resend API key present; no message sent")
+        else:
+            print("smtp credential check passed: login accepted; no message sent")
         return 0
 
     if args.body_file:
@@ -107,7 +165,10 @@ def main() -> int:
 
     msg = build_message(args.subject, body)
     if args.dry_run:
-        print(f"dry-run: would send to {msg['To']} from {msg['From']} subject {msg['Subject']!r} ({len(body)} chars)")
+        print(
+            f"dry-run: would send via {configured_provider()} to {msg['To']} "
+            f"from {msg['From']} subject {msg['Subject']!r} ({len(body)} chars)"
+        )
         return 0
     send_message(msg)
     print(f"sent status email to {msg['To']}")

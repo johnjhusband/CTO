@@ -22,3 +22,4 @@
 | CTO-DECISION-019 | 2026-05-27 | OpenAI workload identity federation | Deferred | Defer WIF adoption until the coordinated credential-rotation window; use it as the preferred research path for replacing long-lived OpenAI API keys if supported. |
 | CTO-DECISION-020 | 2026-05-27 | OpenAI Secure MCP Tunnel + Anthropic MCP tunnels | Deferred | Defer private MCP tunnel adoption; treat tunnel/relay patterns as validated direction for any future non-loopback MCP exposure. |
 | CTO-DECISION-021 | 2026-05-27 | Microsoft Agent Framework 1.6.0 | Deferred | Defer migration; monitor and harvest patterns such as A2A v1.0 support, OpenTelemetry-by-default, DevUI access controls, and background A2A ops. |
+| CTO-DECISION-022 | 2026-05-27 | Outbound status email provider path | Adopted | Choose non-Google transactional email API for BACKLOG-015; add Resend-compatible env-only sender while preserving SMTP fallback. |

@@ -1,0 +1,42 @@
+{
+  "id": "CTO-DECISION-022",
+  "timestamp": "2026-05-27T20:45:00Z",
+  "version_before": "cto-v1",
+  "technology": "Outbound status email provider path for BACKLOG-015",
+  "source": "John PWA instruction 2026-05-27T19:20Z; Resend send-email API docs fetched 2026-05-27T20:41Z; live SMTP credential check 2026-05-27T20:40Z",
+  "category": "communication",
+  "architecture_layer": "human-interface",
+  "action": "adopted",
+  "summary": "Choose a non-Google transactional email API path for CTO status email instead of Gmail OAuth or the rejected Gmail App Password/SMTP path.",
+  "community_evidence": {
+    "production_deployments": "Transactional email APIs are a standard production pattern; this tick verified the selected Resend endpoint shape against vendor docs rather than community sentiment.",
+    "practitioner_sentiment": "Not surveyed in this short pump tick because John explicitly requested a provider-path decision and implementation, not a broad email-provider research pass.",
+    "github_stars": null,
+    "maturity": "production service"
+  },
+  "evaluation": {
+    "what_it_makes_obsolete": "The rejected Gmail App Password/SMTP path for BACKLOG-015 and any need to couple routine CTO reporting to Google's user OAuth flow.",
+    "cost_of_switching": "Low code cost: status email sender can choose an HTTP API provider via env names only. Runtime credential provisioning remains separate and secret-managed.",
+    "cost_of_staying": "BACKLOG-015 remains indefinitely blocked on invalid Gmail SMTP credentials and no regular email report channel to John.",
+    "can_test_on_vps": true,
+    "material_change": false
+  },
+  "rationale": "[verified] John rejected the Gmail App Password/SMTP path and explicitly instructed CTO to pick a path for BACKLOG-015. [verified] The live configured SMTP credentials currently fail authentication with Gmail 535, without printing secret values. [verified] Resend's send-email API accepts from/to/subject/text fields and Authorization bearer API keys, which fits CTO's env-only secret boundary. [unverified] Resend is the best long-term provider; it is the chosen low-blast-radius implementation target until John provides or approves a different non-Google provider credential.",
+  "test_results": {
+    "tested": true,
+    "vps_provisioned": false,
+    "passed": true,
+    "total_tests": 5,
+    "failed_tests": 0,
+    "iterations": 1,
+    "notes": "python3 -m unittest -v tests/test_send_status_email.py passed. No email was sent. Existing SMTP --check-credentials failed with Gmail 535 and was treated as evidence the old path is not viable."
+  },
+  "rollback": {
+    "snapshot_id": "",
+    "git_tag": "",
+    "instructions": "Unset CTO_EMAIL_PROVIDER/CTO_EMAIL_API_KEY and the sender falls back to legacy SMTP behavior; revert scripts/send-status-email.py and tests/test_send_status_email.py if necessary."
+  },
+  "version_after": "cto-v1",
+  "related_backlog": ["BACKLOG-015"],
+  "re_evaluate_date": "2026-06-10"
+}
