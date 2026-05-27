@@ -12,7 +12,7 @@ scanned=0
 
 # File names that should never be source-visible unless explicitly allowlisted below.
 secret_name_re='(^|/)(private|secret|credentials?|client_secret|token|id_rsa|id_ed25519)(\.|-|_|$)|\.pem$|\.key$|\.p12$|\.pfx$'
-allow_name_re='(^|/)(example\.cto-secrets\.env|README|.*\.md|scripts/security/check-secret-artifacts\.sh)$'
+allow_name_re='(^|/)(example\.cto-secrets\.env|README|.*\.md|scripts/security/check-secret-artifacts\.sh|scripts/security/credential-rotation-plan\.sh)$'
 
 # Content markers: print only path + marker name, never matching lines.
 declare -a content_checks=(

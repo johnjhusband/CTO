@@ -22,14 +22,23 @@ bash -n scripts/security/rotation-preflight.sh
 printf '\n== credential rotation smoke syntax ==\n'
 bash -n scripts/security/rotation-smoke.sh
 
+printf '\n== credential rotation plan syntax ==\n'
+bash -n scripts/security/credential-rotation-plan.sh
+
 printf '\n== credential rotation preflight (names only) ==\n'
 scripts/security/rotation-preflight.sh
+
+printf '\n== credential rotation plan check (metadata only) ==\n'
+scripts/security/credential-rotation-plan.sh --check-only
 
 printf '\n== credential rotation smoke check (no values) ==\n'
 scripts/security/rotation-smoke.sh
 
 printf '\n== redaction unit tests ==\n'
 python3 -m unittest -v tests/test_redact_operational_secrets.py
+
+printf '\n== credential rotation plan unit tests ==\n'
+python3 -m unittest -v tests/test_credential_rotation_plan.py
 
 printf '\n== PWA auth/routing regression tests ==\n'
 python3 -m unittest -v tests/test_pwa_routing.py
