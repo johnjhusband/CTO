@@ -154,7 +154,7 @@ class PwaRoutingTests(unittest.TestCase):
         service_worker = (frontend / "service-worker.js").read_text()
         self.assertIn('"/static/icon-192.png"', service_worker)
         self.assertIn('"/static/icon-512.png"', service_worker)
-        self.assertIn('const SHELL_CACHE = "cto-shell-v21"', service_worker)
+        self.assertIn('const SHELL_CACHE = "cto-shell-v22"', service_worker)
 
     def test_frontend_has_visible_a2a_coordination_toggle(self):
         frontend = REPO / "services" / "pwa" / "frontend"
@@ -169,7 +169,7 @@ class PwaRoutingTests(unittest.TestCase):
         self.assertIn("Feature request status:", index_html)
         self.assertIn("chat log + coordination transcript are live now", index_html)
         self.assertIn("push now shows device readiness", index_html)
-        self.assertIn("Updated 2026-05-27 11:55 UTC · shell v21", index_html)
+        self.assertIn("Updated 2026-05-27 11:58 UTC · shell v22", index_html)
         self.assertIn("retries until it actually reaches the server", index_html)
         self.assertIn("What changed today", index_html)
         self.assertIn("If this panel is missing on your phone", index_html)
@@ -200,7 +200,7 @@ class PwaRoutingTests(unittest.TestCase):
         self.assertIn("Raw JSON", app_js)
         self.assertIn("initToggle($toggleA2A, \"a2a\")", app_js)
         self.assertIn("body:not(.show-a2a) .msg.a2a { display: none; }", style_css)
-        self.assertIn("const SHELL_CACHE = \"cto-shell-v21\"", service_worker)
+        self.assertIn("const SHELL_CACHE = \"cto-shell-v22\"", service_worker)
         self.assertIn("let reported = false", app_js)
         self.assertIn("if (reported) localStorage.setItem(key, day);", app_js)
         self.assertIn('event.request.mode === "navigate" || SHELL_PATHS.has(url.pathname)', service_worker)

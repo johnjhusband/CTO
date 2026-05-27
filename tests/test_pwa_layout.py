@@ -50,7 +50,7 @@ class PwaLayoutTests(unittest.TestCase):
     def test_visible_pwa_controls_and_cache_bump_exist(self):
         for text in ["Background alerts", "Agent coordination", "Chat history", "Voice", "Update app"]:
             self.assertIn(text, HTML)
-        self.assertIn("cto-shell-v21", SW)
+        self.assertIn("cto-shell-v22", SW)
 
 
 if __name__ == "__main__":
