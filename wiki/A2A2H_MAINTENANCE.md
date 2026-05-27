@@ -25,7 +25,7 @@ When any of these CTO paths change, an A2A2H port is required:
 | `services/a2a_delegate/` | `services/a2a_delegate/` | Same |
 | `scripts/cache-keepalive.sh` | `scripts/cache-keepalive.sh` | Same |
 | `services/pwa/frontend/` | `services/pwa/frontend/` | UI strings: strip "CTO" specifically (e.g., `<title>CTO chat logs</title>` → `<title>A2A2H chat logs</title>`); cache name `cto-shell-v*` → `a2a2h-shell-v*` |
-| `chat/db.py` (if it changes shape) | `chat/db.py` | Same |
+| `services/chat/db.py` (if it changes shape) | `services/chat/db.py` | Same |
 | Caddyfile snippets for `cto.husband.llc` | Generic example Caddyfile | Replace host with `{$A2A2H_HOST}` placeholder |
 
 ## Files that are NOT upstream
@@ -42,7 +42,7 @@ Never port:
 
 On EVERY Hermes work-pump tick AND every OpenClaw continuous-work tick, the agent MUST perform this check before selecting a new item:
 
-1. **List CTO commits since A2A2H was last synced.** Read `wiki/A2A2H_LAST_SYNC.md` for the last-synced CTO SHA (initial value: `1f71f58` — the initial extraction commit). Run `git log <LAST_SYNC>..HEAD -- services/pwa services/hermes_a2a_sidecar services/a2a_delegate scripts/cache-keepalive.sh chat/db.py` in `/opt/cto`. If empty: no port needed; record this in the tick artifact and proceed. If non-empty: port is required.
+1. **List CTO commits since A2A2H was last synced.** Read `wiki/A2A2H_LAST_SYNC.md` for the last-synced CTO SHA (initial value: `1f71f58` — the initial extraction commit). Run `git log <LAST_SYNC>..HEAD -- services/pwa services/hermes_a2a_sidecar services/a2a_delegate scripts/cache-keepalive.sh services/chat/db.py` in `/opt/cto`. If empty: no port needed; record this in the tick artifact and proceed. If non-empty: port is required.
 2. **For each commit needing a port:**
    - Identify the changed files using the upstream table above
    - Apply the genericization rules
