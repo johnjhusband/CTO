@@ -1,0 +1,54 @@
+{
+  "a2a2h_drift_lines": [],
+  "clone_verify": {
+    "candidate_summary": "/opt/cto/.cache/openclaw-upgrade-candidate/openclaw-2026.5.26/summary.json",
+    "checks": {
+      "help_smoke_passed": true,
+      "installed_matches_target": false,
+      "version_command_rc": 0
+    },
+    "failures": [
+      "installed OpenClaw version 2026.5.7 does not match target 2026.5.26"
+    ],
+    "installed_version": "2026.5.7",
+    "next_required_step": "If this ran on a clone host and status is clone_upgrade_verified, run the standard install parity, service health, A2A2H drift, safe security gates, and PWA chat-first layout gates before promotion. If this ran on production and status is blocked because production still has the old version, that is expected.",
+    "package": "openclaw",
+    "production_mutated_by_this_check": false,
+    "secret_values_printed": false,
+    "spend_or_infrastructure_change": false,
+    "status": "blocked",
+    "target_version": "2026.5.26",
+    "warnings": []
+  },
+  "failures": [
+    "openclaw clone version/help verification failed"
+  ],
+  "gate": "openclaw_upgrade_clone_gate",
+  "next_required_step": "Only promote the clone after this gate reports clone_gate_verified on the clone host; do not upgrade production in place.",
+  "production_mutated_by_this_check": false,
+  "secret_values_printed": false,
+  "spend_or_infrastructure_change": false,
+  "status": "blocked",
+  "validate_no_spend_tail": [
+    "",
+    "\u2550\u2550\u2550 frontend TypeScript build if dependencies are present \u2550\u2550\u2550",
+    "",
+    "> @cto/chat-ui@0.1.0 build",
+    "> tsc && vite build",
+    "",
+    "vite v8.0.14 building client environment for production...",
+    "\u001b[2K",
+    "transforming...\u2713 71 modules transformed.",
+    "rendering chunks...",
+    "computing gzip size...",
+    "dist/index.html                   0.50 kB \u2502 gzip:  0.31 kB",
+    "dist/assets/index-BGmgkLwT.css    2.39 kB \u2502 gzip:  0.81 kB",
+    "dist/assets/index-DYuRUqh_.js   223.09 kB \u2502 gzip: 69.52 kB",
+    "",
+    "\u2713 built in 192ms",
+    "SKIP: lib/a2a-secure/node_modules absent",
+    "SKIP: plugins/openclaw-secure-a2a/node_modules absent",
+    "",
+    "PASS: no-spend validation complete"
+  ]
+}
