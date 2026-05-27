@@ -19,7 +19,7 @@ John/device confirmation is the current blocker for BACKLOG-014 and BACKLOG-004.
 
 ## A2A2H port
 
-Ported CTO `0226a115ae19534d08150c569e490b196023ed68` to A2A2H as `094edef16d3030786530a00adc7e6d62258a6a4f`; updated `wiki/A2A2H_LAST_SYNC.md`.
+Ported CTO `b54d04e45cb491e4baebc9ace65a61e643af15ac` to A2A2H as `545be39e7b4253db239706858e61079e12d2034f`; updated `wiki/A2A2H_LAST_SYNC.md`.
 
 ## Verification
 
