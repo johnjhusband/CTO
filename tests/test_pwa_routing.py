@@ -154,7 +154,7 @@ class PwaRoutingTests(unittest.TestCase):
         service_worker = (frontend / "service-worker.js").read_text()
         self.assertIn('"/static/icon-192.png"', service_worker)
         self.assertIn('"/static/icon-512.png"', service_worker)
-        self.assertIn('const SHELL_CACHE = "cto-shell-v11"', service_worker)
+        self.assertIn('const SHELL_CACHE = "cto-shell-v12"', service_worker)
 
     def test_frontend_has_visible_a2a_coordination_toggle(self):
         frontend = REPO / "services" / "pwa" / "frontend"
@@ -176,7 +176,10 @@ class PwaRoutingTests(unittest.TestCase):
         self.assertIn("Raw JSON", app_js)
         self.assertIn("initToggle($toggleA2A, \"a2a\")", app_js)
         self.assertIn("body:not(.show-a2a) .msg.a2a { display: none; }", style_css)
-        self.assertIn("const SHELL_CACHE = \"cto-shell-v11\"", service_worker)
+        self.assertIn("const SHELL_CACHE = \"cto-shell-v12\"", service_worker)
+        self.assertIn('event.request.mode === "navigate" || SHELL_PATHS.has(url.pathname)', service_worker)
+        self.assertIn('url.pathname.startsWith("/chat-log/")', service_worker)
+        self.assertIn('fetch(event.request).then((resp) => {', service_worker)
 
     def test_a2a_audit_sanitizer_redacts_obvious_secrets(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
