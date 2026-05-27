@@ -25,6 +25,10 @@ Static verification passed in `/opt/a2a2h`:
 
 ## Result
 
-- A2A2H commit: `eec79ef8df5c33f086fd792c8adf5b78023bdf2d`.
+- A2A2H commits: `eec79ef8df5c33f086fd792c8adf5b78023bdf2d` (feature status shell) and `8156811db9b23dddf10807752bb37b7222db439e` (Update app button handler).
 - Updated `wiki/A2A2H_LAST_SYNC.md` to CTO commit `07c3efa6dff136aab41c8079dc3c8dc6df2055de`.
 - No secrets or raw tool traces recorded.
+
+## Follow-up reconciliation
+
+After the feature-status port, `/opt/a2a2h` still had one uncommitted upstream-eligible frontend change: the `Update app` button handler in `app.js`. Verified `refreshAppShell` exists, targets `a2a2h-shell-*` caches, committed it as `8156811db9b23dddf10807752bb37b7222db439e`, pushed A2A2H, and updated the tracker sync SHA.
