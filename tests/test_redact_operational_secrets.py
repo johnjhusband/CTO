@@ -46,6 +46,15 @@ class RedactOperationalSecretsTests(unittest.TestCase):
         self.assertEqual(redacted, text)
         self.assertEqual(counts, {})
 
+
+    def test_leaves_angle_bracket_placeholders_safe(self):
+        text = "PWA_AUTH_TOKEN=<from /opt/cto/.env> pytest tests/test_pwa_chat_first_layout.py\n"
+
+        redacted, counts = redactor.redact_text(text)
+
+        self.assertEqual(redacted, text)
+        self.assertEqual(counts, {})
+
     def test_does_not_report_secret_values_in_counts(self):
         _, counts = redactor.redact_text("GOOGLE_ACCOUNT_PASSWORD_PENDING=super-secret-value\n")
 

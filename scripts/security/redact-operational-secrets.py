@@ -43,7 +43,7 @@ SECRET_ENV_NAMES = [
 # surrounding prose. Variable names are not secrets, values are.
 ENV_ASSIGNMENT_RE = re.compile(
     r"(?P<prefix>\b(?:" + "|".join(map(re.escape, SECRET_ENV_NAMES)) + r")\s*=\s*)"
-    r"(?:(?P<quote>['\"])(?P<valueq>.*?)(?P=quote)|(?P<valueb>[^\s'\";]+))",
+    r"(?:(?P<quote>['\"])(?P<valueq>.*?)(?P=quote)|(?P<valuep><[^>\r\n]+>)|(?P<valueb>[^\s'\";]+))",
     re.DOTALL,
 )
 
@@ -108,12 +108,12 @@ def redact_text(text: str) -> tuple[str, dict[str, int]]:
     counts: dict[str, int] = {}
 
     def repl_env(match: re.Match[str]) -> str:
-        value = match.group("valueq") if match.group("quote") else match.group("valueb")
+        value = match.group("valueq") if match.group("quote") else (match.group("valuep") or match.group("valueb"))
         quote = match.group("quote") or ""
         # Already-sanitized values/placeholders are safe and should not keep the check failing.
         safe_values = {"", "REDACTED", "<set>", "<redacted>", "***", "xxxxx"}
         normalized = (value or "").strip()
-        if normalized.startswith("REDACTED") or normalized in safe_values:
+        if normalized.startswith("REDACTED") or normalized in safe_values or (normalized.startswith("<") and normalized.endswith(">")):
             return match.group(0)
         name = match.group("prefix").split("=", 1)[0].strip()
         counts[f"env:{name}"] = counts.get(f"env:{name}", 0) + 1
