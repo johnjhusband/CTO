@@ -89,14 +89,17 @@ def provider_outage_circuit_breaker() -> tuple[bool, str, dict]:
     state = _load_provider_failure_state()
     count = int(state.get('consecutive_failures') or 0)
     last = float(state.get('last_failure_epoch') or 0)
-    cooldown = int(os.environ.get('HERMES_WORK_PUMP_PROVIDER_FAILURE_COOLDOWN_SECONDS', '2700'))
-    if count < 3 or not last or cooldown <= 0:
+    base_cooldown = int(os.environ.get('HERMES_WORK_PUMP_PROVIDER_FAILURE_COOLDOWN_SECONDS', '2700'))
+    max_cooldown = int(os.environ.get('HERMES_WORK_PUMP_PROVIDER_FAILURE_MAX_COOLDOWN_SECONDS', '21600'))
+    if count < 3 or not last or base_cooldown <= 0:
         return False, '', state
+    multiplier = 2 ** max(0, count - 3)
+    cooldown = min(max_cooldown if max_cooldown > 0 else base_cooldown * multiplier, base_cooldown * multiplier)
     elapsed = time.time() - last
     if elapsed >= cooldown:
         return False, '', state
     remaining = int(cooldown - elapsed)
-    return True, f'known provider-side agent_incomplete outage; semantic Hermes delegation paused for another {remaining}s after {count} consecutive failures', state
+    return True, f'known provider-side agent_incomplete outage; semantic Hermes delegation paused for another {remaining}s after {count} consecutive failures (adaptive cooldown {cooldown}s)', state
 
 
 def build_payload(attempt: int) -> dict:
