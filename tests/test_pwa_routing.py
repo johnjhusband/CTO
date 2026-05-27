@@ -141,6 +141,21 @@ class PwaRoutingTests(unittest.TestCase):
         self.assertIn("visibilitychange", app_js)
         self.assertIn("loadHistory({ replace: true })", app_js)
 
+    def test_manifest_icons_exist_and_are_cached_by_service_worker(self):
+        frontend = REPO / "services" / "pwa" / "frontend"
+        manifest = json.loads((frontend / "manifest.json").read_text())
+        icon_srcs = {icon["src"] for icon in manifest["icons"]}
+        self.assertEqual(icon_srcs, {"/static/icon-192.png", "/static/icon-512.png"})
+        for src in icon_srcs:
+            icon_path = frontend / src.removeprefix("/static/")
+            self.assertTrue(icon_path.exists(), src)
+            self.assertGreater(icon_path.stat().st_size, 100, src)
+            self.assertEqual(icon_path.read_bytes()[:8], b"\x89PNG\r\n\x1a\n", src)
+        service_worker = (frontend / "service-worker.js").read_text()
+        self.assertIn('"/static/icon-192.png"', service_worker)
+        self.assertIn('"/static/icon-512.png"', service_worker)
+        self.assertIn('const SHELL_CACHE = "cto-shell-v10"', service_worker)
+
     def test_frontend_has_visible_a2a_coordination_toggle(self):
         frontend = REPO / "services" / "pwa" / "frontend"
         index_html = (frontend / "index.html").read_text()
@@ -149,13 +164,14 @@ class PwaRoutingTests(unittest.TestCase):
         service_worker = (frontend / "service-worker.js").read_text()
 
         self.assertIn('id="toggle-a2a"', index_html)
-        self.assertIn("Show agent coordination", index_html)
+        self.assertIn("Agent coordination", index_html)
+        self.assertIn("Show OpenClaw ↔ Hermes handoffs inline", index_html)
         self.assertIn("m.kind.startsWith(\"a2a_\")", app_js)
         self.assertIn("a2a-capability", app_js)
         self.assertIn("Raw JSON", app_js)
         self.assertIn("initToggle($toggleA2A, \"a2a\")", app_js)
         self.assertIn("body:not(.show-a2a) .msg.a2a { display: none; }", style_css)
-        self.assertIn("const SHELL_CACHE = \"cto-shell-v8\"", service_worker)
+        self.assertIn("const SHELL_CACHE = \"cto-shell-v10\"", service_worker)
 
     def test_a2a_audit_sanitizer_redacts_obvious_secrets(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:

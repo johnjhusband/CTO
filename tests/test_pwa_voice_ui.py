@@ -22,7 +22,7 @@ class PwaVoiceUiTests(unittest.TestCase):
         self.assertIn("pwa-voice-enabled", app)
         self.assertIn("appendMessage(m, { speak: true })", app)
         self.assertIn("#voice-input.listening", style)
-        self.assertIn('SHELL_CACHE = "cto-shell-v8"', worker)
+        self.assertIn('SHELL_CACHE = "cto-shell-v10"', worker)
 
 
 if __name__ == "__main__":
