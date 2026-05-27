@@ -1,0 +1,3 @@
+{"level":"info-0","ts":"2026-05-27T19:23:51Z","logger":"trufflehog","msg":"running source","source_manager_worker_id":"CgLU6","with_units":true}
+{"level":"info-0","ts":"2026-05-27T19:23:51Z","logger":"trufflehog","msg":"scanning repo","source_manager_worker_id":"CgLU6","unit_kind":"dir","unit":"/tmp/trufflehog-2413302-1549505549","repo":"file:///opt/cto"}
+{"level":"info-0","ts":"2026-05-27T19:23:51Z","logger":"trufflehog","msg":"finished scanning","chunks":2436,"bytes":5110458,"verified_secrets":0,"unverified_secrets":1,"scan_duration":"571.629763ms","trufflehog_version":"3.95.3","verification_caching":{"Hits":0,"Misses":0,"HitsWasted":0,"AttemptsSaved":0,"VerificationTimeSpentMS":0}}
