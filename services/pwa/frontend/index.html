@@ -14,13 +14,30 @@
   <header class="topbar">
     <h1>CTO</h1>
     <div class="status" id="status">connecting…</div>
-    <div class="toggles" title="Show or hide OpenClaw ↔ Hermes coordination traffic inline with the chat.">
-      <label><input type="checkbox" id="toggle-a2a" /> Show agent coordination</label>
-    </div>
-    <a class="topbar-link" id="chat-history" href="/chat-log/" target="_blank" rel="noopener">Chat history</a>
-    <button id="voice-toggle" aria-pressed="false" title="Speak new CTO replies aloud">Voice off</button>
-    <button id="enable-push">Test push</button>
+    <button id="refresh-app" title="Refresh the installed PWA shell and reload latest features">Update app</button>
   </header>
+  <section class="feature-panel" aria-label="PWA improvements">
+    <div class="feature-card">
+      <strong>Background alerts</strong>
+      <span>Enable push and send a live test notification.</span>
+      <button id="enable-push">Enable/Test</button>
+    </div>
+    <div class="feature-card">
+      <strong>Agent coordination</strong>
+      <span>Show OpenClaw ↔ Hermes handoffs inline.</span>
+      <label class="inline-toggle"><input type="checkbox" id="toggle-a2a" /> Show</label>
+    </div>
+    <div class="feature-card">
+      <strong>Chat history</strong>
+      <span>Open a durable human-readable transcript.</span>
+      <a class="feature-link" id="chat-history" href="/chat-log/" target="_blank" rel="noopener">Open</a>
+    </div>
+    <div class="feature-card">
+      <strong>Voice</strong>
+      <span>Read replies aloud or dictate a message.</span>
+      <button id="voice-toggle" aria-pressed="false" title="Speak new CTO replies aloud">Voice off</button>
+    </div>
+  </section>
   <main id="messages" aria-live="polite"></main>
   <form id="composer" autocomplete="off">
     <button type="button" id="voice-input" title="Dictate a message">🎙</button>
