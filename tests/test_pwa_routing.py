@@ -98,6 +98,19 @@ class PwaRoutingTests(unittest.TestCase):
         self.assertIn("pwa_chat_worker_crashed", source)
         self.assertIn("traceback.format_exception", source)
 
+    def test_stale_chat_worker_watchdog_writes_visible_system_event(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            server = fresh_server_module(tmp)
+            server.PWA_PENDING_WORKER_WARN_S = 10
+            server._record_active_chat_worker("worker-test", target="openclaw")
+            server._ACTIVE_CHAT_WORKERS["worker-test"]["started"] -= 11
+            emitted = server._emit_stale_chat_worker_events()
+            self.assertEqual(emitted, 1)
+            rows = server.tail(0, 10)
+            self.assertTrue(any("pwa_chat_worker_stuck" in row["content"] for row in rows))
+            self.assertEqual(server._emit_stale_chat_worker_events(), 0)
+            server._clear_active_chat_worker("worker-test")
+
     def test_candidate_clone_rejects_production_chat_db(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             server = fresh_server_module(tmp)

@@ -3,23 +3,23 @@
   "timestamp": "2026-05-27T12:20:00Z",
   "type": "upstream-pr-needed",
   "priority": "P0",
-  "status": "in-progress",
+  "status": "resolved",
   "surfaced_by": "john",
   "surfaced_from": "PWA outage report: messages 1448/1450 answered in OpenClaw gateway log but not chat.db after PWA worker timeout",
   "affects": "A2A2H PWA / human-interface reliability",
   "capability_needed": "Visible failure reporting whenever PWA chat delivery workers, agent routes, or coordinated handoffs are stuck or crash",
   "details": "John hit a PWA chat outage where OpenClaw generated replies in the gateway log but the PWA backend worker timed out before writing them to chat.db, leaving the UI waiting indefinitely. This entry tracks the broader visible-failure-reporting requirement beyond the immediate worker try/except patch: every delivery path should surface stuck/crashed agent state as a system_event in chat.db and, where practical, via push/foreground UI so John can tell the agents are blocked rather than silently waiting.",
   "search_trail": [
-    "Checked BACKLOG.md and logs/backlog for visible-failure, failure reporting, silently, stuck, and chat.db \u2014 no exact open item existed.",
-    "Inspected services/pwa/backend/server.py worker path \u2014 in-process worker lacked an outer try/except, so exceptions from send_to_openclaw/send_coordinated_both could be lost to threading.Thread default stderr behavior.",
-    "Inspected services/pwa/backend/job_runner.py \u2014 detached background jobs already append pwa_background_job_crashed, so the gap is the live in-process PWA chat worker and coordinated delivery visibility.",
-    "Reviewed resolved BACKLOG-016 and BACKLOG-017 \u2014 they cover A2A audit visibility and durable chat logs, not agent-worker crash/stuck reporting."
+    "Checked BACKLOG.md and logs/backlog for visible-failure, failure reporting, silently, stuck, and chat.db — no exact open item existed.",
+    "Inspected services/pwa/backend/server.py worker path — in-process worker lacked an outer try/except, so exceptions from send_to_openclaw/send_coordinated_both could be lost to threading.Thread default stderr behavior.",
+    "Inspected services/pwa/backend/job_runner.py — detached background jobs already append pwa_background_job_crashed, so the gap is the live in-process PWA chat worker and coordinated delivery visibility.",
+    "Reviewed resolved BACKLOG-016 and BACKLOG-017 — they cover A2A audit visibility and durable chat logs, not agent-worker crash/stuck reporting."
   ],
   "proposed_resolution": "Keep the immediate CTO patch, then port the generic visible-failure reporting pattern to A2A2H as an upstream PR/update: outer worker exception capture, route-specific timeout/failure system_events, stale pending-job watchdog, and regression tests.",
   "blast_radius": "PWA backend chat delivery, chat.db system_event rows, optional push notifications, A2A2H upstream maintenance copy. No model credentials or external infrastructure changes required.",
   "rollback_plan": "Revert the PWA backend failure-event patch and remove the watchdog/UI surfacing if it creates noisy false positives; chat.db system_event rows are append-only evidence and do not alter user chat content.",
   "john_review_date": null,
-  "resolution_date": null,
-  "resolution_notes": "2026-05-27T12:25Z OpenClaw pump: runtime-verified the first visible-failure-reporting repair already on disk and kept the broader item open/in-progress. Evidence: daily-bounded PWA OpenClaw sessions are present; in-process chat workers append pwa_chat_worker_crashed on outer exceptions; route failures append hermes_send_timeout/hermes_send_failed/openclaw_send_timeout/openclaw_send_failed/coordinated_both_failed system_events; Hermes A2A unauthorized paths append hermes_a2a_unauthorized/actionable token-mismatch events; regression tests cover worker crash visibility and Hermes token mismatch. Verification passed: py_compile for PWA backend, Hermes sidecar, and job_runner; 41 PWA routing/layout/voice tests; full safe security gates. Artifact: logs/repairs/BACKLOG-019-visible-failure-runtime-verification-2026-05-27T1225Z.md. Remaining work: stale pending-job watchdog / broader false-positive tuning before final closure.",
+  "resolution_date": "2026-05-27",
+  "resolution_notes": "2026-05-27T12:25Z OpenClaw pump: runtime-verified the first visible-failure-reporting repair already on disk and kept the broader item open/in-progress. Evidence: daily-bounded PWA OpenClaw sessions are present; in-process chat workers append pwa_chat_worker_crashed on outer exceptions; route failures append hermes_send_timeout/hermes_send_failed/openclaw_send_timeout/openclaw_send_failed/coordinated_both_failed system_events; Hermes A2A unauthorized paths append hermes_a2a_unauthorized/actionable token-mismatch events; regression tests cover worker crash visibility and Hermes token mismatch. Verification passed: py_compile for PWA backend, Hermes sidecar, and job_runner; 41 PWA routing/layout/voice tests; full safe security gates. Artifact: logs/repairs/BACKLOG-019-visible-failure-runtime-verification-2026-05-27T1225Z.md. Remaining work: stale pending-job watchdog / broader false-positive tuning before final closure.\n\nResolved 2026-05-27T12:45Z: completed the remaining visible-failure reporting gap by adding an in-process PWA chat worker watchdog. Live workers now get a correlation worker_id, are tracked in memory, and emit one visible pwa_chat_worker_stuck system_event after PWA_PENDING_WORKER_WARN_S (default 180s) if still pending. Crash events now include the same worker_id. Regression coverage proves stale workers append visible system events exactly once. Verification passed: py_compile for services/pwa/backend/server.py and 42 PWA routing/layout/voice tests. A2A2H port is required because services/pwa changed.",
   "related_decision_log": null
 }
