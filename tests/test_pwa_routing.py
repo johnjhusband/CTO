@@ -310,6 +310,25 @@ class PwaAccessControlTests(unittest.TestCase):
             handler.headers = {}
             self.assertFalse(handler._auth_ok())
 
+
+    def test_static_file_disconnect_does_not_raise(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            server = fresh_server_module(tmp)
+            asset = Path(tmp) / "manifest.json"
+            asset.write_text('{"name":"test"}')
+
+            class BrokenWriter:
+                def write(self, _data):
+                    raise BrokenPipeError()
+
+            handler = object.__new__(server.Handler)
+            handler.wfile = BrokenWriter()
+            handler.send_response = lambda _status: None
+            handler.send_header = lambda *_args: None
+            handler.end_headers = lambda: None
+
+            handler._file(asset, "application/manifest+json")
+
     def test_pwa_shell_is_not_public_when_auth_token_configured(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             os.environ["PWA_AUTH_TOKEN"] = "test-secret-token"
