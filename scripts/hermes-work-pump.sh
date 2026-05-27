@@ -374,8 +374,18 @@ for attempt in (1, 2, 3):
                 time.sleep(5)
                 continue
             if attempt == 2 and not recovery_attempted:
-                print("Hermes work pump got repeat agent_incomplete; restarting existing Hermes user services once before final retry")
                 recovery_attempted = True
+                prior_state = _load_provider_failure_state()
+                prior_count = int(prior_state.get('consecutive_failures') or 0)
+                if prior_count >= 3:
+                    recovery_note = (
+                        'recovery restart skipped; provider outage circuit was already established '
+                        f'with {prior_count} consecutive failures, and previous restarts did not change outcome'
+                    )
+                    artifact = write_blocked_note(last_error, recovery_note)
+                    print(json.dumps({"status": "blocked_degraded", "artifact": artifact, "recovery": recovery_note}))
+                    raise SystemExit(0)
+                print("Hermes work pump got repeat agent_incomplete; restarting existing Hermes user services once before final retry")
                 ok, recovery_note = recover_hermes_runtime()
                 if ok:
                     time.sleep(5)
