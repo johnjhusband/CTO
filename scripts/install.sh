@@ -45,9 +45,72 @@ echo "=== CTO Install (entry script) — $(date -Is) ==="
 echo "Log: ${LOG_FILE}"
 echo ""
 
-fail()   { echo "FAIL: $*" >&2; exit 1; }
+fail()   { echo "FAIL: $*" >&2; retire_failed_candidate 1 "$*"; exit 1; }
 note()   { echo "→ $*"; }
 section(){ echo ""; echo "═══ $* ═══"; }
+
+CANDIDATE_PROVISIONED=0
+CANDIDATE_RETIRE_ATTEMPTED=0
+VPS_ID=""
+VPS_IP=""
+VPS_NAME=""
+
+retire_failed_candidate() {
+  local status="$1"
+  local reason="$2"
+  [ "${CANDIDATE_PROVISIONED}" = "1" ] || return 0
+  [ "${CANDIDATE_RETIRE_ATTEMPTED}" = "0" ] || return 0
+  CANDIDATE_RETIRE_ATTEMPTED=1
+
+  mkdir -p "${REPO_ROOT}/logs/clone/candidates"
+  local summary="${REPO_ROOT}/logs/clone/candidates/${VPS_NAME}-${VPS_ID}-summary.json"
+
+  note "Preserving failed candidate summary before retirement: ${summary}"
+  SUMMARY_PATH="${summary}" \
+  SUMMARY_STATUS="failed_destroying" \
+  SUMMARY_REASON="${reason}" \
+  SUMMARY_VPS_NAME="${VPS_NAME}" \
+  SUMMARY_VPS_ID="${VPS_ID}" \
+  SUMMARY_VPS_IP="${VPS_IP}" \
+  SUMMARY_LOG="${LOG_FILE}" \
+  SUMMARY_EXIT_STATUS="${status}" \
+  python3 - <<'PY'
+import json
+import os
+from datetime import datetime, timezone
+
+path = os.environ["SUMMARY_PATH"]
+data = {
+    "name": os.environ["SUMMARY_VPS_NAME"],
+    "server_id": int(os.environ["SUMMARY_VPS_ID"]),
+    "ip": os.environ["SUMMARY_VPS_IP"],
+    "status": os.environ["SUMMARY_STATUS"],
+    "phase": "fresh_install_wrapper",
+    "reason": os.environ["SUMMARY_REASON"],
+    "exit_status": int(os.environ["SUMMARY_EXIT_STATUS"]),
+    "evidence_log": os.environ["SUMMARY_LOG"],
+    "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+}
+with open(path, "w", encoding="utf-8") as fh:
+    json.dump(data, fh, indent=2)
+    fh.write("\n")
+PY
+
+  note "Requesting Hetzner deletion for failed clone candidate id=${VPS_ID}"
+  if hcloud_api DELETE "/servers/${VPS_ID}" >/dev/null; then
+    note "Deletion requested for failed clone candidate id=${VPS_ID}"
+  else
+    note "Deletion request failed for candidate id=${VPS_ID}; watchdog will retry from summary"
+  fi
+}
+
+on_error() {
+  local status="$?"
+  retire_failed_candidate "${status}" "install wrapper failed before candidate promotion"
+  exit "${status}"
+}
+
+trap on_error ERR
 
 # ─── Section 1: Load secrets ───────────────────────────────────────────────
 
@@ -203,6 +266,7 @@ done
 
 VPS_ID=$(echo "${RESP}" | python3 -c "import json,sys; print(json.load(sys.stdin)['server']['id'])")
 VPS_IP=$(echo "${RESP}" | python3 -c "import json,sys; print(json.load(sys.stdin)['server']['public_net']['ipv4']['ip'])")
+CANDIDATE_PROVISIONED=1
 note "Provisioned: ${VPS_NAME} ID=${VPS_ID} IP=${VPS_IP}"
 
 # Clear any stale SSH host key for this IP (in case it was reused)
@@ -442,6 +506,7 @@ ssh "${SSH_OPTS[@]}" "cto@${VPS_IP}" '
 # ─── Done ──────────────────────────────────────────────────────────────────
 
 section "Install complete"
+CANDIDATE_PROVISIONED=0
 
 cat <<SUMMARY
 
