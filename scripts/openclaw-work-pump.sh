@@ -59,11 +59,43 @@ openclaw agent \
   --session-id openclaw-work-pump \
   --timeout 660 \
   --json \
-  --message "$prompt" | tee "$tmp_output"
-rc=${PIPESTATUS[0]}
+  --message "$prompt" >"$tmp_output"
+rc=$?
 set -e
 
+summarize_json() {
+  python3 - "$tmp_output" <<'PY'
+import json
+import re
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+try:
+    data = json.loads(path.read_text())
+except Exception:
+    print("openclaw work pump produced non-JSON output; raw output kept only in the temporary file")
+    sys.exit(1)
+
+visible = data.get("finalAssistantVisibleText") or data.get("finalAssistantRawText") or ""
+stop_reason = data.get("stopReason") or data.get("completion", {}).get("stopReason") or "unknown"
+if visible:
+    # Keep journald concise and avoid persisting raw model/tool envelopes.
+    one_line = re.sub(r"\s+", " ", visible).strip()
+    if len(one_line) > 500:
+        one_line = one_line[:497].rstrip() + "..."
+    print(f"openclaw work pump completed (stopReason={stop_reason}): {one_line}")
+else:
+    err = data.get("error") or data.get("message") or data.get("status") or "no visible final text"
+    one_line = re.sub(r"\s+", " ", str(err)).strip()
+    if len(one_line) > 500:
+        one_line = one_line[:497].rstrip() + "..."
+    print(f"openclaw work pump returned no visible final text (stopReason={stop_reason}): {one_line}")
+PY
+}
+
 if [[ "$rc" -eq 0 ]]; then
+  summarize_json || true
   exit 0
 fi
 
@@ -88,8 +120,10 @@ if visible and stop_reason == "stop":
 sys.exit(1)
 PY
 then
+  summarize_json || true
   echo "openclaw work pump returned status $rc after a complete stop response; treating tick as successful"
   exit 0
 fi
 
+summarize_json || true
 exit "$rc"
