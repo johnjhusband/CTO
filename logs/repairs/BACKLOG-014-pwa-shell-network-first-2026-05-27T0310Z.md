@@ -23,6 +23,10 @@ John reported from the PWA that none of his feature requests were visible. Recen
 - A2A2H syntax check: `python3 -c "import ast; ast.parse(open('services/pwa/backend/server.py').read())"` passed.
 - A2A2H CTO-specific grep over `services/ scripts/` remains clean for `/opt/cto` and `husband.llc`; the only `cto` hits are historical naming references already present outside this patch.
 
+## Port result
+
+Ported CTO 2a92975 to A2A2H as a767551. Updated A2A2H_LAST_SYNC in a follow-up CTO tracker commit.
+
 ## Notes
 
 This does not claim device-level push display is confirmed. It removes a concrete cache trap that could make completed PWA improvements invisible on John's installed PWA.
