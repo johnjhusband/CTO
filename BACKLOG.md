@@ -63,6 +63,7 @@ None.
 | BACKLOG-001 | 2026-05-26 | missing-skill | Self-hosted PWA at cto.husband.llc — chat with OpenClaw/Hermes from phone, web-push notifications, A2A wire format | Resolved 2026-05-26: the A2A2H/PWA umbrella build is delivered and in active use. Evidence: John is using the PWA daily; durable chat log exists at logs/pwa-chat/; push enrollme... |
 | BACKLOG-009 | 2026-05-26 | security | Replace URL query-token PWA auth with cookie/session auth and reduce token logging risk | Resolved 2026-05-26: URL/query-token auth was replaced with signed HttpOnly/SameSite cookie sessions; API query-token auth is rejected; unauthenticated shell/API access returns... |
 | BACKLOG-013 | 2026-05-26 | security | Close PWA chat access-control bug so knowing the chat URL is not sufficient to read or use CTO chat | Resolved 2026-05-26: the PWA access-control failure is closed. The chat shell and APIs require authenticated cookie sessions, unauthenticated and query-token API access are reje... |
+| BACKLOG-018 | 2026-05-27 | missing-mcp | Per-tick automated check and porting of CTO chat-bridge improvements to A2A2H, plus one-time backfill | Resolved 2026-05-27: maintenance protocol, role docs, per-tick policy, one-time backfill, pushed A2A2H origin, last-sync tracker, and no-drift check are complete. Evidence: wiki/A2A2H_MAINTENANCE.md, wiki/A2A2H_LAST_SYNC.md, logs/repairs/a2a2h-backfill-2026-05-26.md, A2A2H origin/master a72c2cdc. |
 
 ---
 

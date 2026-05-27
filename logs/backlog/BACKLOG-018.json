@@ -3,7 +3,7 @@
   "timestamp": "2026-05-27T00:00:00Z",
   "type": "missing-mcp",
   "priority": "P1",
-  "status": "open",
+  "status": "resolved",
   "surfaced_by": "john",
   "surfaced_from": "PWA chat 2026-05-26 ~23:50 UTC — John asked 'are we maintaining the a2a2h repo?'. Answer was no — between 2026-05-25 and 2026-05-26 CTO shipped ~15 chat-bridge improvements, none ported to A2A2H. John: 'setup a maintenance process and direct cto to keep it up to date'.",
   "affects": "Public A2A2H extraction (https://github.com/johnjhusband/a2a2h) and its credibility as a reference implementation",
@@ -19,7 +19,7 @@
   "blast_radius": "If a port introduces CTO-specific paths/strings that leak through the rename rules, the A2A2H repo becomes confusing or broken as a standalone extraction. If the per-tick check is too aggressive, agents waste time on no-op port cycles. Mitigation: the protocol's grep verification step catches CTO-string leakage; the last-synced SHA makes no-op cycles cheap.",
   "rollback_plan": "If the protocol creates churn or breaks A2A2H, revert the protocol docs (wiki/A2A2H_MAINTENANCE.md + wiki/A2A2H_LAST_SYNC.md + role doc changes), and either (a) freeze A2A2H back as historical or (b) flip it private until the protocol is fixed.",
   "john_review_date": "2026-05-26",
-  "resolution_date": null,
-  "resolution_notes": null,
+  "resolution_date": "2026-05-27",
+  "resolution_notes": "Resolved 2026-05-27: A2A2H maintenance process is durable and current. Evidence: wiki/A2A2H_MAINTENANCE.md defines the per-tick protocol; HERMES_ROLE.md, OPENCLAW_ROLE.md, and wiki/continuous-work-policy.md require the check; one-time backfill is recorded in logs/repairs/a2a2h-backfill-2026-05-26.md; A2A2H origin/master is at a72c2cdc7ea5b4c8a193c828b113ec4273497a33; wiki/A2A2H_LAST_SYNC.md tracks CTO bebcd3953f2db3b876cf90ea5b4484630999db73; the 2026-05-27T01:25 work-pump drift check found no upstream-eligible commits since that SHA.",
   "related_decision_log": null
 }

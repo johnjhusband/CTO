@@ -23,4 +23,4 @@ Summary table and operating rules live in the top-level [BACKLOG.md](../../BACKL
 | [BACKLOG-015](BACKLOG-015.json) | 2026-05-25 | missing-mcp | P1 | adapter_implemented_blocked_on_credentials |
 | [BACKLOG-016](BACKLOG-016.json) | 2026-05-26 | upstream-pr-needed | P0 | open |
 | [BACKLOG-017](BACKLOG-017.json) | 2026-05-26 | feature | P0 | open |
-| [BACKLOG-018](BACKLOG-018.json) | 2026-05-27 | missing-mcp | P1 | open |
+| [BACKLOG-018](BACKLOG-018.json) | 2026-05-27 | missing-mcp | P1 | resolved |
