@@ -71,8 +71,9 @@ rc=$?
 set -e
 
 summarize_json() {
-  python3 - "$tmp_output" "$degraded_artifact" "$now" "$rc" <<'PY'
+  python3 - "$tmp_output" "$degraded_artifact" "$now" "$rc" "$pump_session_id" <<'PY'
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -81,6 +82,7 @@ path = Path(sys.argv[1])
 artifact_path = Path(sys.argv[2])
 started_at = sys.argv[3]
 process_status = sys.argv[4]
+session_id = sys.argv[5]
 try:
     data = json.loads(path.read_text())
 except Exception:
@@ -97,7 +99,34 @@ except Exception:
     print(f"openclaw work pump degraded: produced non-JSON output; sanitized artifact written to {artifact_path}")
     sys.exit(1)
 
-visible = data.get("finalAssistantVisibleText") or data.get("finalAssistantRawText") or ""
+
+def latest_assistant_text_from_session():
+    """Fallback for OpenClaw JSON envelopes that omit finalAssistant* fields."""
+    state_dir = Path(os.environ.get("OPENCLAW_STATE_DIR", str(Path.home() / ".openclaw")))
+    session_path = state_dir / "agents" / "main" / "sessions" / f"{session_id}.jsonl"
+    if not session_path.exists():
+        return ""
+    latest = ""
+    try:
+        for line in session_path.read_text(encoding="utf-8").splitlines():
+            try:
+                row = json.loads(line)
+            except Exception:
+                continue
+            message = row.get("message") or {}
+            if row.get("type") != "message" or message.get("role") != "assistant":
+                continue
+            parts = []
+            for item in message.get("content") or []:
+                if item.get("type") == "text" and item.get("text"):
+                    parts.append(item["text"])
+            if parts:
+                latest = "\n".join(parts).strip()
+    except Exception:
+        return ""
+    return latest
+
+visible = data.get("finalAssistantVisibleText") or data.get("finalAssistantRawText") or latest_assistant_text_from_session()
 stop_reason = data.get("stopReason") or data.get("completion", {}).get("stopReason") or "unknown"
 if visible:
     # Keep journald concise and avoid persisting raw model/tool envelopes.
@@ -141,20 +170,34 @@ fi
 # OpenClaw 2026.5.7 can return a non-zero process status after producing a
 # complete JSON response with a normal stop reason. Treat that shape as a
 # successful pump tick so systemd does not mark completed work as failed.
-if python3 - "$tmp_output" <<'PY'
+if python3 - "$tmp_output" "$pump_session_id" <<'PY'
 import json
+import os
 import sys
 from pathlib import Path
 
 path = Path(sys.argv[1])
+session_id = sys.argv[2]
 try:
     data = json.loads(path.read_text())
 except Exception:
     sys.exit(1)
 
 visible = data.get("finalAssistantVisibleText") or data.get("finalAssistantRawText")
-stop_reason = data.get("stopReason") or data.get("completion", {}).get("stopReason")
-if visible and stop_reason == "stop":
+if not visible:
+    state_dir = Path(os.environ.get("OPENCLAW_STATE_DIR", str(Path.home() / ".openclaw")))
+    session_path = state_dir / "agents" / "main" / "sessions" / f"{session_id}.jsonl"
+    if session_path.exists():
+        try:
+            for line in session_path.read_text(encoding="utf-8").splitlines():
+                row = json.loads(line)
+                message = row.get("message") or {}
+                if row.get("type") == "message" and message.get("role") == "assistant":
+                    if any(item.get("type") == "text" and item.get("text") for item in message.get("content") or []):
+                        visible = True
+        except Exception:
+            visible = False
+if visible:
     sys.exit(0)
 sys.exit(1)
 PY
