@@ -30,7 +30,7 @@ class PwaVoiceUiTests(unittest.TestCase):
         self.assertIn('/api/voice/device_status', app)
         self.assertIn("appendMessage(m, { speak: true })", app)
         self.assertIn("#voice-input.listening", style)
-        self.assertIn('SHELL_CACHE = "cto-shell-v22"', worker)
+        self.assertIn('SHELL_CACHE = "cto-shell-v23"', worker)
         self.assertIn("let reported = false", app)
         self.assertIn("if (reported) localStorage.setItem(key, day);", app)
 
