@@ -19,7 +19,10 @@ if ! flock -n 9; then
   exit 0
 fi
 
+/opt/cto/scripts/pwa-chat-first-gate.sh
+
 now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+start_epoch="$(date -u +%s)"
 artifact_stamp="$(date -u +%Y-%m-%dT%H%M%SZ)"
 # Keep scheduled pump runs bounded. The pump rehydrates state from durable
 # files every tick; reusing one long-lived session eventually causes context
@@ -33,6 +36,8 @@ prompt="Continuous safe work pump fired at ${now}.
 You are OpenClaw, CTO's left hemisphere. Pick exactly one highest-priority safe item and advance it now.
 
 Before choosing, inspect the relevant current state: recent John/PWA chat messages if available, /opt/cto/BACKLOG.md, /opt/cto/HEARTBEAT.md, /opt/cto/wiki/continuous-work-policy.md, /opt/cto/wiki/A2A2H_MAINTENANCE.md, /opt/cto/wiki/A2A2H_LAST_SYNC.md, git status, service health, and recent failed verification/logs.
+
+If you touch services/pwa/frontend/index.html, services/pwa/frontend/app.js, services/pwa/frontend/style.css, or services/pwa/frontend/service-worker.js, run /home/cto/.local/bin/pytest tests/test_pwa_chat_first_layout.py with PWA_BASE_URL=https://cto.husband.llc and PWA_AUTH_TOKEN sourced from /opt/cto/.env after the change. If the test fails or skips, do not commit. CSS string-search tests do not count for visible PWA UI verification, and new visible-shell features must stay within the chat-first thresholds.
 
 Before selecting any backlog item, execute the A2A2H per-tick upstream-port check from /opt/cto/wiki/A2A2H_MAINTENANCE.md. If upstream-eligible drift exists, port it, update the tracker, commit/push, and write the tick artifact before doing anything else.
 
@@ -51,6 +56,42 @@ Default priority order:
 Stop conditions: do not spend money, destroy data/infrastructure without authorization, create external risk, require a non-retrievable decision from John, or bypass the two-hemisphere strategy. If the top item is blocked, write a concise blocked note and continue with the next safe item.
 
 Success criteria: produce one durable artifact, verification result, repair, commit, delegated Hermes task, or explicit blocked note. Do not store secrets, raw tool traces, chain-of-thought, or transient noise in shared memory. Keep any John-facing text concise and conversational."
+
+run_frontend_touch_gate_if_needed() {
+  local touched
+  touched="$(git -C /opt/cto log --since="@${start_epoch}" --name-only --format='' -- \
+    services/pwa/frontend/index.html \
+    services/pwa/frontend/app.js \
+    services/pwa/frontend/style.css \
+    services/pwa/frontend/service-worker.js | sed '/^$/d' | sort -u)"
+  if [[ -z "$touched" ]]; then
+    return 0
+  fi
+  if [[ -z "${PWA_AUTH_TOKEN:-}" ]]; then
+    echo "PWA frontend gate failed: PWA_AUTH_TOKEN is not set while frontend commits landed in this tick" >&2
+    return 1
+  fi
+  local pytest_bin="/home/cto/.local/bin/pytest"
+  if [[ ! -x "$pytest_bin" ]]; then
+    echo "PWA frontend gate failed: $pytest_bin is not executable" >&2
+    return 1
+  fi
+  local gate_output
+  gate_output="$(mktemp /tmp/cto-pwa-chat-first-layout.XXXXXX.log)"
+  set +e
+  (cd /opt/cto && \
+    PWA_BASE_URL="${PWA_BASE_URL:-https://cto.husband.llc}" \
+    PWA_AUTH_TOKEN="$PWA_AUTH_TOKEN" \
+    "$pytest_bin" tests/test_pwa_chat_first_layout.py -v) | tee "$gate_output"
+  local gate_rc=${PIPESTATUS[0]}
+  set -e
+  if [[ "$gate_rc" -ne 0 ]] || grep -Eiq 'skipped|SKIPPED' "$gate_output"; then
+    echo "PWA frontend gate failed or skipped after frontend touch: $touched" >&2
+    rm -f "$gate_output"
+    return 1
+  fi
+  rm -f "$gate_output"
+}
 
 tmp_output="$(mktemp /tmp/cto-openclaw-work-pump.XXXXXX.json)"
 cleanup() {
@@ -158,6 +199,7 @@ PY
 
 if [[ "$rc" -eq 0 ]]; then
   if summarize_json; then
+    run_frontend_touch_gate_if_needed
     exit 0
   fi
   # A JSON response with no visible final assistant text means the scheduled
@@ -203,6 +245,7 @@ sys.exit(1)
 PY
 then
   summarize_json || true
+  run_frontend_touch_gate_if_needed
   echo "openclaw work pump returned status $rc after a complete stop response; treating tick as successful"
   exit 0
 fi

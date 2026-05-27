@@ -17,3 +17,17 @@ Default queue order:
 Stop conditions: spend money without prior approval; destroy data/infrastructure without authorization; create external risk; require a non-retrievable John decision; or override OpenClaw strategy/routing authority. When stopped, write a concise visible blocked note and continue with the next safe item.
 
 Memory rule: durable lessons, decisions, architecture facts, reusable procedures, and John preferences go to the appropriate memory/shared-memory layer. Secrets, raw tool traces, chain-of-thought, and transient task noise never go into shared memory.
+
+## PWA Chat-First UI Gate
+
+Any commit touching `services/pwa/frontend/index.html`, `services/pwa/frontend/app.js`, `services/pwa/frontend/style.css`, or `services/pwa/frontend/service-worker.js` must run the real Playwright layout gate after the change and before the work is reported complete:
+
+```bash
+PWA_BASE_URL=https://cto.husband.llc \
+PWA_AUTH_TOKEN="$PWA_AUTH_TOKEN" \
+/home/cto/.local/bin/pytest tests/test_pwa_chat_first_layout.py -v
+```
+
+`PWA_AUTH_TOKEN` must be sourced from `/opt/cto/.env`. If the test fails or skips, the commit does not land. Do not call PWA visible UI work tested, verified, or `[verified]` unless this Playwright test actually passed after the change. CSS string-search tests do not count for visible PWA UI verification. Adding new features to the visible shell is an automatic failure unless the chrome stays within the chat-first thresholds.
+
+The chat-first philosophy is binding: new features go in the `⋯` settings disclosure or a separate route such as `/chat-log/`, never as cards or banners above the chat. If a feature genuinely needs to live above the chat, raise it for John's approval first.

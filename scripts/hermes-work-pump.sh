@@ -13,6 +13,8 @@ fi
 
 : "${HERMES_A2A_TOKEN:?HERMES_A2A_TOKEN is required}"
 
+/opt/cto/scripts/pwa-chat-first-gate.sh
+
 python3 - <<'PY'
 import glob, json, os, subprocess, time, urllib.request, urllib.error
 
@@ -126,7 +128,17 @@ def build_payload(attempt: int) -> dict:
                 "create external risk",
                 "require a non-retrievable decision from John",
                 "override OpenClaw strategy or routing authority"
-            ]
+            ],
+            "pwa_chat_first_gate": {
+                "frontend_paths": [
+                    "services/pwa/frontend/index.html",
+                    "services/pwa/frontend/app.js",
+                    "services/pwa/frontend/style.css",
+                    "services/pwa/frontend/service-worker.js"
+                ],
+                "required_command": "PWA_BASE_URL=https://cto.husband.llc PWA_AUTH_TOKEN=<from /opt/cto/.env> /home/cto/.local/bin/pytest tests/test_pwa_chat_first_layout.py",
+                "rule": "If a frontend path is touched, the Playwright test must pass after the change. Failure or skip means do not commit. CSS string-search tests do not count for visible UI verification; new visible-shell features must stay within chat-first thresholds."
+            }
         },
         "success_criteria": "Produce one durable artifact, verification result, repair, commit, or explicit blocked note. Do not store secrets, raw tool traces, or transient noise in shared memory. Return concise structured findings for OpenClaw."
     }
