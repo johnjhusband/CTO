@@ -46,9 +46,16 @@ if [[ "$mode" != "600" ]]; then
 fi
 
 declare -A present=()
-while IFS='=' read -r key _value; do
+declare -A nonempty=()
+while IFS='=' read -r key value; do
   [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
   present["$key"]=1
+  # Track whether a credential has a non-empty value without ever printing it.
+  # Treat literal empty quotes as empty for preflight purposes.
+  normalized="${value%$'\r'}"
+  if [[ -n "$normalized" && "$normalized" != '""' && "$normalized" != "''" ]]; then
+    nonempty["$key"]=1
+  fi
 done < <(grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$ENV_FILE" || true)
 
 missing=0
@@ -56,11 +63,14 @@ echo
 
 echo "Required credential names:"
 for key in "${required_vars[@]}"; do
-  if [[ -n "${present[$key]:-}" ]]; then
-    echo "- $key: present"
-  else
+  if [[ -z "${present[$key]:-}" ]]; then
     echo "- $key: MISSING"
     missing=1
+  elif [[ -z "${nonempty[$key]:-}" ]]; then
+    echo "- $key: EMPTY"
+    missing=1
+  else
+    echo "- $key: present_nonempty"
   fi
 done
 
@@ -68,10 +78,12 @@ echo
 
 echo "Optional/retired credential names to reconcile during rotation window:"
 for key in "${optional_or_retired_vars[@]}"; do
-  if [[ -n "${present[$key]:-}" ]]; then
-    echo "- $key: present"
-  else
+  if [[ -z "${present[$key]:-}" ]]; then
     echo "- $key: absent"
+  elif [[ -z "${nonempty[$key]:-}" ]]; then
+    echo "- $key: present_empty"
+  else
+    echo "- $key: present_nonempty"
   fi
 done
 
