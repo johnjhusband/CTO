@@ -18,25 +18,31 @@
   </header>
   <section class="feature-panel" aria-label="PWA improvements">
     <div class="feature-card">
-      <strong>Background alerts</strong>
-      <span>Enable push and send a live test notification.</span>
+      <div class="feature-title"><strong>Background alerts</strong><span class="feature-status">Needs phone test</span></div>
+      <span>Enable push and send a live device notification.</span>
       <button id="enable-push">Enable/Test</button>
     </div>
     <div class="feature-card">
-      <strong>Agent coordination</strong>
+      <div class="feature-title"><strong>Agent coordination</strong><span class="feature-status live">Live</span></div>
       <span>Show OpenClaw ↔ Hermes handoffs inline.</span>
       <label class="inline-toggle"><input type="checkbox" id="toggle-a2a" /> Show</label>
     </div>
     <div class="feature-card">
-      <strong>Chat history</strong>
+      <div class="feature-title"><strong>Chat history</strong><span class="feature-status live">Live</span></div>
       <span>Open a durable human-readable transcript.</span>
       <a class="feature-link" id="chat-history" href="/chat-log/" target="_blank" rel="noopener">Open</a>
     </div>
     <div class="feature-card">
-      <strong>Voice</strong>
+      <div class="feature-title"><strong>Voice</strong><span class="feature-status">Browser-native</span></div>
       <span>Read replies aloud or dictate a message.</span>
       <button id="voice-toggle" aria-pressed="false" title="Speak new CTO replies aloud">Voice off</button>
     </div>
+  </section>
+  <section class="feature-summary" aria-label="PWA feature request status">
+    <strong>Feature request status:</strong>
+    <span>chat log + coordination transcript are live now;</span>
+    <span>push/voice are wired and waiting on your phone/browser confirmation.</span>
+    <a href="/chat-log/" target="_blank" rel="noopener">Review full logs</a>
   </section>
   <main id="messages" aria-live="polite"></main>
   <form id="composer" autocomplete="off">

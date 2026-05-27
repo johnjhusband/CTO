@@ -154,7 +154,7 @@ class PwaRoutingTests(unittest.TestCase):
         service_worker = (frontend / "service-worker.js").read_text()
         self.assertIn('"/static/icon-192.png"', service_worker)
         self.assertIn('"/static/icon-512.png"', service_worker)
-        self.assertIn('const SHELL_CACHE = "cto-shell-v10"', service_worker)
+        self.assertIn('const SHELL_CACHE = "cto-shell-v11"', service_worker)
 
     def test_frontend_has_visible_a2a_coordination_toggle(self):
         frontend = REPO / "services" / "pwa" / "frontend"
@@ -166,12 +166,17 @@ class PwaRoutingTests(unittest.TestCase):
         self.assertIn('id="toggle-a2a"', index_html)
         self.assertIn("Agent coordination", index_html)
         self.assertIn("Show OpenClaw ↔ Hermes handoffs inline", index_html)
+        self.assertIn("Feature request status:", index_html)
+        self.assertIn("chat log + coordination transcript are live now", index_html)
+        self.assertIn("push/voice are wired and waiting on your phone/browser confirmation", index_html)
+        self.assertIn("feature-status live", index_html)
+        self.assertIn(".feature-summary", style_css)
         self.assertIn("m.kind.startsWith(\"a2a_\")", app_js)
         self.assertIn("a2a-capability", app_js)
         self.assertIn("Raw JSON", app_js)
         self.assertIn("initToggle($toggleA2A, \"a2a\")", app_js)
         self.assertIn("body:not(.show-a2a) .msg.a2a { display: none; }", style_css)
-        self.assertIn("const SHELL_CACHE = \"cto-shell-v10\"", service_worker)
+        self.assertIn("const SHELL_CACHE = \"cto-shell-v11\"", service_worker)
 
     def test_a2a_audit_sanitizer_redacts_obvious_secrets(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
