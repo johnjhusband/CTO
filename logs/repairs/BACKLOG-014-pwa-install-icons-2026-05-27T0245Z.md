@@ -17,3 +17,8 @@ John reported that PWA feature work was not visible from his side. I selected BA
 
 ## Status
 This advances BACKLOG-014 but does not close it. John/device confirmation is still needed for actual phone background notification behavior. No secrets or raw tool traces were recorded.
+
+## A2A2H port
+- Ported the same icon assets and service-worker cache update to `/opt/a2a2h`.
+- A2A2H commit: `35de5ddb56e4d12019630da353c580a443bc042a`.
+- Updated `wiki/A2A2H_LAST_SYNC.md` to CTO commit `180e8da5b14943e8ccb6dd55e5b0309ff840aeaf`.
