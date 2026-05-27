@@ -22,10 +22,21 @@ for p in (str(REPO), str(SERVICES)):
         sys.path.insert(0, p)
 
 
-def fresh_server_module(tmpdir: str, *, instance_id: str = "test-suite"):
+def fresh_server_module(
+    tmpdir: str,
+    *,
+    instance_id: str = "test-suite",
+    openclaw_session_id: str | None = "test-openclaw-session",
+    openclaw_session_base: str | None = "",
+):
     os.environ["CHAT_DB"] = str(Path(tmpdir) / "chat.db")
     os.environ["CTO_INSTANCE_ID"] = instance_id
-    os.environ["OPENCLAW_SESSION_ID"] = "test-openclaw-session"
+    if openclaw_session_base == "":
+        os.environ.pop("OPENCLAW_SESSION_ID_BASE", None)
+    elif openclaw_session_base is not None:
+        os.environ["OPENCLAW_SESSION_ID_BASE"] = openclaw_session_base
+    if openclaw_session_id is not None:
+        os.environ["OPENCLAW_SESSION_ID"] = openclaw_session_id
     os.environ["PWA_CHAT_LOG_DIR"] = str(Path(tmpdir) / "logs" / "pwa-chat")
     for name in list(sys.modules):
         if name == "services.pwa.backend.server" or name == "chat.db":
@@ -68,6 +79,24 @@ class PwaRoutingTests(unittest.TestCase):
 
             self.assertTrue(result["ok"])
             self.assertEqual(calls, ["openclaw", "hermes"])
+
+    def test_openclaw_session_id_is_bounded_to_utc_day(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            os.environ["OPENCLAW_SESSION_ID"] = "pwa-john-20260527-1203"
+            server = fresh_server_module(tmp, openclaw_session_id=None)
+            session_id = server.openclaw_session_id(server.datetime(2026, 5, 28, tzinfo=server.timezone.utc))
+            self.assertEqual(session_id, "pwa-john-20260528")
+
+    def test_openclaw_session_id_base_override_is_bounded_to_utc_day(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            server = fresh_server_module(tmp, openclaw_session_id=None, openclaw_session_base="pwa-john-custom")
+            session_id = server.openclaw_session_id(server.datetime(2026, 5, 28, tzinfo=server.timezone.utc))
+            self.assertEqual(session_id, "pwa-john-custom-20260528")
+
+    def test_worker_crash_event_is_visible_in_chat_db_contract(self):
+        source = (REPO / "services" / "pwa" / "backend" / "server.py").read_text()
+        self.assertIn("pwa_chat_worker_crashed", source)
+        self.assertIn("traceback.format_exception", source)
 
     def test_candidate_clone_rejects_production_chat_db(self):
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
@@ -299,6 +328,29 @@ class PwaRoutingTests(unittest.TestCase):
             self.assertNotIn("input-secret", joined)
             self.assertNotIn("response-secret", joined)
             self.assertIn("[REDACTED]", joined)
+
+    def test_send_to_hermes_reports_a2a_token_mismatch_actionably(self):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            server = fresh_server_module(tmp)
+
+            def fake_urlopen(*_args, **_kwargs):
+                raise urllib.error.HTTPError(
+                    url="http://127.0.0.1:8643/a2a/",
+                    code=401,
+                    msg="Unauthorized",
+                    hdrs=None,
+                    fp=BytesIO(b'{"error":"unauthorized"}'),
+                )
+
+            original_urlopen = urllib.request.urlopen
+            try:
+                urllib.request.urlopen = fake_urlopen
+                result = server.send_to_hermes("check", task_id="unauth-test-1")
+            finally:
+                urllib.request.urlopen = original_urlopen
+
+            self.assertFalse(result["ok"])
+            self.assertIn("HERMES_A2A_TOKEN", result["error"])
 
 
 if __name__ == "__main__":
