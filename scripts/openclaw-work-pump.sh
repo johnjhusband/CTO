@@ -21,6 +21,10 @@ fi
 
 now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 artifact_stamp="$(date -u +%Y-%m-%dT%H%M%SZ)"
+# Keep scheduled pump runs bounded. The pump rehydrates state from durable
+# files every tick; reusing one long-lived session eventually causes context
+# overflow before useful work can start.
+pump_session_id="openclaw-work-pump-$(date -u +%Y%m%dT%H%M)"
 artifact_dir="/opt/cto/logs/repairs"
 degraded_artifact="${artifact_dir}/openclaw-work-pump-degraded-${artifact_stamp}.md"
 
@@ -59,7 +63,7 @@ openclaw agent \
   --local \
   --agent main \
   --model openai-codex/gpt-5.5 \
-  --session-id openclaw-work-pump \
+  --session-id "$pump_session_id" \
   --timeout 660 \
   --json \
   --message "$prompt" >"$tmp_output"
