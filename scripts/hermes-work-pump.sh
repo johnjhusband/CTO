@@ -338,7 +338,10 @@ def write_circuit_open_note(skip_note: str, state: dict) -> str:
     state['last_circuit_notice_utc'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(now_epoch))
     state['last_circuit_artifact'] = path
     _save_provider_failure_state(state)
-    notify_blocked_note(path, skip_note)
+    # Do not emit a PWA system_event for every already-open circuit tick.
+    # The initial agent_incomplete failure is human-visible; repeated circuit-open
+    # skips are old news unless recovery state changes, and should remain durable
+    # filesystem evidence for OpenClaw strategy rather than chat noise.
     return path
 
 
