@@ -1,0 +1,27 @@
+name: Source security gates
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  source-security-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Run source-visible secret artifact guard
+        run: scripts/security/check-secret-artifacts.sh
+
+      - name: Run install secret-handling guard
+        run: scripts/security/check-install-secret-handling.sh
+
+      - name: Run redaction unit tests
+        run: python3 -m unittest -v tests/test_redact_operational_secrets.py
+
+      - name: Run PWA source regression tests
+        run: python3 -m unittest -v tests/test_pwa_routing.py tests/test_pwa_voice_ui.py
