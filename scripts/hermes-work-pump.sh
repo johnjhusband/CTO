@@ -260,11 +260,49 @@ def write_blocked_note(error_text: str, recovery_note: str = '') -> str:
     return path
 
 
+def write_circuit_open_note(skip_note: str, state: dict) -> str:
+    """Record a throttled durable note when the provider circuit is already open.
+
+    The circuit breaker intentionally skips semantic Hermes delegation. Without a
+    fresh artifact, a green systemd unit can look like successful work while the
+    right hemisphere is still degraded. Throttle artifacts to avoid spam during a
+    single outage while preserving visible evidence for the current cooldown.
+    """
+    now_epoch = time.time()
+    last_notice = float(state.get('last_circuit_notice_epoch') or 0)
+    existing = str(state.get('last_circuit_artifact') or state.get('last_artifact') or '')
+    if existing and last_notice and now_epoch - last_notice < 900:
+        return existing
+
+    log_dir = "/opt/cto/logs/repairs"
+    os.makedirs(log_dir, exist_ok=True)
+    stamp = time.strftime('%Y-%m-%dT%H%M%SZ', time.gmtime(now_epoch))
+    path = os.path.join(log_dir, f"hermes-work-pump-circuit-open-{stamp}.md")
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write("# Hermes work pump circuit open\n\n")
+        f.write(f"- Timestamp: {now}\n")
+        f.write("- Selected item: hemisphere health / Hermes continuous work pump reliability\n")
+        f.write("- Status: blocked_degraded_circuit_open\n")
+        f.write("- Evidence: provider failure cache shows repeated `agent_incomplete` / `NoneType` failures, so semantic Hermes delegation was intentionally skipped this tick.\n")
+        f.write(f"- Circuit state: {skip_note}\n")
+        if state.get('last_artifact'):
+            f.write(f"- Previous failure artifact: {state.get('last_artifact')}\n")
+        f.write("- Action taken: left services running, avoided another provider call, and preserved this durable degraded-state note for OpenClaw strategy follow-up.\n")
+        f.write("- Secret handling: no request headers, bearer tokens, environment values, or raw tool traces recorded.\n")
+    state['last_circuit_notice_epoch'] = now_epoch
+    state['last_circuit_notice_utc'] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(now_epoch))
+    state['last_circuit_artifact'] = path
+    _save_provider_failure_state(state)
+    notify_blocked_note(path, skip_note)
+    return path
+
+
 skip, skip_note, skip_state = provider_outage_circuit_breaker()
 if skip:
+    artifact = write_circuit_open_note(skip_note, skip_state)
     print(json.dumps({
         "status": "blocked_degraded_circuit_open",
-        "artifact": skip_state.get('last_artifact'),
+        "artifact": artifact,
         "recovery": skip_note,
     }))
     raise SystemExit(0)
